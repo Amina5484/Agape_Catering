@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useStore } from '../../context/StoreContext';
+import PasswordInput from '../common/PasswordInput';
 
 const Login = ({ setShowLogin }) => {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ const Login = ({ setShowLogin }) => {
   const { login, isLoggedIn, userRole } = useStore();
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
   });
 
   useEffect(() => {
@@ -22,7 +23,7 @@ const Login = ({ setShowLogin }) => {
       // Redirect based on role
       switch (userRole) {
         case 'Customer':
-          navigate('/', { replace: true });
+          navigate('/customer', { replace: true });
           break;
         case 'System Admin':
           navigate('/admin', { replace: true });
@@ -34,7 +35,7 @@ const Login = ({ setShowLogin }) => {
           navigate('/manager', { replace: true });
           break;
         default:
-          navigate('/', { replace: true });
+          navigate('/');
       }
     }
   }, [isLoggedIn, userRole, navigate, setShowLogin]);
@@ -42,7 +43,7 @@ const Login = ({ setShowLogin }) => {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -53,7 +54,7 @@ const Login = ({ setShowLogin }) => {
     try {
       const result = await login(formData.email, formData.password);
       console.log('Login result:', result);
-      
+
       if (result.success) {
         // Close login modal if it exists
         if (setShowLogin) {
@@ -63,7 +64,7 @@ const Login = ({ setShowLogin }) => {
         // Redirect based on role
         switch (result.role) {
           case 'Customer':
-            navigate('/', { replace: true });
+            navigate('/customer', { replace: true });
             break;
           case 'System Admin':
             navigate('/admin', { replace: true });
@@ -75,7 +76,7 @@ const Login = ({ setShowLogin }) => {
             navigate('/manager', { replace: true });
             break;
           default:
-            navigate('/', { replace: true });
+            navigate('/');
         }
       } else {
         toast.error(result.message || 'Login failed');
@@ -118,19 +119,13 @@ const Login = ({ setShowLogin }) => {
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
+              <PasswordInput
                 name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
+                placeholder="Password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
               />
             </div>
           </div>
@@ -144,11 +139,14 @@ const Login = ({ setShowLogin }) => {
             </button>
           </div>
         </form>
-        
+
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Don&apos;t have an account?{' '}
-            <a href="/register" className="font-medium text-teal-600 hover:text-teal-500">
+            <a
+              href="/register"
+              className="font-medium text-teal-600 hover:text-teal-500"
+            >
               Register here
             </a>
           </p>
@@ -158,4 +156,4 @@ const Login = ({ setShowLogin }) => {
   );
 };
 
-export default Login; 
+export default Login;

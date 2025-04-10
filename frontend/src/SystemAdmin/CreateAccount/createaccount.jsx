@@ -1,27 +1,28 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { toast } from "react-toastify";
-import { useStore } from "../../context/StoreContext";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useStore } from '../../context/StoreContext';
+import PasswordInput from '../../components/common/PasswordInput';
 
 const CreateAccount = () => {
   const navigate = useNavigate();
   const { token } = useStore();
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    gender: "",
-    role: "",
-    password: "",
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    gender: '',
+    role: '',
+    password: '',
     photo: null,
   });
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "photo" && files) {
+    if (name === 'photo' && files) {
       setUser((prev) => ({ ...prev, photo: files[0] }));
     } else {
       setUser((prev) => ({ ...prev, [name]: value }));
@@ -40,7 +41,7 @@ const CreateAccount = () => {
     try {
       // Validate phone number
       if (!validatePhone(user.phone)) {
-        toast.error("Please enter a valid phone number");
+        toast.error('Please enter a valid phone number');
         setLoading(false);
         return;
       }
@@ -51,20 +52,21 @@ const CreateAccount = () => {
         email: user.email,
         phone: user.phone,
         password: user.password,
-        gender: user.gender
+        gender: user.gender,
       };
 
       // Determine the correct endpoint based on role
-      const endpoint = user.role === "Catering Manager" 
-        ? "/api/auth/register/catering-manager"
-        : "/api/auth/register/executive-chef";
+      const endpoint =
+        user.role === 'Catering Manager'
+          ? '/api/auth/register/catering-manager'
+          : '/api/auth/register/executive-chef';
 
       const response = await axios.post(
         `http://localhost:4000${endpoint}`,
         userData,
         {
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
         }
@@ -72,11 +74,12 @@ const CreateAccount = () => {
 
       if (response.data.message) {
         toast.success(response.data.message);
-        navigate("/admin/view-users");
+        navigate('/admin/view-users');
       }
     } catch (error) {
-      console.error("Error creating account:", error);
-      const errorMessage = error.response?.data?.message || "Error creating account";
+      console.error('Error creating account:', error);
+      const errorMessage =
+        error.response?.data?.message || 'Error creating account';
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -90,11 +93,15 @@ const CreateAccount = () => {
           <div className="max-w-md mx-auto">
             <div className="divide-y divide-gray-200">
               <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-                <h2 className="text-2xl font-bold mb-8 text-center">Create New Account</h2>
+                <h2 className="text-2xl font-bold mb-8 text-center">
+                  Create New Account
+                </h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">First Name</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        First Name
+                      </label>
                       <input
                         type="text"
                         name="firstName"
@@ -105,7 +112,9 @@ const CreateAccount = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Last Name
+                      </label>
                       <input
                         type="text"
                         name="lastName"
@@ -118,7 +127,9 @@ const CreateAccount = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Email
+                    </label>
                     <input
                       type="email"
                       name="email"
@@ -130,7 +141,9 @@ const CreateAccount = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Phone</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Phone
+                    </label>
                     <input
                       type="tel"
                       name="phone"
@@ -140,11 +153,15 @@ const CreateAccount = () => {
                       placeholder="+1234567890"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     />
-                    <p className="mt-1 text-sm text-gray-500">Format: +1234567890</p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Format: +1234567890
+                    </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Gender</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Gender
+                    </label>
                     <select
                       name="gender"
                       value={user.gender}
@@ -160,7 +177,9 @@ const CreateAccount = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Role</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Role
+                    </label>
                     <select
                       name="role"
                       value={user.role}
@@ -175,12 +194,11 @@ const CreateAccount = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Password</label>
-                    <input
-                      type="password"
+                    <PasswordInput
                       name="password"
                       value={user.password}
                       onChange={handleChange}
+                      label="Password"
                       required
                       minLength="6"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
@@ -193,7 +211,7 @@ const CreateAccount = () => {
                       disabled={loading}
                       className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
-                      {loading ? "Creating..." : "Create Account"}
+                      {loading ? 'Creating...' : 'Create Account'}
                     </button>
                   </div>
                 </form>

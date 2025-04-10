@@ -18,7 +18,9 @@ const StoreContextProvider = (props) => {
   const [food_list, setFoodList] = useState([]);
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
-  const [userRole, setUserRole] = useState(localStorage.getItem('userRole') || '');
+  const [userRole, setUserRole] = useState(
+    localStorage.getItem('userRole') || ''
+  );
   const [userId, setUserId] = useState(localStorage.getItem('userId') || '');
 
   const url = 'http://localhost:4000';
@@ -27,24 +29,23 @@ const StoreContextProvider = (props) => {
   const DEFAULT_ADMIN = {
     email: 'admin@system.com',
     password: 'Admin@123',
-    role: 'System Admin'
+    role: 'System Admin',
   };
 
   // Login function
   const login = async (email, password) => {
     try {
-      console.log('Attempting login with:', { email, password });
+      console.log('Attempting login with:', { email, password: '***' });
       const response = await axios.post(`${url}/api/auth/login`, {
         email,
-        password
+        password,
       });
 
       console.log('Login response:', response.data);
 
       if (response.data.success) {
         const { token, user } = response.data;
-        // Ensure role is properly capitalized
-        const role = user.role === 'system_admin' ? 'System Admin' : user.role;
+        const role = user.role;
         setToken(token);
         setUserRole(role);
         setUserId(user._id);
@@ -57,9 +58,13 @@ const StoreContextProvider = (props) => {
       return { success: false, message: response.data.message };
     } catch (error) {
       console.error('Login error details:', error.response?.data || error);
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Login failed. Please check your credentials.' 
+      const errorMessage =
+        error.response?.data?.message ||
+        'Login failed. Please check your credentials.';
+      toast.error(errorMessage);
+      return {
+        success: false,
+        message: errorMessage,
       };
     }
   };
@@ -78,15 +83,22 @@ const StoreContextProvider = (props) => {
   // Create user account (for system admin only)
   const createUser = async (userData) => {
     if (userRole !== 'system_admin') {
-      return { success: false, message: 'Only system admin can create new users' };
+      return {
+        success: false,
+        message: 'Only system admin can create new users',
+      };
     }
 
     try {
-      const response = await axios.post(`${url}/api/auth/register/${userData.role}`, userData, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const response = await axios.post(
+        `${url}/api/auth/register/${userData.role}`,
+        userData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       if (response.data.success) {
         toast.success('User created successfully');
@@ -95,7 +107,10 @@ const StoreContextProvider = (props) => {
       return { success: false, message: response.data.message };
     } catch (error) {
       console.error('Create user error:', error);
-      return { success: false, message: error.response?.data?.message || 'Failed to create user' };
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to create user',
+      };
     }
   };
 
@@ -149,7 +164,9 @@ const StoreContextProvider = (props) => {
       }
     } catch (error) {
       console.error('Error adding item to cart:', error);
-      toast.error(error.response?.data?.message || 'Failed to add item to cart');
+      toast.error(
+        error.response?.data?.message || 'Failed to add item to cart'
+      );
     }
   };
 
@@ -180,7 +197,9 @@ const StoreContextProvider = (props) => {
       }
     } catch (error) {
       console.error('Error removing item from cart:', error);
-      toast.error(error.response?.data?.message || 'Failed to remove item from cart');
+      toast.error(
+        error.response?.data?.message || 'Failed to remove item from cart'
+      );
     }
   };
 
@@ -241,7 +260,8 @@ const StoreContextProvider = (props) => {
     logout,
     createUser,
     fetchFoodList,
-    DEFAULT_ADMIN
+    fetchCart,
+    DEFAULT_ADMIN,
   };
 
   return (
