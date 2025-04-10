@@ -1,4 +1,3 @@
-
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 import ROLES from '../config/roles.js';
@@ -62,16 +61,38 @@ export const registerSystemAdmin = (req, res) => registerUser(req, res, ROLES.SY
 export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
+        console.log('Login attempt for email:', email);
+        
         const user = await User.findOne({ email });
-
-        if (!user || !(await user.matchPassword(password))) {
-            return res.status(401).json({ message: "Invalid credentials" });
+        console.log('User found:', user ? 'Yes' : 'No');
+        
+        if (!user) {
+            console.log('User not found');
+            return res.status(401).json({ success: false, message: "Invalid credentials" });
+        }
+        
+        const isPasswordValid = await user.matchPassword(password);
+        console.log('Password valid:', isPasswordValid ? 'Yes' : 'No');
+        
+        if (!isPasswordValid) {
+            console.log('Invalid password');
+            return res.status(401).json({ success: false, message: "Invalid credentials" });
         }
 
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        console.log('Token generated, user role:', user.role);
 
-        res.json({ token, user: { id: user._id, name: user.name, role: user.role } });
+        res.json({ 
+            success: true,
+            token, 
+            user: { 
+                _id: user._id,
+                name: user.name, 
+                role: user.role 
+            } 
+        });
     } catch (error) {
-        res.status(500).json({ message: "Server Error" });
+        console.error('Login error:', error);
+        res.status(500).json({ success: false, message: "Server Error" });
     }
 };
