@@ -1,162 +1,129 @@
-import { useContext, useEffect } from 'react';
-import { StoreContext } from '../../context/StoreContext';
-import { RiCloseLine } from 'react-icons/ri';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { StoreContext } from '../../context/StoreContext';
+import { useContext } from 'react';
+import { toast } from 'react-toastify';
 
 const Cart = () => {
-  const {
-    cartItems,
-    food_list,
-    addToCart,
-    removeFromCart,
-    url,
-    totalCartPrice,
-    fetchCart,
-    isLoggedIn,
-    userRole,
-  } = useContext(StoreContext);
+  const { cartItems, removeFromCart, fetchCart, loading } = useContext(StoreContext);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch cart data when component mounts
   useEffect(() => {
-    console.log('Cart component mounted');
-    console.log('Is logged in:', isLoggedIn);
-    console.log('User role:', userRole);
-    fetchCart();
-  }, [fetchCart, isLoggedIn, userRole]);
+    const fetchData = async () => {
+      try {
+        await fetchCart();
+      } catch (error) {
+        console.error('Error fetching cart:', error);
+      }
+    };
 
-  // Filter items based on cartItems
-  const filteredItems = food_list.filter(
-    (item) => cartItems[item._id]?.quantity > 0
-  );
+    fetchData();
+  }, [fetchCart]);
 
-  console.log('Cart items:', cartItems);
-  console.log('Food list:', food_list);
-  console.log('Filtered items:', filteredItems);
+  const handleCheckout = async () => {
+    if (Object.keys(cartItems).length === 0) {
+      toast.error('Your cart is empty');
+      return;
+    }
 
-  if (!isLoggedIn) {
+    setIsCheckingOut(true);
+    try {
+      navigate('/placeorder');
+    } catch (error) {
+      toast.error('Error during checkout');
+      console.error('Checkout error:', error);
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-8 pt-24">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Cart</h1>
-          <p className="text-gray-600 mb-4">Please log in to view your cart</p>
-          <button
-            onClick={() => navigate('/login')}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
-          >
-            Login
-          </button>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-600 text-xl">Loading cart...</div>
       </div>
     );
   }
 
+  if (!localStorage.getItem("token")) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Please login to view your cart</h2>
+        <button 
+          onClick={() => navigate('/login')}
+          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+        >
+          Login
+        </button>
+      </div>
+    );
+  }
+
+  const totalAmount = Object.values(cartItems).reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-8 pt-24">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-          Your Cart
-        </h1>
-
-        {/* Cart Items Container */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
-          {/* Cart Header */}
-          <div className="hidden sm:grid grid-cols-6 font-bold bg-gray-50 px-6 py-4 border-b border-gray-200">
-            <div className="text-gray-600">Item</div>
-            <div className="text-gray-600">Title</div>
-            <div className="text-gray-600">Price</div>
-            <div className="text-gray-600">Quantity</div>
-            <div className="text-gray-600">Total</div>
-            <div className="text-gray-600">Remove</div>
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-3xl font-bold text-gray-800 mb-8">Your Cart</h2>
+        {Object.keys(cartItems).length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-xl text-gray-600 mb-4">Your cart is empty</p>
+            <button 
+              onClick={() => navigate('/')}
+              className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+            >
+              Continue Shopping
+            </button>
           </div>
-
-          {/* Cart Items */}
-          {filteredItems.length > 0 ? (
-            filteredItems.map((item) => {
-              const cartItem = cartItems[item._id];
-              const price = cartItem.price || item.price;
-              const totalPrice = price * cartItem.quantity;
-
-              return (
-                <div
-                  key={item._id}
-                  className="grid grid-cols-3 sm:grid-cols-6 items-center px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <div className="relative">
-                    <img
-                      src={url + '/uploads/' + item.image}
-                      alt={item.name}
-                      className="w-20 h-20 sm:w-16 sm:h-16 rounded-lg object-cover shadow-md"
-                    />
+        ) : (
+          <>
+            <div className="space-y-4">
+              {Object.entries(cartItems).map(([itemId, item]) => (
+                <div key={itemId} className="flex justify-between items-center p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
+                    <p className="text-gray-600">Price: ${item.price}</p>
+                    <p className="text-gray-600">Quantity: {item.quantity}</p>
+                    {item.selectedType && (
+                      <p className="text-gray-600">Type: {item.selectedType}</p>
+                    )}
                   </div>
-                  <p className="col-span-2 sm:col-span-1 font-medium text-gray-900">
-                    {item.name}
-                  </p>
-                  <p className="hidden sm:block text-gray-600 font-medium">
-                    {price} ETB
-                  </p>
-                  {/* Quantity Controls */}
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => removeFromCart(item._id)}
-                      className="w-8 h-8 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors duration-200"
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => removeFromCart(itemId, false)}
+                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
                     >
                       -
                     </button>
-                    <p className="font-medium text-gray-900 w-8 text-center">
-                      {cartItem.quantity}
-                    </p>
-                    <button
-                      onClick={() =>
-                        addToCart(item._id, 1, cartItem.selectedType, price)
-                      }
-                      className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition-colors duration-200"
+                    <button 
+                      onClick={() => removeFromCart(itemId, true)}
+                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                     >
-                      +
+                      Remove
                     </button>
                   </div>
-                  <p className="hidden sm:block text-gray-900 font-medium">
-                    {totalPrice} ETB
-                  </p>
-                  <button
-                    onClick={() => removeFromCart(item._id, true)}
-                    className="text-gray-400 hover:text-red-500 transition-colors duration-200"
-                    title="Remove Item"
-                  >
-                    <RiCloseLine size={24} />
-                  </button>
                 </div>
-              );
-            })
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Your cart is empty</p>
-              <button
-                onClick={() => navigate('/menu')}
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
+              ))}
+            </div>
+            <div className="mt-8 pt-4 border-t border-gray-200">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                Total: ${totalAmount.toFixed(2)}
+              </h3>
+              <button 
+                onClick={handleCheckout} 
+                disabled={isCheckingOut}
+                className={`w-full py-3 px-4 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors ${
+                  isCheckingOut ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                Browse Menu
+                {isCheckingOut ? 'Processing...' : 'Proceed to Checkout'}
               </button>
             </div>
-          )}
-        </div>
-
-        {/* Cart Summary */}
-        {filteredItems.length > 0 && (
-          <div className="bg-white rounded-lg shadow-lg p-6 sticky bottom-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Order Summary</h2>
-              <p className="text-2xl font-bold text-gray-900">
-                {totalCartPrice} ETB
-              </p>
-            </div>
-            <button
-              onClick={() => navigate('/place-order')}
-              className="w-full py-4 bg-green-600 text-white text-lg font-bold rounded-lg hover:bg-green-700 transition-colors duration-200 shadow-lg"
-            >
-              Proceed to Checkout
-            </button>
-          </div>
+          </>
         )}
       </div>
     </div>

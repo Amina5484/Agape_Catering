@@ -1,47 +1,48 @@
-import React, { useContext, useState } from 'react';
-import { FaTimes } from 'react-icons/fa';
-import { StoreContext } from '../../context/StoreContext';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import Modal from 'react-modal';
+import { useStore } from '../../context/StoreContext';
+import { toast } from 'react-toastify';
 
-const FoodItem = ({ id, name, price, description, image }) => {
-  const { cartItems, addToCart, isLoggedIn } = useContext(StoreContext);
+Modal.setAppElement('#root');
 
+const FoodItem = ({ name, description, image, price, category }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [quantity, setQuantity] = useState(cartItems[id] || 1);
-
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-  };
-
-  const handleAddToCart = () => {
-    if (!isLoggedIn) {
-      alert('Please log in to add items to your cart.');
-      return;
-    }
-    if (quantity <= 0) {
-      alert('Please enter a valid quantity greater than 0.');
-      return;
-    }
-
-    addToCart(id, quantity);
-    toggleModal();
-  };
-
-  const handleQuantityChange = (e) => {
-    const newQuantity = parseInt(e.target.value, 10);
-    setQuantity(isNaN(newQuantity) || newQuantity < 1 ? 1 : newQuantity);
-  };
+  const [quantity, setQuantity] = useState(1);
+  const { addToCart, isLoggedIn } = useStore();
 
   const imageUrl = image.startsWith('http')
     ? image
-    : `http://localhost:4000/uploads/${image}`;
+    : image.startsWith('/uploads/')
+      ? `http://localhost:4000${image}`
+      : `http://localhost:4000/uploads/${image}`;
+
+  const handleAddToCart = async () => {
+    if (!isLoggedIn) {
+      toast.error('Please login to add items to cart');
+      return;
+    }
+
+    try {
+      await addToCart({
+        id: name, // Using name as ID since we don't have direct access to _id
+        name,
+        price,
+        quantity,
+      });
+      setIsModalOpen(false);
+      setQuantity(1);
+      toast.success('Added to cart successfully!');
+    } catch (error) {
+      toast.error('Failed to add item to cart');
+    }
+  };
 
   return (
     <>
-      {/* Main Food Item Display */}
-      <div
+      <div 
         className="bg-white border border-gray-200 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group"
-        onClick={toggleModal}
+        onClick={() => setIsModalOpen(true)}
       >
         <div className="relative overflow-hidden rounded-lg mb-4">
           <img
@@ -55,70 +56,77 @@ const FoodItem = ({ id, name, price, description, image }) => {
           {name}
         </h3>
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">{description}</p>
-        <p className="text-lg font-bold text-[tomato]">{price} ETB</p>
       </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-md relative">
+      <Modal
+        isOpen={isModalOpen}
+        onRequestClose={() => {
+          setIsModalOpen(false);
+          setQuantity(1);
+        }}
+        className="fixed inset-0 flex items-center justify-center z-50"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50 z-40"
+      >
+        <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+          <div className="relative">
             <button
-              onClick={toggleModal}
-              className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-300"
+              onClick={() => {
+                setIsModalOpen(false);
+                setQuantity(1);
+              }}
+              className="absolute top-0 right-0 text-gray-600 hover:text-red-500 text-2xl font-bold bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-md"
             >
-              <FaTimes className="w-5 h-5 text-gray-600" />
+              ×
             </button>
-
-            <div className="relative overflow-hidden rounded-xl mb-6">
+            <div className="mb-4">
               <img
                 src={imageUrl}
                 alt={name}
-                className="w-full h-64 object-cover"
+                className="w-full h-48 object-cover rounded-lg"
               />
             </div>
-
             <h2 className="text-2xl font-bold text-gray-800 mb-2">{name}</h2>
             <p className="text-gray-600 mb-4">{description}</p>
-            <p className="text-xl font-bold text-[tomato] mb-6">{price} ETB</p>
-
-            <div className="flex flex-col space-y-4">
-              <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                <label
-                  htmlFor="quantity"
-                  className="font-semibold text-gray-700"
+            <p className="text-xl font-semibold text-[tomato] mb-4">
+              Birr {price}
+            </p>
+            <div className="flex items-center justify-between mb-6">
+              <span className="text-gray-700">Quantity:</span>
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
                 >
-                  Quantity:
-                </label>
-                <input
-                  type="number"
-                  id="quantity"
-                  value={quantity}
-                  onChange={handleQuantityChange}
-                  min="1"
-                  className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[tomato] focus:border-transparent"
-                />
+                  -
+                </button>
+                <span className="text-lg font-medium">{quantity}</span>
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  +
+                </button>
               </div>
-
-              <button
-                onClick={handleAddToCart}
-                className="w-full bg-[tomato] text-white py-3 rounded-lg font-semibold hover:bg-[#ff6347] transition-colors duration-300 transform hover:scale-105"
-              >
-                Add to Cart
-              </button>
             </div>
+            <button
+              onClick={handleAddToCart}
+              className="w-full bg-[tomato] text-white py-2 rounded-lg hover:bg-[#ff6347] transition-colors"
+            >
+              Add to Cart - Birr {price * quantity}
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
     </>
   );
 };
 
 FoodItem.propTypes = {
-  id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
-  price: PropTypes.number.isRequired,
   description: PropTypes.string.isRequired,
   image: PropTypes.string.isRequired,
+  price: PropTypes.number.isRequired,
+  category: PropTypes.string.isRequired,
 };
 
 export default FoodItem;

@@ -35,6 +35,17 @@ const StoreContextProvider = (props) => {
   // Login function
   const login = async (email, password) => {
     try {
+      // Clear any existing state first
+      setToken('');
+      setUserRole('');
+      setUserId('');
+      setIsLoggedIn(false);
+      setCartItems({});
+      setFoodList([]);
+      localStorage.removeItem('token');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userId');
+
       console.log('Attempting login with:', { email, password: '***' });
       const response = await axios.post(`${url}/api/auth/login`, {
         email,
@@ -71,13 +82,24 @@ const StoreContextProvider = (props) => {
 
   // Logout function
   const logout = () => {
+    // Clear all state
     setToken('');
     setUserRole('');
     setUserId('');
     setIsLoggedIn(false);
+    setCartItems({});
+    setFoodList([]);
+    
+    // Clear localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userId');
+    
+    // Show success message
+    toast.success('Logged out successfully');
+    
+    // Force a page reload to ensure clean state
+    window.location.href = '/';
   };
 
   // Create user account (for system admin only)
@@ -118,14 +140,18 @@ const StoreContextProvider = (props) => {
   const fetchCart = async () => {
     if (!isLoggedIn || userRole !== 'Customer') return;
     try {
-      const response = await axios.get(`${url}/api/cart/get`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: { userId },
-      });
+      const response = await axios.post(
+        `${url}/api/cart/get`,
+        { userId },
+        {
+          headers: {
+            token: token,
+          },
+        }
+      );
 
       if (response.data.success) {
+        console.log('Fetched cart data:', response.data.cartData);
         setCartItems(response.data.cartData || {});
       }
     } catch (error) {
@@ -152,15 +178,15 @@ const StoreContextProvider = (props) => {
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            token: token,
           },
         }
       );
 
       if (response.data.success) {
+        console.log('Added to cart:', response.data.cartData);
         setCartItems(response.data.cartData || {});
         toast.success('Added to cart successfully!');
-        await fetchCart();
       }
     } catch (error) {
       console.error('Error adding item to cart:', error);
@@ -185,15 +211,15 @@ const StoreContextProvider = (props) => {
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            token: token,
           },
         }
       );
 
       if (response.data.success) {
+        console.log('Removed from cart:', response.data.cartData);
         setCartItems(response.data.cartData || {});
         toast.success('Item removed from cart');
-        await fetchCart();
       }
     } catch (error) {
       console.error('Error removing item from cart:', error);
@@ -205,7 +231,7 @@ const StoreContextProvider = (props) => {
 
   // Calculate total cart price
   const totalCartPrice = Object.keys(cartItems).reduce((total, itemId) => {
-    const item = (food_list || []).find((food) => food._id === itemId);
+    const item = food_list.find((food) => food._id === itemId);
     if (item) {
       const cartItem = cartItems[itemId];
       return total + (cartItem.price || item.price) * cartItem.quantity;
@@ -218,8 +244,10 @@ const StoreContextProvider = (props) => {
     try {
       const response = await axios.get(`${url}/api/food/list`);
       if (response.data.success) {
-        setFoodList(response.data.foods || []);
-        return response.data.foods || [];
+        // Check if the response has a 'foods' property, otherwise use 'data'
+        const foodData = response.data.foods || response.data.data || [];
+        setFoodList(foodData);
+        return foodData;
       }
       return [];
     } catch (error) {

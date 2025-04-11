@@ -102,7 +102,7 @@ const ManageStock = () => {
   return (
     <div className="container mx-auto p-4">
       <h2 className="text-2xl font-bold mb-4">Manage Stock</h2>
-      
+
       {/* Add Stock Form */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
         <h3 className="text-xl font-semibold mb-4">Add New Stock Item</h3>

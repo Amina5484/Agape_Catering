@@ -23,7 +23,7 @@ const ViewUser = () => {
     fetchUser();
   }, [id]);
 
-  const fetchUser = async () => {
+    const fetchUser = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`http://localhost:4000/api/users/${id}`, {
@@ -39,14 +39,14 @@ const ViewUser = () => {
         role: response.data.role || "",
         isactivated: response.data.isactivated
       });
-    } catch (error) {
-      console.error("Error fetching user:", error);
+      } catch (error) {
+        console.error("Error fetching user:", error);
       toast.error(error.response?.data?.message || "Failed to fetch user details");
       navigate("/admin/liststaff");
-    } finally {
-      setLoading(false);
-    }
-  };
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -71,7 +71,7 @@ const ViewUser = () => {
       toast.success("User updated successfully");
       setIsEditing(false);
       fetchUser();
-    } catch (error) {
+      } catch (error) {
       console.error("Error updating user:", error);
       toast.error(error.response?.data?.message || "Failed to update user");
     }
@@ -160,7 +160,7 @@ const ViewUser = () => {
                 required
               />
             </div>
-            <div>
+        <div>
               <label className="block text-sm font-medium text-gray-700">Role</label>
               <select
                 name="role"
@@ -176,7 +176,7 @@ const ViewUser = () => {
                 <option value="delivery">Delivery</option>
                 <option value="customer">Customer</option>
               </select>
-            </div>
+        </div>
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -186,21 +186,21 @@ const ViewUser = () => {
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label className="ml-2 block text-sm text-gray-900">Active Account</label>
-            </div>
+      </div>
             <div className="flex justify-end space-x-4">
-              <button
+        <button
                 type="button"
                 onClick={() => setIsEditing(false)}
                 className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-              >
+        >
                 Cancel
-              </button>
+        </button>
               <button
                 type="submit"
                 className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
               >
                 Save Changes
-              </button>
+        </button>
             </div>
           </form>
         ) : (

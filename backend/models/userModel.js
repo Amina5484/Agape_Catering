@@ -21,6 +21,7 @@ const UserSchema = new mongoose.Schema({
     enum: ['Customer', 'Catering Manager', 'Executive Chef', 'System Admin'],
     default: 'Customer',
   },
+  cartData: { type: Object, default: {} },
   createdAt: { type: Date, default: Date.now },
 });
 
