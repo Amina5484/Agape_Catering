@@ -226,4 +226,17 @@ catering_router.post('/order/accept/:orderId', acceptOrder);
  */
 catering_router.put('/order/update-status/:orderId', updateOrderStatus);
 
+// Schedule Management
+catering_router.post('/schedule/assign', assignSchedule);
+catering_router.get('/schedule', getSchedule);
+
+// Customer Location
+catering_router.get('/customer/:customerId/location', viewCustomerLocation);
+
+// Feedback
+catering_router.get('/feedback', viewFeedback);
+
+// Reports
+catering_router.get('/report', generateReport);
+
 export default catering_router;
