@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import './index.css';
 import { ToastContainer } from 'react-toastify';
@@ -16,7 +16,8 @@ import Explore from './components/Explore/Explore';
 import FeedbackForm from './pages/Feedback/Feedback';
 import PlaceOrder from './pages/PlaceOrder/PlaceOrder';
 import StoreContextProvider from './context/StoreContext';
-import CustomerDashboard from './customer/CustomerDashboard';
+import CustomerProfile from './customer/CustomerProfile';
+import CustomerOrders from './pages/Orders/Orders';
 
 // Chef Imports
 import ChefDashboard from './chef/ChefDashboard';
@@ -58,9 +59,10 @@ const AppContent = () => {
   const [showLogin, setShowLogin] = useState(false);
   const location = useLocation();
   const isManagerRoute = location.pathname.startsWith('/manager');
-  const isSystemRoute = location.pathname.startsWith('/system') || location.pathname.startsWith('/admin');
+  const isSystemRoute =
+    location.pathname.startsWith('/system') ||
+    location.pathname.startsWith('/admin');
   const isChefRoute = location.pathname.startsWith('/chef');
-  const isCustomerRoute = location.pathname.startsWith('/customer');
 
   return (
     <>
@@ -70,9 +72,7 @@ const AppContent = () => {
           <ManagerNavbar />
         ) : isSystemRoute ? (
           <SystemNavbar />
-        ) : isChefRoute || isCustomerRoute ? (
-          null
-        ) : (
+        ) : isChefRoute ? null : (
           <Navbar setShowLogin={setShowLogin} />
         )}
 
@@ -84,10 +84,26 @@ const AppContent = () => {
 
           {/* Protected routes */}
           <Route
+            path="/customer"
+            element={
+              <ProtectedRoute allowedRoles={['Customer']}>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/customer/dashboard"
             element={
               <ProtectedRoute allowedRoles={['Customer']}>
-                <CustomerDashboard />
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/profile"
+            element={
+              <ProtectedRoute allowedRoles={['Customer']}>
+                <CustomerProfile />
               </ProtectedRoute>
             }
           />
@@ -102,10 +118,16 @@ const AppContent = () => {
             }
           >
             <Route index element={<AdminHome />} />
-            <Route path="create-account" element={<CreateAccount url={url} />} />
+            <Route
+              path="create-account"
+              element={<CreateAccount url={url} />}
+            />
             <Route path="edit-user" element={<EditStaff url={url} />} />
             <Route path="settings" element={<SystemSettings url={url} />} />
-            <Route path="user-management" element={<UserManagement url={url} />} />
+            <Route
+              path="user-management"
+              element={<UserManagement url={url} />}
+            />
             <Route path="staff-list" element={<ListStaff url={url} />} />
             <Route path="view-user" element={<ViewUser url={url} />} />
             <Route path="account-list" element={<AccountList />} />
@@ -153,17 +175,32 @@ const AppContent = () => {
             path="/menu"
             element={<FoodDisplay setShowLogin={setShowLogin} category="All" />}
           />
-          <Route path="/categories" element={<Explore />} />
+          <Route
+            path="/categories"
+            element={
+              <div className="pt-16">
+                <Explore category="All" setCatagory={() => {}} />
+              </div>
+            }
+          />
           <Route path="/feedback" element={<FeedbackForm />} />
           <Route path="/view-feedback" element={<ViewFeedback />} />
           <Route path="/contact" element={<Footer />} />
           <Route path="/place-order" element={<PlaceOrder />} />
+          <Route
+            path="/customer/orders"
+            element={
+              <ProtectedRoute allowedRoles={['Customer']}>
+                <CustomerOrders />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Default route */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
 
-        {!isManagerRoute && !isSystemRoute && !isChefRoute && !isCustomerRoute && <Footer />}
+        {!isManagerRoute && !isSystemRoute && !isChefRoute && <Footer />}
       </div>
 
       {showLogin && (

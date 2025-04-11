@@ -17,6 +17,7 @@ import swaggerUi from 'swagger-ui-express';
 import customer_router from './routes/customerRoute.js';
 import category_router from './routes/categoryRoute.js';
 import admin_router from './routes/adminRoutes.js';
+import orderRoutes from './routes/orderRoute.js';
 
 dotenv.config();
 
@@ -77,11 +78,11 @@ app.use('/api/auth', authRouter);
 app.use('/api/admin', admin_router);
 app.use('/api/catering', catering_router);
 app.use('/api', category_router);
-app.use('/api/customer',customer_router);
+app.use('/api/customer', customer_router);
 app.use('/api/user', userRouter);
 app.use('/api/food', foodRouter);
 app.use('/api/cart', cartRouter);
-// app.use('/api/order', orderRouter);
+app.use('/api/orders', orderRoutes);
 app.use('/api/feedback', feedbackRouter);
 
 // ✅ Database Connection
