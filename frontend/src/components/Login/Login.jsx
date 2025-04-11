@@ -1,10 +1,13 @@
 import React, { useState, useContext } from 'react';
 import { FaTimes } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import { StoreContext } from '../../context/StoreContext';
 import axios from 'axios';
 
 const Login = ({ setShowLogin }) => {
-  const { url, setToken, setUserId } = useContext(StoreContext);
+  const { url, setToken, setUserId, setUserRole, setIsLoggedIn } =
+    useContext(StoreContext);
+  const navigate = useNavigate();
   const [currentState, setCurrentState] = useState('Login');
   const [data, setData] = useState({
     name: '',
@@ -57,9 +60,9 @@ const Login = ({ setShowLogin }) => {
 
     let newUrl = url;
     if (currentState === 'Login') {
-      newUrl += '/api/user/login';
+      newUrl += '/api/auth/login';
     } else {
-      newUrl += '/api/user/register';
+      newUrl += '/api/auth/register';
     }
 
     try {
@@ -71,14 +74,34 @@ const Login = ({ setShowLogin }) => {
       const response = await axios.post(newUrl, data);
       console.log('Backend Response:', response.data);
 
-      if (response.data.token) {
-        setToken(response.data.token);
-        localStorage.setItem('token', response.data.token);
-        if (response.data.userId) {
-          setUserId(response.data.userId);
-          localStorage.setItem('userId', response.data.userId);
-        }
+      if (response.data.success) {
+        const { token, user } = response.data;
+        setToken(token);
+        setUserRole(user.role);
+        setUserId(user._id);
+        setIsLoggedIn(true);
+        localStorage.setItem('token', token);
+        localStorage.setItem('userRole', user.role);
+        localStorage.setItem('userId', user._id);
         setShowLogin(false);
+
+        // Redirect based on role
+        switch (user.role) {
+          case 'Customer':
+            navigate('/customer', { replace: true });
+            break;
+          case 'System Admin':
+            navigate('/admin', { replace: true });
+            break;
+          case 'Executive Chef':
+            navigate('/chef', { replace: true });
+            break;
+          case 'Catering Manager':
+            navigate('/manager', { replace: true });
+            break;
+          default:
+            navigate('/');
+        }
       } else {
         console.error('No token received in response:', response.data);
         alert(response.data.message || 'Login failed. Please try again.');
