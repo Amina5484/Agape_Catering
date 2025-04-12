@@ -7,8 +7,9 @@ const SystemNavbar = ({ user }) => {
 
   const onLogout = () => {
     localStorage.clear();
-    navigate("/login");
+    navigate("/");
   };
+  
 
   // Ensure user data is available
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'System Admin';

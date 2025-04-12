@@ -33,10 +33,10 @@ import Orders from './pages/Orders/Orders';
 import ManagerHome from './manager/ManagerHome/ManagerHome';
 import Profile from './manager/Profile';
 import ViewFeedback from './manager/viewFeedback';
-import ManageStock from './manager/ManageStock';
 import GenerateReport from './manager/GenerateReport';
 import ScheduleManagement from './manager/ScheduleManagement';
-import MenuManagement from './components/manager/MenuManagement';
+import MenuManagement from './manager/MenuManagement';
+import StockManagement from './manager/StockManagement';
 
 // System Admin Imports
 import CreateAccount from './SystemAdmin/CreateAccount/createaccount';
@@ -161,7 +161,7 @@ const AppContent = () => {
             <Route path="food-list" element={<List url={url} />} />
             <Route path="orders" element={<Orders />} />
             <Route path="profile" element={<Profile />} />
-            <Route path="manage-stock" element={<ManageStock />} />
+            <Route path="stock" element={<StockManagement />} />
             <Route path="generate-report" element={<GenerateReport />} />
             <Route path="schedule" element={<ScheduleManagement />} />
             <Route path="feedback" element={<ViewFeedback />} />

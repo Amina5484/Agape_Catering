@@ -1,21 +1,12 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { StoreContext } from '../../context/StoreContext';
 import FoodItem from '../FoodItem/FoodItem';
-import Modal from 'react-modal';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-Modal.setAppElement('#root');
-
 const FoodDisplay = () => {
-  const { food_list, fetchFoodList, addToCart, isLoggedIn } =
+  const { food_list, fetchFoodList } =
     useContext(StoreContext);
-  const navigate = useNavigate();
   const [categorizedFood, setCategorizedFood] = useState({});
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState(null);
-  const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -38,55 +29,17 @@ const FoodDisplay = () => {
       const categorized = food_list.reduce((acc, item) => {
         const { category, subcategory } = item;
         if (!acc[category]) acc[category] = {};
-        if (!acc[category][subcategory]) acc[category][subcategory] = [];
-        acc[category][subcategory].push(item);
+        
+        // Handle items without subcategory
+        const subcategoryKey = subcategory || 'General';
+        
+        if (!acc[category][subcategoryKey]) acc[category][subcategoryKey] = [];
+        acc[category][subcategoryKey].push(item);
         return acc;
       }, {});
       setCategorizedFood(categorized);
     }
   }, [food_list]);
-
-  const openModal = (item) => {
-    setSelectedItem(item);
-    setSelectedType(item.types ? item.types[0] : null);
-    setQuantity(1);
-    setModalIsOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalIsOpen(false);
-    setSelectedItem(null);
-    setSelectedType(null);
-    setQuantity(1);
-  };
-
-  const handleAddToCart = async () => {
-    if (!isLoggedIn) {
-      toast.error('Please login to add items to cart');
-      navigate('/login');
-      return;
-    }
-
-    if (!selectedItem || !selectedType) {
-      toast.error('Please select a type');
-      return;
-    }
-
-    try {
-      await addToCart({
-        id: selectedItem._id,
-        name: selectedItem.name,
-        type: selectedType.name,
-        price: selectedType.price,
-        quantity,
-      });
-      toast.success('Item added to cart successfully');
-      closeModal();
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast.error('Failed to add item to cart');
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12 px-4 sm:px-6 lg:px-8">
@@ -118,13 +71,14 @@ const FoodDisplay = () => {
                       {categorizedFood[category][subcategory].map((item) => (
                         <div
                           key={item._id}
-                          className="transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
-                          onClick={() => openModal(item)}
+                          className="transform transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer"
                         >
                           <FoodItem
                             name={item.name}
                             description={item.description}
                             image={item.image}
+                            price={item.price}
+                            category={item.category}
                           />
                         </div>
                       ))}
@@ -139,94 +93,6 @@ const FoodDisplay = () => {
             <p>No menu items available at the moment.</p>
           </div>
         )}
-
-        {/* Modal */}
-        <Modal
-          isOpen={modalIsOpen}
-          onRequestClose={closeModal}
-          contentLabel="Food Item Details"
-          className="fixed inset-0 flex items-center justify-center z-50"
-          overlayClassName="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center"
-        >
-          {selectedItem && (
-            <div className="bg-white p-5 rounded-lg shadow-lg w-full max-w-sm relative">
-              <button
-                className="absolute top-2 right-2 text-gray-600 hover:text-red-500 text-xl"
-                onClick={closeModal}
-              >
-                &times;
-              </button>
-
-              <h2 className="text-2xl font-bold text-center">
-                {selectedItem.name}
-              </h2>
-              <img
-                src={selectedItem.image}
-                alt={selectedItem.name}
-                className="w-full h-40 object-cover mt-3 rounded-lg"
-              />
-              <p className="mt-3 text-gray-700 text-center">
-                {selectedItem.description}
-              </p>
-
-              {/* Type Selection */}
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold">Select Type:</h3>
-                <select
-                  className="border p-2 rounded mt-1 w-full"
-                  value={selectedType ? selectedType.name : ''}
-                  onChange={(e) =>
-                    setSelectedType(
-                      selectedItem.types.find(
-                        (type) => type.name === e.target.value
-                      )
-                    )
-                  }
-                >
-                  {selectedItem.types && selectedItem.types.length > 0 ? (
-                    selectedItem.types.map((type) => (
-                      <option key={type.name} value={type.name}>
-                        {type.name} - {type.price} ETB
-                      </option>
-                    ))
-                  ) : (
-                    <option>No types available</option>
-                  )}
-                </select>
-              </div>
-
-              {/* Quantity Selection */}
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold">Quantity:</h3>
-                <input
-                  type="number"
-                  className="border p-2 rounded mt-1 w-full"
-                  value={quantity}
-                  min="1"
-                  onChange={(e) =>
-                    setQuantity(Math.max(1, parseInt(e.target.value)))
-                  }
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="mt-5 grid grid-cols-2 gap-2">
-                <button
-                  onClick={closeModal}
-                  className="bg-red-500 text-white px-4 py-2 rounded w-full hover:bg-red-600"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddToCart}
-                  className="bg-green-500 text-white px-4 py-2 rounded w-full hover:bg-green-600"
-                >
-                  Add to Cart
-                </button>
-              </div>
-            </div>
-          )}
-        </Modal>
       </div>
     </div>
   );

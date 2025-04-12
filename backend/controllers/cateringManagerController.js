@@ -3,6 +3,7 @@ import Stock from '../models/stock.js';
 import Order from '../models/order.js';
 import Schedule from '../models/schedule.js';
 import Feedback from '../models/feedback.js';
+import Food from '../models/foodmodel.js';
 import category_router from '../routes/categoryRoute.js';
 
 export const addMenuItem = async (req, res) => {
@@ -11,17 +12,37 @@ export const addMenuItem = async (req, res) => {
         console.log("Request Body:", req.body); // Debugging log
         console.log("Uploaded File:", req.file); // Debugging log
 
-        const { name, price, description, category } = req.body;
+        const { name, price, description, category, subcategory } = req.body;
 
         // Ensure all required fields exist
         if (!name || !price || !description || !category) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const image = req.file ? `/uploads/${req.file.filename}` : null;
+        // Fix image path construction
+        const image = req.file ? req.file.filename : null;
 
-        const menuItem = new Menu({ name, price, description, category, image });
+        // Create menu item
+        const menuItem = new Menu({ 
+            name, 
+            price, 
+            description, 
+            category, 
+            subcategory,
+            image 
+        });
         await menuItem.save();
+
+        // Also add to Food collection for home page display
+        const foodItem = new Food({
+            name,
+            price,
+            description,
+            category,
+            subcategory,
+            image
+        });
+        await foodItem.save();
 
         res.status(201).json({ message: "Menu item added successfully", menuItem });
     } catch (error) {
@@ -33,7 +54,30 @@ export const addMenuItem = async (req, res) => {
 export const updateMenuItem = async (req, res) => {
     try {
         const { id } = req.params;
-        const updatedItem = await Menu.findByIdAndUpdate(id, req.body, { new: true });
+        const { name, price, description, category, subcategory } = req.body;
+        
+        // Update menu item
+        const updatedItem = await Menu.findByIdAndUpdate(
+            id, 
+            { name, price, description, category, subcategory }, 
+            { new: true }
+        );
+        
+        // Also update in Food collection
+        // Find food item by name and category (since we don't have a direct ID mapping)
+        const foodItem = await Food.findOne({ 
+            name: updatedItem.name, 
+            category: updatedItem.category 
+        });
+        
+        if (foodItem) {
+            await Food.findByIdAndUpdate(
+                foodItem._id,
+                { name, price, description, category, subcategory },
+                { new: true }
+            );
+        }
+        
         res.status(200).json({ message: "Menu item updated", updatedItem });
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });
@@ -43,7 +87,21 @@ export const updateMenuItem = async (req, res) => {
 export const deleteMenuItem = async (req, res) => {
     try {
         const { id } = req.params;
-        await Menu.findByIdAndDelete(id);
+        
+        // Get menu item before deleting to find corresponding food item
+        const menuItem = await Menu.findById(id);
+        
+        if (menuItem) {
+            // Delete from Menu collection
+            await Menu.findByIdAndDelete(id);
+            
+            // Also delete from Food collection
+            await Food.findOneAndDelete({ 
+                name: menuItem.name, 
+                category: menuItem.category 
+            });
+        }
+        
         res.status(200).json({ message: "Menu item deleted" });
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });

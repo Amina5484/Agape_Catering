@@ -5,6 +5,12 @@ import { assets } from '../../assets/assets';
 const ManagerNavbar = () => {
   const navigate = useNavigate();
 
+  const onLogout = () => {
+    localStorage.clear();
+    navigate("/");
+  };
+  
+
   // State to manage the profile picture
   const [profilePicture, setProfilePicture] = useState(assets.manager_profile);
 
@@ -59,6 +65,9 @@ const ManagerNavbar = () => {
           />
         </label>
       </div>
+      <button className='px-4 py-1 bg-teal-700 hover:bg-teal-800 ml-8' onClick={onLogout}>
+          Logout
+        </button>
     </div>
   );
 };
