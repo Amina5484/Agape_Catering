@@ -6,16 +6,17 @@ import { toast } from 'react-toastify';
 
 Modal.setAppElement('#root');
 
-const FoodItem = ({ name, description, image, price, category }) => {
+const FoodItem = ({ name, description, image, price, _id }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const { addToCart, isLoggedIn } = useStore();
+  const { addToCart, isLoggedIn, url } = useStore();
 
-  const imageUrl = image.startsWith('http')
-    ? image
-    : image.startsWith('/uploads/')
-      ? `http://localhost:4000${image}`
-      : `http://localhost:4000/uploads/${image}`;
+  const getImageUrl = (img) => {
+    if (!img) return 'https://via.placeholder.com/300x200?text=No+Image';
+    if (img.startsWith('http')) return img;
+    if (img.startsWith('/uploads/')) return `${url}${img}`;
+    return `${url}/uploads/${img}`;
+  };
 
   const handleAddToCart = async () => {
     if (!isLoggedIn) {
@@ -24,12 +25,7 @@ const FoodItem = ({ name, description, image, price, category }) => {
     }
 
     try {
-      await addToCart({
-        id: name, // Using name as ID since we don't have direct access to _id
-        name,
-        price,
-        quantity,
-      });
+      await addToCart(_id, quantity, '', price);
       setIsModalOpen(false);
       setQuantity(1);
       toast.success('Added to cart successfully!');
@@ -46,9 +42,14 @@ const FoodItem = ({ name, description, image, price, category }) => {
       >
         <div className="relative overflow-hidden rounded-lg mb-4">
           <img
-            src={imageUrl}
+            src={getImageUrl(image)}
             alt={name}
             className="w-full h-48 object-cover transform transition-transform duration-500 group-hover:scale-110"
+            onError={(e) => {
+              console.error('Image failed to load:', image);
+              e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
+              e.target.onerror = null;
+            }}
           />
           <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
         </div>
@@ -80,9 +81,14 @@ const FoodItem = ({ name, description, image, price, category }) => {
             </button>
             <div className="mb-4">
               <img
-                src={imageUrl}
+                src={getImageUrl(image)}
                 alt={name}
                 className="w-full h-48 object-cover rounded-lg"
+                onError={(e) => {
+                  console.error('Image failed to load:', image);
+                  e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
+                  e.target.onerror = null;
+                }}
               />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">{name}</h2>
@@ -124,9 +130,9 @@ const FoodItem = ({ name, description, image, price, category }) => {
 FoodItem.propTypes = {
   name: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
-  image: PropTypes.string.isRequired,
+  image: PropTypes.string,
   price: PropTypes.number.isRequired,
-  category: PropTypes.string.isRequired,
+  _id: PropTypes.string.isRequired,
 };
 
 export default FoodItem;

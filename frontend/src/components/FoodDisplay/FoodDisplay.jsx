@@ -78,7 +78,7 @@ const FoodDisplay = () => {
                             description={item.description}
                             image={item.image}
                             price={item.price}
-                            category={item.category}
+                            _id={item._id}
                           />
                         </div>
                       ))}

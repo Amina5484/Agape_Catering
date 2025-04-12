@@ -7,10 +7,9 @@ import Food from '../models/foodmodel.js';
 import category_router from '../routes/categoryRoute.js';
 
 export const addMenuItem = async (req, res) => {
-
     try {
-        console.log("Request Body:", req.body); // Debugging log
-        console.log("Uploaded File:", req.file); // Debugging log
+        console.log("Request Body:", req.body);
+        console.log("Uploaded File:", req.file);
 
         const { name, price, description, category, subcategory } = req.body;
 
@@ -19,8 +18,13 @@ export const addMenuItem = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        // Fix image path construction
-        const image = req.file ? req.file.filename : null;
+        // Handle image path
+        let image = null;
+        if (req.file) {
+            // Store only the filename, not the full path
+            image = req.file.filename;
+            console.log("Image filename:", image);
+        }
 
         // Create menu item
         const menuItem = new Menu({ 
@@ -44,10 +48,23 @@ export const addMenuItem = async (req, res) => {
         });
         await foodItem.save();
 
-        res.status(201).json({ message: "Menu item added successfully", menuItem });
+        // Return both items with proper image URLs
+        const response = {
+            message: "Menu item added successfully",
+            menuItem: {
+                ...menuItem.toObject(),
+                image: image ? `/uploads/${image}` : null
+            },
+            foodItem: {
+                ...foodItem.toObject(),
+                image: image ? `/uploads/${image}` : null
+            }
+        };
+
+        res.status(201).json(response);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server Error", error });
+        console.error("Error adding menu item:", error);
+        res.status(500).json({ message: "Server Error", error: error.message });
     }
 };
 
