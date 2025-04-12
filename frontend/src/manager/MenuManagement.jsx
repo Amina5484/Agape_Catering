@@ -164,7 +164,7 @@ const MenuManagement = () => {
       subcategory: item.subcategory || '',
       image: null
     });
-    setImagePreview(item.image ? `http://localhost:4000${item.image}` : null);
+    setImagePreview(item.image ? `http://localhost:4000/uploads/${item.image}` : null);
     setIsModalOpen(true);
   };
 
@@ -250,7 +250,7 @@ const MenuManagement = () => {
                           <div className="flex items-start space-x-4">
                             {item.image ? (
                               <img 
-                                src={`http://localhost:4000${item.image}`} 
+                                src={`http://localhost:4000/uploads/${item.image}`} 
                                 alt={item.name} 
                                 className="h-16 w-16 rounded-md object-cover"
                               />

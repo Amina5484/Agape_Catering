@@ -180,12 +180,12 @@ const Cart = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-center p-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Please login to view your cart</h2>
-        <button 
-          onClick={() => navigate('/login')}
+          <button
+            onClick={() => navigate('/login')}
           className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md"
-        >
-          Login
-        </button>
+          >
+            Login
+          </button>
       </div>
     );
   }
@@ -195,7 +195,7 @@ const Cart = () => {
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
         <h2 className="text-3xl font-bold text-gray-800 mb-8">Your Cart</h2>
         
-        {/* Cart Header */}
+          {/* Cart Header */}
         <div className="hidden sm:grid grid-cols-6 font-bold border-b border-gray-200 py-4 text-gray-600">
           <div>Item</div>
           <div>Title</div>
@@ -203,9 +203,9 @@ const Cart = () => {
           <div>Quantity</div>
           <div>Total</div>
           <div>Remove</div>
-        </div>
+          </div>
 
-        {/* Cart Items */}
+          {/* Cart Items */}
         {cartData.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-xl text-gray-600 mb-4">Your cart is empty</p>
@@ -225,35 +225,35 @@ const Cart = () => {
                 const quantity = cartItem?.quantity || 0;
                 const price = cartItem?.price || item.price;
                 const itemTotal = price * quantity;
-                
-                return (
-                  <div
+
+              return (
+                <div
                     key={itemId}
                     className="grid grid-cols-3 sm:grid-cols-6 items-center border-b border-gray-200 py-4 gap-4 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="relative">
-                      <img
+                >
+                  <div className="relative">
+                    <img
                         src={getImageUrl(item.image)}
-                        alt={item.name}
+                      alt={item.name}
                         className="w-16 h-16 sm:w-10 sm:h-10 rounded-lg object-cover shadow-sm"
                         onError={(e) => {
                           e.target.src = 'https://via.placeholder.com/100?text=No+Image';
                           e.target.onerror = null;
                         }}
-                      />
-                    </div>
+                    />
+                  </div>
                     <p className="col-span-2 sm:col-span-1 font-medium text-gray-800">{item.name}</p>
                     <p className="hidden sm:block text-gray-600">{price} ETB</p>
                     
-                    {/* Quantity Controls */}
+                  {/* Quantity Controls */}
                     <div className="flex items-center space-x-2">
-                      <button
+                    <button
                         onClick={() => handleQuantityChange(itemId, -1)}
                         className="w-8 h-8 flex items-center justify-center bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors shadow-sm"
                         disabled={quantity <= 1}
-                      >
-                        -
-                      </button>
+                    >
+                      -
+                    </button>
                       <p className="font-medium text-gray-800">{quantity}</p>
                       <button
                         onClick={() => handleQuantityChange(itemId, 1)}
@@ -286,7 +286,7 @@ const Cart = () => {
                 <h3 className="text-2xl font-bold text-indigo-600">
                   {totalCartPrice} ETB
                 </h3>
-              </div>
+                </div>
               <button
                 onClick={handleCheckout}
                 disabled={isCheckingOut}
