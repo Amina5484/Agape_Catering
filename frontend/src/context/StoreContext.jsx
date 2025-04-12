@@ -151,8 +151,22 @@ const StoreContextProvider = (props) => {
       );
 
       if (response.data.success) {
-        console.log('Fetched cart data:', response.data.cartData);
-        setCartItems(response.data.cartData || {});
+        console.log('Raw cart data:', response.data.cartData);
+        // Convert cart data to proper format
+        const formattedCartData = {};
+        if (response.data.cartData) {
+          Object.entries(response.data.cartData).forEach(([key, value]) => {
+            // Handle both string and object keys
+            const itemId = typeof key === 'object' ? key._id || key.toString() : key;
+            formattedCartData[itemId] = {
+              quantity: value.quantity || 0,
+              price: value.price || 0,
+              selectedType: value.selectedType || ''
+            };
+          });
+        }
+        console.log('Formatted cart data:', formattedCartData);
+        setCartItems(formattedCartData);
       }
     } catch (error) {
       console.error('Error fetching cart:', error);
@@ -166,14 +180,37 @@ const StoreContextProvider = (props) => {
       toast.error('Please login to add items to cart');
       return;
     }
+
+    if (!itemId || !price) {
+      console.error('Missing required fields:', { itemId, price });
+      toast.error('Missing required item information');
+      return;
+    }
+
     try {
+      // Ensure itemId is a string
+      const stringItemId = itemId.toString();
+      
+      // Optimistic update
+      const currentQuantity = cartItems[stringItemId]?.quantity || 0;
+      const newQuantity = currentQuantity + parseInt(quantity);
+      const newCartItems = {
+        ...cartItems,
+        [stringItemId]: {
+          quantity: newQuantity,
+          selectedType,
+          price: parseFloat(price)
+        }
+      };
+      setCartItems(newCartItems);
+      
       const response = await axios.post(
         `${url}/api/cart/add`,
         {
-          itemId,
-          quantity,
+          itemId: stringItemId,
+          quantity: parseInt(quantity),
           selectedType,
-          price,
+          price: parseFloat(price),
           userId,
         },
         {
@@ -185,11 +222,26 @@ const StoreContextProvider = (props) => {
 
       if (response.data.success) {
         console.log('Added to cart:', response.data.cartData);
-        setCartItems(response.data.cartData || {});
+        // Convert cart data to proper format
+        const formattedCartData = {};
+        if (response.data.cartData) {
+          Object.entries(response.data.cartData).forEach(([key, value]) => {
+            const itemId = typeof key === 'object' ? key._id || key.toString() : key;
+            formattedCartData[itemId] = {
+              quantity: value.quantity || 0,
+              price: value.price || 0,
+              selectedType: value.selectedType || ''
+            };
+          });
+        }
+        setCartItems(formattedCartData);
         toast.success('Added to cart successfully!');
       }
     } catch (error) {
+      // Revert optimistic update on error
+      setCartItems(cartItems);
       console.error('Error adding item to cart:', error);
+      console.error('Error response:', error.response?.data);
       toast.error(
         error.response?.data?.message || 'Failed to add item to cart'
       );
@@ -202,6 +254,18 @@ const StoreContextProvider = (props) => {
     if (!cartItems[itemId]) return;
 
     try {
+      // Optimistic update
+      const newCartItems = { ...cartItems };
+      if (removeAll) {
+        delete newCartItems[itemId];
+      } else {
+        newCartItems[itemId].quantity = Math.max(0, newCartItems[itemId].quantity - 1);
+        if (newCartItems[itemId].quantity === 0) {
+          delete newCartItems[itemId];
+        }
+      }
+      setCartItems(newCartItems);
+
       const response = await axios.post(
         `${url}/api/cart/remove`,
         {
@@ -222,6 +286,8 @@ const StoreContextProvider = (props) => {
         toast.success('Item removed from cart');
       }
     } catch (error) {
+      // Revert optimistic update on error
+      setCartItems(cartItems);
       console.error('Error removing item from cart:', error);
       toast.error(
         error.response?.data?.message || 'Failed to remove item from cart'

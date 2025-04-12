@@ -30,8 +30,8 @@ const Home = () => {
                 <div className="bg-blue-50 rounded-full p-3">
                   <FaBoxOpen className="w-6 h-6 text-blue-600" />
                 </div>
-              </div>
-            </div>
+          </div>
+        </div>
 
             {/* Stock Card */}
             <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 border border-gray-100">
@@ -43,8 +43,8 @@ const Home = () => {
                 <div className="bg-green-50 rounded-full p-3">
                   <FaCubes className="w-6 h-6 text-green-600" />
                 </div>
-              </div>
-            </div>
+          </div>
+        </div>
 
             {/* Reports Card */}
             <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 border border-gray-100">
@@ -56,8 +56,8 @@ const Home = () => {
                 <div className="bg-yellow-50 rounded-full p-3">
                   <FaChartBar className="w-6 h-6 text-yellow-600" />
                 </div>
-              </div>
-            </div>
+          </div>
+        </div>
 
             {/* Feedback Card */}
             <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 border border-gray-100">
@@ -69,12 +69,12 @@ const Home = () => {
                 <div className="bg-red-50 rounded-full p-3">
                   <FaComments className="w-6 h-6 text-red-600" />
                 </div>
-              </div>
-            </div>
           </div>
+        </div>
+      </div>
 
           {/* Feedback Section */}
-          {showFeedback && (
+      {showFeedback && (
             <div className="mt-8 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">Recent Feedback</h2>
@@ -86,16 +86,16 @@ const Home = () => {
                 </button>
               </div>
               
-              {feedbackList.length === 0 ? (
+          {feedbackList.length === 0 ? (
                 <div className="text-center py-8">
                   <FaComments className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">No feedback submitted yet.</p>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {feedbackList.map((feedback, index) => (
-                    <div
-                      key={index}
+          ) : (
+            <div className="space-y-4">
+              {feedbackList.map((feedback, index) => (
+                <div
+                  key={index}
                       className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors duration-300"
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -103,12 +103,12 @@ const Home = () => {
                         <span className="text-sm text-gray-500">{feedback.email}</span>
                       </div>
                       <p className="text-gray-600">{feedback.feedback}</p>
-                    </div>
-                  ))}
                 </div>
-              )}
+              ))}
             </div>
           )}
+        </div>
+      )}
         </div>
       </div>
     </div>
