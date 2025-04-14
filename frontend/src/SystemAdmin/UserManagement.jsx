@@ -29,7 +29,7 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:4000/api/users", {
+      const response = await axios.get("http://localhost:4000/api/admin/staffs", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -77,7 +77,7 @@ const UserManagement = () => {
           }
         );
         toast.success("User updated successfully");
-      } else {
+    } else {
         await axios.post(
           "http://localhost:4000/api/users",
           formData,
@@ -170,36 +170,36 @@ const UserManagement = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Name</label>
-                  <input
-                    type="text"
-                    name="name"
+        <input
+          type="text"
+          name="name"
                     value={formData.name}
-                    onChange={handleChange}
+          onChange={handleChange}
                     className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    required
-                  />
+          required
+        />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <input
-                    type="email"
-                    name="email"
+        <input
+          type="email"
+          name="email"
                     value={formData.email}
-                    onChange={handleChange}
+          onChange={handleChange}
                     className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    required
-                  />
+          required
+        />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Phone</label>
-                  <input
+        <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
-                    onChange={handleChange}
+          onChange={handleChange}
                     className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    required
-                  />
+          required
+        />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Role</label>
@@ -253,10 +253,10 @@ const UserManagement = () => {
                   className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                 >
                   {selectedUser ? "Update User" : "Create User"}
-                </button>
+        </button>
               </div>
-            </form>
-          </div>
+      </form>
+            </div>
         )}
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -308,15 +308,15 @@ const UserManagement = () => {
                           title="Edit User"
                         >
                           <FaEdit className="w-4 h-4" />
-                        </button>
+              </button>
                         <button
                           onClick={() => handleDelete(user._id)}
                           className="text-red-600 hover:text-red-900"
                           title="Delete User"
                         >
                           <FaTrash className="w-4 h-4" />
-                        </button>
-                      </div>
+              </button>
+            </div>
                     </td>
                   </tr>
                 ))}

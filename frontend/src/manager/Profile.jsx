@@ -22,16 +22,16 @@ const Profile = () => {
       try {
         const response = await axiosInstance.get('/user/profile');
         if (response.data) {
-          const { name, email, gender, photo } = response.data;
+        const { name, email, gender, photo } = response.data;
           const [firstName, lastName] = name ? name.split(' ') : ['', ''];
-          setUser(prev => ({
-            ...prev,
-            firstName,
-            lastName,
-            email,
-            gender,
-            photo
-          }));
+        setUser(prev => ({
+          ...prev,
+          firstName,
+          lastName,
+          email,
+          gender,
+          photo
+        }));
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -128,58 +128,58 @@ const Profile = () => {
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">First Name</label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={user.firstName}
-                    onChange={handleChange}
-                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
-                    required
-                  />
-                </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">First Name</label>
+            <input
+              type="text"
+              name="firstName"
+              value={user.firstName}
+              onChange={handleChange}
+              className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
+              required
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Last Name</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={user.lastName}
-                    onChange={handleChange}
-                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
-                    required
-                  />
-                </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Last Name</label>
+            <input
+              type="text"
+              name="lastName"
+              value={user.lastName}
+              onChange={handleChange}
+              className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
+              required
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={user.email}
-                    onChange={handleChange}
-                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
-                    required
-                  />
-                </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={user.email}
+              onChange={handleChange}
+              className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
+              required
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Gender</label>
-                  <select
-                    name="gender"
-                    value={user.gender}
-                    onChange={handleChange}
-                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
-                    required
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                  </select>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Gender</label>
+            <select
+              name="gender"
+              value={user.gender}
+              onChange={handleChange}
+              className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
+              required
+            >
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
                 </div>
               </div>
-            </div>
+          </div>
 
             {/* Profile Picture Section */}
             <div className="space-y-4">
@@ -199,66 +199,66 @@ const Profile = () => {
                   )}
                 </div>
                 <div className="flex-1">
-                  <input
-                    type="file"
-                    name="photo"
-                    onChange={handleChange}
+            <input
+              type="file"
+              name="photo"
+              onChange={handleChange}
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
-                    accept="image/*"
-                  />
+              accept="image/*"
+            />
                 </div>
-              </div>
-            </div>
+          </div>
+        </div>
 
             {/* Password Section */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900">Change Password</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Current Password</label>
-                  <input
-                    type="password"
-                    name="currentPassword"
-                    value={user.currentPassword}
-                    onChange={handleChange}
-                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
-                  />
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Current Password</label>
+              <input
+                type="password"
+                name="currentPassword"
+                value={user.currentPassword}
+                onChange={handleChange}
+                className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">New Password</label>
-                  <input
-                    type="password"
-                    name="newPassword"
-                    value={user.newPassword}
-                    onChange={handleChange}
-                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
-                  />
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">New Password</label>
+          <input
+                type="password"
+                name="newPassword"
+                value={user.newPassword}
+                onChange={handleChange}
+                className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
+          />
+        </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={user.confirmPassword}
-                    onChange={handleChange}
-                    className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
-                  />
-                </div>
-              </div>
+              <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
+          <input
+                type="password"
+                name="confirmPassword"
+                value={user.confirmPassword}
+                onChange={handleChange}
+                className="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
+              />
             </div>
+          </div>
+        </div>
 
             {/* Submit Button */}
             <div className="pt-4">
-              <button
-                type="submit"
+        <button
+          type="submit"
                 className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-              >
-                Update Profile
-              </button>
-            </div>
-          </form>
+        >
+            Update Profile
+        </button>
+        </div>
+      </form>
         </div>
       </div>
     </div>
