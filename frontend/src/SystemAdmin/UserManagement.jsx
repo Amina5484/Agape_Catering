@@ -23,8 +23,13 @@ const UserManagement = () => {
   });
 
   useEffect(() => {
+    if (!token) {
+      toast.error("Please login to view this page");
+      navigate("/login");
+      return;
+    }
     fetchUsers();
-  }, []);
+  }, [token, navigate]);
 
   const fetchUsers = async () => {
     try {
@@ -34,10 +39,20 @@ const UserManagement = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setUsers(response.data);
+      
+      if (response.data && Array.isArray(response.data)) {
+        setUsers(response.data);
+      } else {
+        toast.error("Invalid response format");
+      }
     } catch (error) {
       console.error("Error fetching users:", error);
-      toast.error(error.response?.data?.message || "Failed to fetch users");
+      if (error.response?.status === 401) {
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+      } else {
+        toast.error(error.response?.data?.message || "Failed to fetch users");
+      }
     } finally {
       setLoading(false);
     }
@@ -68,7 +83,7 @@ const UserManagement = () => {
     try {
       if (selectedUser) {
         await axios.put(
-          `http://localhost:4000/api/users/${selectedUser._id}`,
+          `http://localhost:4000/api/admin/update/${selectedUser._id}`,
           formData,
           {
             headers: {
@@ -108,7 +123,7 @@ const UserManagement = () => {
   const handleDelete = async (userId) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
-        await axios.delete(`http://localhost:4000/api/users/${userId}`, {
+        await axios.delete(`http://localhost:4000/api/admin/delete/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -142,23 +157,7 @@ const UserManagement = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">User Management</h2>
-          <button
-            onClick={() => {
-              setSelectedUser(null);
-              setFormData({
-                name: "",
-                email: "",
-                phone: "",
-                role: "",
-                isactivated: true
-              });
-              setIsEditing(true);
-            }}
-            className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors shadow-md"
-          >
-            <FaPlus className="w-4 h-4" />
-            <span>Add New User</span>
-          </button>
+         
         </div>
 
         {isEditing && (
@@ -211,12 +210,9 @@ const UserManagement = () => {
                     required
                   >
                     <option value="">Select a role</option>
-                    <option value="admin">Admin</option>
-                    <option value="manager">Manager</option>
-                    <option value="staff">Staff</option>
-                    <option value="kitchen">Kitchen</option>
-                    <option value="delivery">Delivery</option>
-                    <option value="customer">Customer</option>
+                    <option value="Excutive Chef">Excutive Chef</option>
+                    <option value="Catering Manager">Catering Manager</option>
+                   
                   </select>
                 </div>
               </div>

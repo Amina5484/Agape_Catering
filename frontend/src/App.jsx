@@ -46,7 +46,7 @@ import SystemSidebar from './SystemAdmin/SystemSidebar';
 import SystemNavbar from './SystemAdmin/SystemNavbar';
 import ViewUser from './SystemAdmin/ViewUser';
 import EditStaff from './SystemAdmin/EditStaff';
-import ListStaff from './SystemAdmin/ListStaff';
+//import ListStaff from './SystemAdmin/ListStaff';
 import AdminHome from './SystemAdmin/AdminHome';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AccountList from './admin/AccountList';
@@ -128,7 +128,7 @@ const AppContent = () => {
               path="user-management"
               element={<UserManagement url={url} />}
             />
-            <Route path="staff-list" element={<ListStaff url={url} />} />
+            {/* <Route path="staff-list" element={<ListStaff url={url} />} /> */}
             <Route path="view-user" element={<ViewUser url={url} />} />
             <Route path="account-list" element={<AccountList />} />
           </Route>

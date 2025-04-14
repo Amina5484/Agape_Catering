@@ -2,7 +2,16 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../SystemAdmin/axiosInstance';
 import { toast } from 'react-toastify';
 import { useNavigate, Link, Outlet } from 'react-router-dom';
-import { FaClipboardList, FaBoxes, FaCalendarAlt } from 'react-icons/fa';
+import { 
+  FaClipboardList, 
+  FaBoxes, 
+  FaCalendarAlt, 
+  FaSignOutAlt,
+  FaUser,
+  FaHome,
+  FaUtensils,
+  FaChartLine
+} from 'react-icons/fa';
 
 const ChefDashboard = () => {
   const navigate = useNavigate();
@@ -10,6 +19,7 @@ const ChefDashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeMenu, setActiveMenu] = useState('dashboard');
   const [profileData, setProfileData] = useState({
     firstName: '',
     lastName: '',
@@ -107,61 +117,128 @@ const ChefDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/login');
+    toast.success('Logged out successfully');
+    navigate('/');
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       <div className="flex">
         {/* Sidebar */}
         <div className="w-64 bg-white shadow-lg h-screen fixed">
-          <div className="p-4">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Chef Dashboard</h2>
-            <nav>
-              <ul className="space-y-2">
-                <li>
-                  <Link
-                    to="/chef/orders"
-                    className="flex items-center p-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <FaClipboardList className="mr-3" />
-                    <span>Orders</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/chef/inventory"
-                    className="flex items-center p-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <FaBoxes className="mr-3" />
-                    <span>Inventory</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/chef/schedule"
-                    className="flex items-center p-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <FaCalendarAlt className="mr-3" />
-                    <span>Schedule</span>
-                  </Link>
-                </li>
-              </ul>
+          <div className="p-6">
+            <div className="flex items-center justify-center mb-8">
+              <FaUtensils className="text-3xl text-orange-500 mr-2" />
+              <h2 className="text-2xl font-bold text-gray-800">Chef Dashboard</h2>
+            </div>
+            
+            {/* User Profile Section */}
+            <div className="mb-8 p-4 bg-orange-50 rounded-lg">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                  <FaUser className="text-orange-500 text-xl" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+                  <p className="text-xs text-gray-500">Chef</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation Menu */}
+            <nav className="space-y-2">
+              <Link
+                to="/chef"
+                onClick={() => setActiveMenu('dashboard')}
+                className={`flex items-center p-3 rounded-lg transition-colors ${
+                  activeMenu === 'dashboard'
+                    ? 'bg-orange-100 text-orange-600'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <FaHome className="mr-3" />
+                <span>Dashboard</span>
+              </Link>
+
+              <Link
+                to="/chef/orders"
+                onClick={() => setActiveMenu('orders')}
+                className={`flex items-center p-3 rounded-lg transition-colors ${
+                  activeMenu === 'orders'
+                    ? 'bg-orange-100 text-orange-600'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <FaClipboardList className="mr-3" />
+                <span>Orders</span>
+              </Link>
+
+              <Link
+                to="/chef/inventory"
+                onClick={() => setActiveMenu('inventory')}
+                className={`flex items-center p-3 rounded-lg transition-colors ${
+                  activeMenu === 'inventory'
+                    ? 'bg-orange-100 text-orange-600'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <FaBoxes className="mr-3" />
+                <span>Inventory</span>
+              </Link>
+
+              <Link
+                to="/chef/schedule"
+                onClick={() => setActiveMenu('schedule')}
+                className={`flex items-center p-3 rounded-lg transition-colors ${
+                  activeMenu === 'schedule'
+                    ? 'bg-orange-100 text-orange-600'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <FaCalendarAlt className="mr-3" />
+                <span>Schedule</span>
+              </Link>
+
+              <Link
+                to="/chef/performance"
+                onClick={() => setActiveMenu('performance')}
+                className={`flex items-center p-3 rounded-lg transition-colors ${
+                  activeMenu === 'performance'
+                    ? 'bg-orange-100 text-orange-600'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <FaChartLine className="mr-3" />
+                <span>Performance</span>
+              </Link>
             </nav>
+
+            {/* Logout Button */}
+            <div className="absolute bottom-6 left-6 right-6">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              >
+                <FaSignOutAlt className="mr-3" />
+                <span>Logout</span>
+              </button>
             </div>
           </div>
+        </div>
 
         {/* Main Content */}
         <div className="ml-64 flex-1 p-8">
-          <Outlet />
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <Outlet />
+          </div>
         </div>
       </div>
     </div>

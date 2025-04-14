@@ -6,10 +6,10 @@ const AdminHome = () => {
   const stats = [
     {
       id: 1,
-      title: 'Manage Accounts',
+      title: 'List of customers',
       icon: <FaUserCog className="h-6 w-6" />,
-      value: 'View & Edit',
-      link: '/admin/staff-list',
+      value: 'View ',
+      link: '/admin/view-user',
       description: 'Manage user accounts and roles',
       color: 'bg-indigo-100 text-indigo-600'
     },
@@ -24,7 +24,7 @@ const AdminHome = () => {
     },
     {
       id: 3,
-      title: 'User Management',
+      title: 'List of staffs',
       icon: <FaUsers className="h-6 w-6" />,
       value: 'Manage',
       link: '/admin/user-management',
@@ -33,7 +33,7 @@ const AdminHome = () => {
     },
     {
       id: 4,
-      title: 'System Settings',
+      title: 'Profle Managment',
       icon: <FaUserShield className="h-6 w-6" />,
       value: 'Configure',
       link: '/admin/settings',
@@ -73,25 +73,8 @@ const AdminHome = () => {
           ))}
         </div>
 
-        <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Link 
-              to="/admin/staff-list" 
-              className="p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-300"
-            >
-              <h3 className="font-semibold text-lg text-gray-800 mb-2">Account Management</h3>
-              <p className="text-gray-600">View and manage all user accounts</p>
-            </Link>
-            <Link 
-              to="/admin/create-account" 
-              className="p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-300"
-            >
-              <h3 className="font-semibold text-lg text-gray-800 mb-2">Create New Account</h3>
-              <p className="text-gray-600">Add a new user to the system</p>
-            </Link>
-          </div>
-        </div>
+       
+      
       </div>
     </div>
   );
