@@ -123,7 +123,7 @@ const updateProfile = async (req, res) => {
 
     // Handle profile photo upload
     if (req.file) {
-      user.photo = `/uploads/profiles/${req.file.filename}`;
+      user.photo = `/profiles/${req.file.filename}`;
     }
 
     await user.save();

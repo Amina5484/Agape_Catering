@@ -23,8 +23,8 @@ const createAdmin = async () => {
       name: 'System Admin',
       email: 'admin@system.com',
       phone: 1234567890, // Using a placeholder phone number
-      password: 'Admin@123',
-      role: ROLES.SYSTEM_ADMIN
+      password: '123456',
+      role: ROLES.SYSTEM_ADMIN,
     });
 
     await adminUser.save();
@@ -36,4 +36,4 @@ const createAdmin = async () => {
   }
 };
 
-createAdmin(); 
+createAdmin();

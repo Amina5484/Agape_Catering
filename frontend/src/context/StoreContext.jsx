@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import axiosInstance from '../SystemAdmin/axiosInstance';
 
 export const StoreContext = createContext(null);
 
@@ -16,38 +17,41 @@ export const useStore = () => {
 const StoreContextProvider = (props) => {
   const [cartItems, setCartItems] = useState({});
   const [food_list, setFoodList] = useState([]);
-  const [token, setToken] = useState(localStorage.getItem('token') || '');
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
-  const [userRole, setUserRole] = useState(
-    localStorage.getItem('userRole') || ''
-  );
-  const [userId, setUserId] = useState(localStorage.getItem('userId') || '');
+  const [token, setToken] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState('');
+  const [userId, setUserId] = useState('');
 
   const url = 'http://localhost:4000';
 
-  // Default system admin credentials
-  const DEFAULT_ADMIN = {
-    email: 'admin@system.com',
-    password: 'Admin@123',
-    role: 'System Admin',
-  };
+  // Check login state on mount
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    const storedRole = localStorage.getItem('userRole');
+    const storedUserId = localStorage.getItem('userId');
 
-  // Login function
-  const login = async (email, password) => {
-    try {
-      // Clear any existing state first
+    if (storedToken && storedRole && storedUserId) {
+      setToken(storedToken);
+      setUserRole(storedRole);
+      setUserId(storedUserId);
+      setIsLoggedIn(true);
+    } else {
+      // Clear any partial data
+      localStorage.removeItem('token');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userId');
       setToken('');
       setUserRole('');
       setUserId('');
       setIsLoggedIn(false);
-      setCartItems({});
-      setFoodList([]);
-      localStorage.removeItem('token');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userId');
+    }
+  }, []);
 
+  // Login function
+  const login = async (email, password) => {
+    try {
       console.log('Attempting login with:', { email, password: '***' });
-      const response = await axios.post(`${url}/api/auth/login`, {
+      const response = await axiosInstance.post('/auth/login', {
         email,
         password,
       });
@@ -56,15 +60,14 @@ const StoreContextProvider = (props) => {
 
       if (response.data.success) {
         const { token, user } = response.data;
-        const role = user.role;
         setToken(token);
-        setUserRole(role);
+        setUserRole(user.role);
         setUserId(user._id);
         setIsLoggedIn(true);
         localStorage.setItem('token', token);
-        localStorage.setItem('userRole', role);
+        localStorage.setItem('userRole', user.role);
         localStorage.setItem('userId', user._id);
-        return { success: true, role };
+        return { success: true, user };
       }
       return { success: false, message: response.data.message };
     } catch (error) {
@@ -72,7 +75,6 @@ const StoreContextProvider = (props) => {
       const errorMessage =
         error.response?.data?.message ||
         'Login failed. Please check your credentials.';
-      toast.error(errorMessage);
       return {
         success: false,
         message: errorMessage,
@@ -89,16 +91,17 @@ const StoreContextProvider = (props) => {
     setIsLoggedIn(false);
     setCartItems({});
     setFoodList([]);
-    
+
     // Clear localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userId');
-    
+    localStorage.removeItem('user');
+
     // Show success message
     toast.success('Logged out successfully');
-    
-    // Force a page reload to ensure clean state
+
+    // Force a page reload to ensure all states are reset
     window.location.href = '/';
   };
 
@@ -157,11 +160,12 @@ const StoreContextProvider = (props) => {
         if (response.data.cartData) {
           Object.entries(response.data.cartData).forEach(([key, value]) => {
             // Handle both string and object keys
-            const itemId = typeof key === 'object' ? key._id || key.toString() : key;
+            const itemId =
+              typeof key === 'object' ? key._id || key.toString() : key;
             formattedCartData[itemId] = {
               quantity: value.quantity || 0,
               price: value.price || 0,
-              selectedType: value.selectedType || ''
+              selectedType: value.selectedType || '',
             };
           });
         }
@@ -190,7 +194,7 @@ const StoreContextProvider = (props) => {
     try {
       // Ensure itemId is a string
       const stringItemId = itemId.toString();
-      
+
       // Optimistic update
       const currentQuantity = cartItems[stringItemId]?.quantity || 0;
       const newQuantity = currentQuantity + parseInt(quantity);
@@ -199,11 +203,11 @@ const StoreContextProvider = (props) => {
         [stringItemId]: {
           quantity: newQuantity,
           selectedType,
-          price: parseFloat(price)
-        }
+          price: parseFloat(price),
+        },
       };
       setCartItems(newCartItems);
-      
+
       const response = await axios.post(
         `${url}/api/cart/add`,
         {
@@ -226,11 +230,12 @@ const StoreContextProvider = (props) => {
         const formattedCartData = {};
         if (response.data.cartData) {
           Object.entries(response.data.cartData).forEach(([key, value]) => {
-            const itemId = typeof key === 'object' ? key._id || key.toString() : key;
+            const itemId =
+              typeof key === 'object' ? key._id || key.toString() : key;
             formattedCartData[itemId] = {
               quantity: value.quantity || 0,
               price: value.price || 0,
-              selectedType: value.selectedType || ''
+              selectedType: value.selectedType || '',
             };
           });
         }
@@ -259,7 +264,10 @@ const StoreContextProvider = (props) => {
       if (removeAll) {
         delete newCartItems[itemId];
       } else {
-        newCartItems[itemId].quantity = Math.max(0, newCartItems[itemId].quantity - 1);
+        newCartItems[itemId].quantity = Math.max(
+          0,
+          newCartItems[itemId].quantity - 1
+        );
         if (newCartItems[itemId].quantity === 0) {
           delete newCartItems[itemId];
         }
@@ -332,6 +340,17 @@ const StoreContextProvider = (props) => {
     }
   }, [isLoggedIn, userRole]);
 
+  // Add a function to reset login state
+  const resetLoginState = () => {
+    setToken('');
+    setUserRole('');
+    setUserId('');
+    setIsLoggedIn(false);
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
+  };
+
   // Context value
   const contextValue = {
     cartItems,
@@ -355,7 +374,7 @@ const StoreContextProvider = (props) => {
     createUser,
     fetchFoodList,
     fetchCart,
-    DEFAULT_ADMIN,
+    resetLoginState,
   };
 
   return (

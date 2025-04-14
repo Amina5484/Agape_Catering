@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import './index.css';
 import { ToastContainer } from 'react-toastify';
@@ -15,7 +15,7 @@ import Register from './components/auth/Register';
 import Explore from './components/Explore/Explore';
 import FeedbackForm from './pages/Feedback/Feedback';
 import PlaceOrder from './pages/PlaceOrder/PlaceOrder';
-import StoreContextProvider from './context/StoreContext';
+import StoreContextProvider, { useStore } from './context/StoreContext';
 import CustomerProfile from './customer/CustomerProfile';
 import CustomerOrders from './pages/Orders/Orders';
 
@@ -58,11 +58,19 @@ const AppContent = () => {
   const url = 'http://localhost:4000';
   const [showLogin, setShowLogin] = useState(false);
   const location = useLocation();
+  const { isLoggedIn, userRole } = useStore();
   const isManagerRoute = location.pathname.startsWith('/manager');
   const isSystemRoute =
     location.pathname.startsWith('/system') ||
     location.pathname.startsWith('/admin');
   const isChefRoute = location.pathname.startsWith('/chef');
+
+  // Reset showLogin when login state changes
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setShowLogin(false);
+    }
+  }, [isLoggedIn]);
 
   return (
     <>
