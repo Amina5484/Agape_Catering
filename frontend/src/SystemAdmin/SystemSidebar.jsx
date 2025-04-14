@@ -55,34 +55,6 @@ const SystemSidebar = ({ user }) => {
           </NavLink>
 
           <NavLink
-            to="/admin/edit-user"
-            className={({ isActive }) =>
-              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
-                isActive 
-                  ? 'bg-indigo-600 text-white shadow-md' 
-                  : 'text-gray-700 hover:bg-gray-200'
-              }`
-            }
-          >
-            <FaUserCircle className="w-5 h-5" />
-            <span>Edit User</span>
-          </NavLink>
-
-          <NavLink
-            to="/admin/staff-list"
-            className={({ isActive }) =>
-              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
-                isActive 
-                  ? 'bg-indigo-600 text-white shadow-md' 
-                  : 'text-gray-700 hover:bg-gray-200'
-              }`
-            }
-          >
-            <FaListUl className="w-5 h-5" />
-            <span>List of Users</span>
-          </NavLink>
-
-          <NavLink
             to="/admin/settings"
             className={({ isActive }) =>
               `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
@@ -92,9 +64,10 @@ const SystemSidebar = ({ user }) => {
               }`
             }
           >
-            <FaCog className="w-5 h-5" />
-            <span>Settings</span>
+            <FaListUl className="w-5 h-5" />
+            <span>Profile Managment</span>
           </NavLink>
+
 
           <NavLink
             to="/admin/user-management"

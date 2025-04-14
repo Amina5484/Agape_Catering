@@ -37,7 +37,8 @@ const EditStaff = () => {
     }
 
     try {
-      await axiosInstance.put(`/staff/${id}`, formData, {
+      await axiosInstance.put(`http://localhost:4000/api/admin/update/${id}
+      }`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Staff updated successfully!");
