@@ -22,7 +22,7 @@ const CustomerProfile = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axiosInstance.get('/api/user/profile');
+        const response = await axiosInstance.get('/user/profile');
         const { name, email, phone, gender, photo } = response.data.user;
         const [firstName, lastName] = name.split(' ');
         setUser((prev) => ({
@@ -94,7 +94,7 @@ const CustomerProfile = () => {
     }
 
     try {
-      const response = await axiosInstance.put('/api/user/profile', formData, {
+      const response = await axiosInstance.put('/user/profile', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

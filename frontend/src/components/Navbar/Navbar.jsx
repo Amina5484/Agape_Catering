@@ -17,11 +17,27 @@ import { StoreContext } from '../../context/StoreContext';
 const Navbar = ({ setShowLogin }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const { token, setToken, darkMode, toggleDarkMode, user } =
-    useContext(StoreContext);
+  const {
+    token,
+    setToken,
+    darkMode,
+    toggleDarkMode,
+    user,
+    resetLoginState,
+    logout: contextLogout,
+    isLoggedIn,
+    userRole,
+  } = useContext(StoreContext);
   const profileRef = useRef(null);
 
   const navigate = useNavigate();
+
+  // Listen for login state changes
+  useEffect(() => {
+    // Close dropdowns when login state changes
+    setIsProfileOpen(false);
+    setIsOpen(false);
+  }, [isLoggedIn, token]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -37,10 +53,22 @@ const Navbar = ({ setShowLogin }) => {
   }, []);
 
   const logout = () => {
-    localStorage.removeItem('token');
-    setToken('');
+    // Use the context logout function which properly clears all state
+    contextLogout();
+    setIsProfileOpen(false);
+    setIsOpen(false);
+    // Navigate to home page
     navigate('/');
   };
+
+  const handleLoginClick = () => {
+    // Reset login state before showing login form
+    resetLoginState();
+    setShowLogin(true);
+  };
+
+  // Check if user is logged in and is a customer
+  const isCustomerLoggedIn = isLoggedIn && userRole === 'Customer';
 
   return (
     <div className="p-2 flex items-center bg-white dark:bg-gray-900 dark:text-white shadow-md fixed top-0 left-0 w-full z-10 transition-colors">
@@ -97,9 +125,9 @@ const Navbar = ({ setShowLogin }) => {
             Feedback
           </Link>
 
-          {!token ? (
+          {!isCustomerLoggedIn ? (
             <button
-              onClick={() => setShowLogin(true)}
+              onClick={handleLoginClick}
               className="bg-blue-500 rounded-full text-white px-6 hover:text-gray-400 transition"
             >
               Login/Sign Up
@@ -184,56 +212,23 @@ const Navbar = ({ setShowLogin }) => {
             <li className="cursor-pointer hover:text-gray-400">
               <Link to="/feedback">Feedback</Link>
             </li>
-            {!token ? (
+            {!isCustomerLoggedIn ? (
               <button
                 className="bg-blue-500 rounded text-white px-4 py-1 hover:text-gray-400 transition"
-                onClick={() => setShowLogin(true)}
+                onClick={handleLoginClick}
               >
                 Login/Sign Up
               </button>
             ) : (
-              <>
-                <li
-                  className="cursor-pointer hover:text-gray-400"
-                  onClick={() => {
-                    navigate('/customer/orders');
-                    setIsOpen(false);
-                  }}
-                >
-                  <FaShoppingBag className="inline mr-2" />
-                  Order
-                </li>
-                <li
-                  className="cursor-pointer hover:text-gray-400"
-                  onClick={() => {
-                    navigate('/customer/orders');
-                    setIsOpen(false);
-                  }}
-                >
-                  <FaShoppingBag className="inline mr-2" />
-                  Order History
-                </li>
-                <li
-                  className="cursor-pointer hover:text-gray-400"
-                  onClick={() => {
-                    navigate('/customer/profile');
-                    setIsOpen(false);
-                  }}
-                >
-                  <FaCog className="inline mr-2" />
-                  Manage Profile
-                </li>
-                <li
-                  className="cursor-pointer hover:text-gray-400 text-red-600 dark:text-red-400"
-                  onClick={() => {
-                    logout();
-                    setIsOpen(false);
-                  }}
-                >
-                  <FaSignOutAlt className="inline mr-2" />
-                  Logout
-                </li>
-              </>
+              <li
+                onClick={() => {
+                  logout();
+                  setIsOpen(false);
+                }}
+                className="cursor-pointer hover:text-gray-400 text-red-600 dark:text-red-400"
+              >
+                Logout
+              </li>
             )}
           </ul>
         </div>
