@@ -154,14 +154,11 @@ const StoreContextProvider = (props) => {
       );
 
       if (response.data.success) {
-        console.log('Raw cart data:', response.data.cartData);
         // Convert cart data to proper format
         const formattedCartData = {};
         if (response.data.cartData) {
           Object.entries(response.data.cartData).forEach(([key, value]) => {
-            // Handle both string and object keys
-            const itemId =
-              typeof key === 'object' ? key._id || key.toString() : key;
+            const itemId = typeof key === 'object' ? key._id || key.toString() : key;
             formattedCartData[itemId] = {
               quantity: value.quantity || 0,
               price: value.price || 0,
@@ -169,8 +166,10 @@ const StoreContextProvider = (props) => {
             };
           });
         }
-        console.log('Formatted cart data:', formattedCartData);
-        setCartItems(formattedCartData);
+        // Only update if the data has changed
+        if (JSON.stringify(cartItems) !== JSON.stringify(formattedCartData)) {
+          setCartItems(formattedCartData);
+        }
       }
     } catch (error) {
       console.error('Error fetching cart:', error);
@@ -192,22 +191,7 @@ const StoreContextProvider = (props) => {
     }
 
     try {
-      // Ensure itemId is a string
       const stringItemId = itemId.toString();
-
-      // Optimistic update
-      const currentQuantity = cartItems[stringItemId]?.quantity || 0;
-      const newQuantity = currentQuantity + parseInt(quantity);
-      const newCartItems = {
-        ...cartItems,
-        [stringItemId]: {
-          quantity: newQuantity,
-          selectedType,
-          price: parseFloat(price),
-        },
-      };
-      setCartItems(newCartItems);
-
       const response = await axios.post(
         `${url}/api/cart/add`,
         {
@@ -225,13 +209,10 @@ const StoreContextProvider = (props) => {
       );
 
       if (response.data.success) {
-        console.log('Added to cart:', response.data.cartData);
-        // Convert cart data to proper format
         const formattedCartData = {};
         if (response.data.cartData) {
           Object.entries(response.data.cartData).forEach(([key, value]) => {
-            const itemId =
-              typeof key === 'object' ? key._id || key.toString() : key;
+            const itemId = typeof key === 'object' ? key._id || key.toString() : key;
             formattedCartData[itemId] = {
               quantity: value.quantity || 0,
               price: value.price || 0,
@@ -239,17 +220,17 @@ const StoreContextProvider = (props) => {
             };
           });
         }
-        setCartItems(formattedCartData);
+        // Only update if the data has changed
+        if (JSON.stringify(cartItems) !== JSON.stringify(formattedCartData)) {
+          setCartItems(formattedCartData);
+        }
         toast.success('Added to cart successfully!');
+      } else {
+        throw new Error(response.data.message || 'Failed to add item');
       }
     } catch (error) {
-      // Revert optimistic update on error
-      setCartItems(cartItems);
       console.error('Error adding item to cart:', error);
-      console.error('Error response:', error.response?.data);
-      toast.error(
-        error.response?.data?.message || 'Failed to add item to cart'
-      );
+      toast.error(error.response?.data?.message || 'Failed to add item to cart');
     }
   };
 
@@ -259,21 +240,6 @@ const StoreContextProvider = (props) => {
     if (!cartItems[itemId]) return;
 
     try {
-      // Optimistic update
-      const newCartItems = { ...cartItems };
-      if (removeAll) {
-        delete newCartItems[itemId];
-      } else {
-        newCartItems[itemId].quantity = Math.max(
-          0,
-          newCartItems[itemId].quantity - 1
-        );
-        if (newCartItems[itemId].quantity === 0) {
-          delete newCartItems[itemId];
-        }
-      }
-      setCartItems(newCartItems);
-
       const response = await axios.post(
         `${url}/api/cart/remove`,
         {
@@ -289,17 +255,28 @@ const StoreContextProvider = (props) => {
       );
 
       if (response.data.success) {
-        console.log('Removed from cart:', response.data.cartData);
-        setCartItems(response.data.cartData || {});
+        const formattedCartData = {};
+        if (response.data.cartData) {
+          Object.entries(response.data.cartData).forEach(([key, value]) => {
+            const itemId = typeof key === 'object' ? key._id || key.toString() : key;
+            formattedCartData[itemId] = {
+              quantity: value.quantity || 0,
+              price: value.price || 0,
+              selectedType: value.selectedType || '',
+            };
+          });
+        }
+        // Only update if the data has changed
+        if (JSON.stringify(cartItems) !== JSON.stringify(formattedCartData)) {
+          setCartItems(formattedCartData);
+        }
         toast.success('Item removed from cart');
+      } else {
+        throw new Error(response.data.message || 'Failed to remove item');
       }
     } catch (error) {
-      // Revert optimistic update on error
-      setCartItems(cartItems);
       console.error('Error removing item from cart:', error);
-      toast.error(
-        error.response?.data?.message || 'Failed to remove item from cart'
-      );
+      toast.error(error.response?.data?.message || 'Failed to remove item from cart');
     }
   };
 

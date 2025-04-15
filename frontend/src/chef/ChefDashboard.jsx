@@ -208,16 +208,16 @@ const ChefDashboard = () => {
               </Link>
 
               <Link
-                to="/chef/performance"
-                onClick={() => setActiveMenu('performance')}
+                to="/chef/profile"
+                onClick={() => setActiveMenu('profile ')}
                 className={`flex items-center p-3 rounded-lg transition-colors ${
-                  activeMenu === 'performance'
+                  activeMenu === 'profile'
                     ? 'bg-orange-100 text-orange-600'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
                 <FaChartLine className="mr-3" />
-                <span>Performance</span>
+                <span>profile</span>
               </Link>
             </nav>
 

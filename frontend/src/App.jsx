@@ -31,7 +31,6 @@ import Add from './pages/Add/Add';
 import List from './pages/List/List';
 import Orders from './pages/Orders/Orders';
 import ManagerHome from './manager/ManagerHome/ManagerHome';
-import Profile from './manager/Profile';
 import ViewFeedback from './manager/viewFeedback';
 import GenerateReport from './manager/GenerateReport';
 import ScheduleManagement from './manager/ScheduleManagement';
@@ -49,7 +48,8 @@ import EditStaff from './SystemAdmin/EditStaff';
 //import ListStaff from './SystemAdmin/ListStaff';
 import AdminHome from './SystemAdmin/AdminHome';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import AccountList from './admin/AccountList';
+
+
 
 // Remove unused placeholder components
 const Unauthorized = () => <div>Unauthorized Access</div>;
@@ -138,7 +138,7 @@ const AppContent = () => {
             />
             {/* <Route path="staff-list" element={<ListStaff url={url} />} /> */}
             <Route path="view-user" element={<ViewUser url={url} />} />
-            <Route path="account-list" element={<AccountList />} />
+            {/* <Route path="account-list" element={<AccountList />} /> */}
           </Route>
 
           {/* Chef Routes */}
@@ -153,6 +153,7 @@ const AppContent = () => {
             <Route index element={<OrderManagement />} />
             <Route path="orders" element={<OrderManagement />} />
             <Route path="inventory" element={<InventoryManagement />} />
+            <Route path="profile" element={<CustomerProfile />} />
           </Route>
 
           {/* Manager Routes */}
@@ -168,7 +169,7 @@ const AppContent = () => {
             <Route path="add-food" element={<Add url={url} />} />
             <Route path="food-list" element={<List url={url} />} />
             <Route path="orders" element={<Orders />} />
-            <Route path="profile" element={<Profile />} />
+            <Route path="profile" element={<CustomerProfile />} />
             <Route path="stock" element={<StockManagement />} />
             <Route path="generate-report" element={<GenerateReport />} />
             <Route path="schedule" element={<ScheduleManagement />} />
@@ -195,6 +196,7 @@ const AppContent = () => {
           <Route path="/view-feedback" element={<ViewFeedback />} />
           <Route path="/contact" element={<Footer />} />
           <Route path="/place-order" element={<PlaceOrder />} />
+          
           <Route
             path="/customer/orders"
             element={

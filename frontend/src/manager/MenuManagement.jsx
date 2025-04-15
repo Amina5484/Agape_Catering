@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useStore } from '../context/StoreContext';
 import { menu_list } from '../assets/assets';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter } from 'react-icons/fa';
 
 // Define subcategories for each main category
 const subcategories = {
@@ -21,6 +22,8 @@ const MenuManagement = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -57,7 +60,15 @@ const MenuManagement = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setMenuItems(response.data);
+      
+      // Ensure each menu item has both category and subcategory
+      const processedItems = response.data.map(item => ({
+        ...item,
+        category: item.category || 'Uncategorized',
+        subcategory: item.subcategory || 'General'
+      }));
+      
+      setMenuItems(processedItems);
     } catch (error) {
       console.error('Error fetching menu items:', error);
       toast.error(error.response?.data?.message || 'Failed to fetch menu items');
@@ -81,7 +92,9 @@ const MenuManagement = () => {
         ...prev,
         image: file
       }));
-      setImagePreview(URL.createObjectURL(file));
+      // Create a preview URL for the selected file
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
     }
   };
 
@@ -109,13 +122,18 @@ const MenuManagement = () => {
       formDataToSend.append('description', formData.description);
       formDataToSend.append('category', formData.category);
       formDataToSend.append('subcategory', formData.subcategory);
-      if (formData.image) {
+      
+      // Only append image if it's a new file
+      if (formData.image instanceof File) {
         formDataToSend.append('image', formData.image);
+      } else if (selectedItem?.image) {
+        // If editing and no new image selected, keep the existing image
+        formDataToSend.append('image', selectedItem.image);
       }
 
       if (selectedItem) {
         // Update existing item
-        await axios.put(
+        const response = await axios.put(
           `http://localhost:4000/api/catering/menu/update/${selectedItem._id}`,
           formDataToSend,
           {
@@ -128,7 +146,7 @@ const MenuManagement = () => {
         toast.success('Menu item updated successfully');
       } else {
         // Add new item
-        await axios.post(
+        const response = await axios.post(
           'http://localhost:4000/api/catering/menu',
           formDataToSend,
           {
@@ -162,9 +180,15 @@ const MenuManagement = () => {
       description: item.description,
       category: item.category || '',
       subcategory: item.subcategory || '',
-      image: null
+      image: null // Reset image to null when editing
     });
-    setImagePreview(item.image ? `http://localhost:4000/uploads/${item.image}` : null);
+    // Set image preview if image exists
+    if (item.image) {
+      const imageUrl = `http://localhost:4000/uploads/${item.image}`;
+      setImagePreview(imageUrl);
+    } else {
+      setImagePreview(null);
+    }
     setIsModalOpen(true);
   };
 
@@ -205,6 +229,14 @@ const MenuManagement = () => {
     return acc;
   }, {});
 
+  // Filter menu items based on search term and selected category
+  const filteredMenuItems = menuItems.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !selectedCategory || item.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -216,86 +248,157 @@ const MenuManagement = () => {
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
         <div className="flex justify-between items-center mb-8">
+          <div>
           <h2 className="text-3xl font-bold text-gray-800">Menu Management</h2>
+            <p className="text-gray-600 mt-1">Manage your menu items and categories</p>
+          </div>
           <button
             onClick={() => {
               resetForm();
               setIsModalOpen(true);
             }}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-300"
+            className="group relative inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 overflow-hidden"
           >
-            Add New Item
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-700 to-indigo-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center space-x-2">
+              <FaPlus className="w-5 h-5 transform group-hover:rotate-90 transition-transform duration-300" />
+              <span className="font-semibold">Add New Menu Item</span>
+            </div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
           </button>
         </div>
 
-        {/* Display menu items grouped by category and subcategory */}
-        <div className="space-y-8">
-          {Object.keys(groupedMenuItems).map(category => (
-            <div key={category} className="bg-white rounded-xl shadow-xl overflow-hidden">
-              <div className="bg-indigo-600 px-6 py-4">
-                <h3 className="text-xl font-bold text-white">{category}</h3>
+        {/* Search and Filter Section */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search menu items..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <FaFilter className="text-gray-400" />
+              <select 
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              >
+                <option value="">All Categories</option>
+                {menu_list.map((item) => (
+                  <option key={item.menu_name} value={item.menu_name}>
+                    {item.menu_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
               </div>
               
-              <div className="p-6">
-                {Object.keys(groupedMenuItems[category]).map(subcategory => (
-                  <div key={subcategory} className="mb-8 last:mb-0">
-                    <h4 className="text-lg font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
-                      {subcategory}
-                    </h4>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {groupedMenuItems[category][subcategory].map(item => (
-                        <div key={item._id} className="bg-gray-50 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                          <div className="flex items-start space-x-4">
+        {/* Table Display */}
+        <div className="bg-white rounded-xl shadow-xl overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-indigo-600">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Image</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Name</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Category</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Subcategory</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Price</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Description</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredMenuItems.length > 0 ? (
+                filteredMenuItems.map((item) => (
+                  <tr key={item._id} className="hover:bg-gray-50 transition duration-150">
+                    <td className="px-6 py-4 whitespace-nowrap">
                             {item.image ? (
                               <img 
-                                src={`http://localhost:4000/uploads/${item.image}`} 
+                          src={`http://localhost:4000/uploads/${item.image}`} 
                                 alt={item.name} 
-                                className="h-16 w-16 rounded-md object-cover"
+                          className="h-16 w-16 rounded-md object-cover shadow-sm"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.style.display = 'none';
+                            const placeholderDiv = document.createElement('div');
+                            placeholderDiv.className = 'h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center shadow-sm';
+                            placeholderDiv.innerHTML = '<span class="text-gray-500 text-xs">No Image</span>';
+                            e.target.parentNode.appendChild(placeholderDiv);
+                          }}
                               />
                             ) : (
-                              <div className="h-16 w-16 rounded-md bg-gray-200 flex items-center justify-center">
-                                <span className="text-gray-500 text-xs">No img</span>
+                        <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center shadow-sm">
+                          <span className="text-gray-500 text-xs">No Image</span>
                               </div>
                             )}
-                            
-                            <div className="flex-1 min-w-0">
-                              <h5 className="text-lg font-medium text-gray-900 truncate">{item.name}</h5>
-                              <p className="text-sm text-gray-500 truncate">{item.description}</p>
-                              <p className="text-sm font-semibold text-indigo-600">Birr {item.price}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-4 flex justify-end space-x-2">
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                        {item.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                        {item.subcategory}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-semibold text-indigo-600">Birr {item.price}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500 max-w-xs truncate">{item.description}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
                             <button 
                               onClick={() => handleEdit(item)}
-                              className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                        className="text-indigo-600 hover:text-indigo-900 transition duration-300 hover:scale-110 flex items-center"
                             >
+                        <FaEdit className="mr-1" />
                               Edit
                             </button>
                             <button 
                               onClick={() => handleDelete(item._id)}
-                              className="text-red-600 hover:text-red-900 text-sm font-medium"
+                        className="text-red-600 hover:text-red-900 transition duration-300 hover:scale-110 flex items-center"
                             >
+                        <FaTrash className="mr-1" />
                               Delete
                             </button>
-                          </div>
-                        </div>
-                      ))}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                    <div className="flex flex-col items-center space-y-2">
+                      <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <p className="text-lg">No menu items found matching your criteria</p>
+                      <p className="text-sm text-gray-500">Try adjusting your search or filter</p>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Modal for Add/Edit Menu Item */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full transform transition-all">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full transform transition-all">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-800">
                 {selectedItem ? 'Edit Menu Item' : 'Add New Item'}
@@ -313,27 +416,27 @@ const MenuManagement = () => {
               </button>
             </div>
             
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Price (Birr)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Price (Birr)</label>
                   <input
                     type="number"
                     name="price"
                     value={formData.price}
                     onChange={handleInputChange}
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required
                     min="0"
                     step="0.01"
@@ -342,25 +445,25 @@ const MenuManagement = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  rows="2"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows="3"
                   required
                 ></textarea>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                   <select
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required
                   >
                     <option value="">Select category</option>
@@ -372,12 +475,12 @@ const MenuManagement = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Subcategory</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
                   <select
                     name="subcategory"
                     value={formData.subcategory}
                     onChange={handleInputChange}
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required
                     disabled={!formData.category || availableSubcategories.length === 0}
                   >
@@ -392,38 +495,38 @@ const MenuManagement = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Image</label>
-                <div className="flex items-center space-x-3">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                <div className="flex items-center space-x-4">
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="flex-1 text-sm text-gray-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    className="flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                   />
                   {imagePreview && (
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="h-10 w-10 object-cover rounded-md"
+                      className="h-16 w-16 object-cover rounded-md shadow-sm"
                     />
                   )}
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-2 pt-2">
+              <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
                   onClick={() => {
                     setIsModalOpen(false);
                     resetForm();
                   }}
-                  className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   {selectedItem ? 'Update' : 'Add'} Item
                 </button>
