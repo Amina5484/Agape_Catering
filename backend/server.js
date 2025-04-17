@@ -84,7 +84,7 @@ app.use('/api/food', foodRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRoutes);
 app.use('/api/feedback', feedbackRouter);
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // ✅ Database Connection
 mongoose
   .connect(process.env.MONGODB_URI, {
