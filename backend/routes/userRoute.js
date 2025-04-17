@@ -14,7 +14,7 @@ const userRouter = express.Router();
 // Configure multer for file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/profiles');
+    cb(null, 'public/profiles');
   },
   filename: function (req, file, cb) {
     cb(null, `${Date.now()}-${file.originalname}`);

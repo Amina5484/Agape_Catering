@@ -55,14 +55,14 @@ const Login = ({ setShowLogin }) => {
       const result = await login(formData.email, formData.password);
       console.log('Login result:', result);
 
-      if (result.success) {
+      if (result.success && result.user) {
         // Close login modal if it exists
         if (setShowLogin) {
           setShowLogin(false);
         }
 
         // Redirect based on role
-        switch (result.role) {
+        switch (result.user.role) {
           case 'Customer':
             navigate('/customer', { replace: true });
             break;
@@ -83,7 +83,9 @@ const Login = ({ setShowLogin }) => {
       }
     } catch (error) {
       console.error('Login error in component:', error);
-      toast.error(error.response?.data?.message || 'Login failed');
+      const errorMessage =
+        error.response?.data?.message || 'Invalid email or password';
+      toast.error(errorMessage);
     }
   };
 

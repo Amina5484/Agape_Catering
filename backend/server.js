@@ -38,7 +38,7 @@ app.use(express.json()); // For parsing application/json
 // ✅ Serve Static Files (Images)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ✅ Swagger Configuration with Authorization
 const swaggerOptions = {
@@ -84,6 +84,8 @@ app.use('/api/food', foodRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRoutes);
 app.use('/api/feedback', feedbackRouter);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // ✅ Database Connection
 mongoose

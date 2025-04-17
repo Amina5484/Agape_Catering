@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useStore } from "../context/StoreContext";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter } from "react-icons/fa";
 
 const StockManagement = () => {
   const { token } = useStore();
@@ -10,6 +10,8 @@ const StockManagement = () => {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState("all");
   const [formData, setFormData] = useState({
     name: "",
     quantity: "",
@@ -28,15 +30,13 @@ const StockManagement = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("Fetched stock items:", response.data);
-      
+
       if (response.data && response.data.success) {
         setStockItems(response.data.data || []);
       } else if (Array.isArray(response.data)) {
         setStockItems(response.data);
       } else {
         setStockItems([]);
-        console.error("Unexpected response format:", response.data);
       }
     } catch (error) {
       console.error("Error fetching stock:", error);
@@ -80,8 +80,16 @@ const StockManagement = () => {
             },
           }
         );
-        
+
         if (response.data && response.data.success) {
+          // Update the item in the local state
+          setStockItems(prevItems =>
+            prevItems.map(item =>
+              item._id === selectedItem._id
+                ? { ...item, ...response.data.data }
+                : item
+            )
+          );
           toast.success("Stock item updated successfully");
           setIsEditing(false);
           setSelectedItem(null);
@@ -90,7 +98,6 @@ const StockManagement = () => {
             quantity: "",
             unit: ""
           });
-          fetchStock();
         } else {
           toast.error(response.data?.message || "Failed to update stock item");
         }
@@ -106,8 +113,10 @@ const StockManagement = () => {
             },
           }
         );
-        
+
         if (response.data && response.data.success) {
+          // Add the new item to the local state
+          setStockItems(prevItems => [...prevItems, response.data.data]);
           toast.success("Stock item added successfully");
           setIsEditing(false);
           setSelectedItem(null);
@@ -116,7 +125,6 @@ const StockManagement = () => {
             quantity: "",
             unit: ""
           });
-          fetchStock();
         } else {
           toast.error(response.data?.message || "Failed to add stock item");
         }
@@ -124,6 +132,8 @@ const StockManagement = () => {
     } catch (error) {
       console.error("Error saving stock item:", error);
       toast.error(error.response?.data?.message || "Failed to save stock item");
+      // Refresh the stock list in case of error
+      fetchStock();
     }
   };
 
@@ -138,29 +148,47 @@ const StockManagement = () => {
             },
           }
         );
-        
+
         if (response.data && response.data.success) {
+          // Remove the item from the local state
+          setStockItems(prevItems => prevItems.filter(item => item._id !== itemId));
           toast.success("Stock item deleted successfully");
-          fetchStock();
         } else {
           toast.error(response.data?.message || "Failed to delete stock item");
+          // Refresh the stock list in case of error
+          fetchStock();
         }
       } catch (error) {
         console.error("Error deleting stock item:", error);
         toast.error(error.response?.data?.message || "Failed to delete stock item");
+        // Refresh the stock list in case of error
+        fetchStock();
       }
     }
   };
 
+  const filteredItems = stockItems.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesUnit = selectedUnit === "all" || item.unit === selectedUnit;
+    return matchesSearch && matchesUnit;
+  });
+
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">Stock Management</h2>
+          <div>
+            <h2 className="text-3xl font-bold text-gray-800">Stock Management</h2>
+
+          </div>
           <button
             onClick={() => {
               setSelectedItem(null);
@@ -171,11 +199,46 @@ const StockManagement = () => {
               });
               setIsEditing(true);
             }}
-            className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition duration-300 flex items-center space-x-2 shadow-lg transform hover:scale-105"
+            className="group relative inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 overflow-hidden"
           >
-            <FaPlus className="w-5 h-5" />
-            <span>Add New Stock Item</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center space-x-2">
+              <FaPlus className="w-5 h-5 transform group-hover:rotate-90 transition-transform duration-300" />
+              <span className="font-semibold">Add New Stock Item</span>
+            </div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
           </button>
+        </div>
+
+        {/* Search and Filter Section */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search items..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <FaFilter className="text-gray-400" />
+              <select
+                value={selectedUnit}
+                onChange={(e) => setSelectedUnit(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Units</option>
+                <option value="kg">Kilograms (kg)</option>
+                <option value="g">Grams (g)</option>
+                <option value="l">Liters (L)</option>
+                <option value="ml">Milliliters (mL)</option>
+                <option value="pcs">Pieces (pcs)</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         {isEditing && (
@@ -243,7 +306,7 @@ const StockManagement = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-300 transform hover:scale-105"
+                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300 transform hover:scale-105"
                 >
                   {selectedItem ? "Update Stock Item" : "Add Stock Item"}
                 </button>
@@ -271,8 +334,8 @@ const StockManagement = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {stockItems && stockItems.length > 0 ? (
-                stockItems.map((item) => (
+              {filteredItems.length > 0 ? (
+                filteredItems.map((item) => (
                   <tr key={item._id} className="hover:bg-gray-50 transition duration-150">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-800">{item.name}</div>
@@ -281,19 +344,23 @@ const StockManagement = () => {
                       <div className="text-sm text-gray-800">{item.quantity}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-800">{item.unit}</div>
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        {item.unit}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
                       <button
                         onClick={() => handleEdit(item)}
-                        className="text-blue-600 hover:text-blue-800 transition duration-300 hover:scale-110"
+                        className="text-blue-600 hover:text-blue-800 transition duration-300 hover:scale-110 flex items-center"
                       >
+                        <FaEdit className="mr-1" />
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(item._id)}
-                        className="text-red-600 hover:text-red-800 transition duration-300 hover:scale-110"
+                        className="text-red-600 hover:text-red-800 transition duration-300 hover:scale-110 flex items-center"
                       >
+                        <FaTrash className="mr-1" />
                         Delete
                       </button>
                     </td>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import './index.css';
 import { ToastContainer } from 'react-toastify';
@@ -15,14 +15,14 @@ import Register from './components/auth/Register';
 import Explore from './components/Explore/Explore';
 import FeedbackForm from './pages/Feedback/Feedback';
 import PlaceOrder from './pages/PlaceOrder/PlaceOrder';
-import StoreContextProvider from './context/StoreContext';
+import StoreContextProvider, { useStore } from './context/StoreContext';
 import CustomerProfile from './customer/CustomerProfile';
 import CustomerOrders from './pages/Orders/Orders';
 
 // Chef Imports
 import ChefDashboard from './chef/ChefDashboard';
-import OrderManagement from './components/chef/OrderManagement';
-import InventoryManagement from './components/chef/InventoryManagement';
+import OrderManagement from './chef/OrderManagement';
+import InventoryManagement from './chef/InventoryManagement';
 
 // Manager Imports
 import ManagerSidebar from './manager/managerSidebar/managerSidebar';
@@ -31,7 +31,6 @@ import Add from './pages/Add/Add';
 import List from './pages/List/List';
 import Orders from './pages/Orders/Orders';
 import ManagerHome from './manager/ManagerHome/ManagerHome';
-import Profile from './manager/Profile';
 import ViewFeedback from './manager/viewFeedback';
 import GenerateReport from './manager/GenerateReport';
 import ScheduleManagement from './manager/ScheduleManagement';
@@ -46,10 +45,10 @@ import SystemSidebar from './SystemAdmin/SystemSidebar';
 import SystemNavbar from './SystemAdmin/SystemNavbar';
 import ViewUser from './SystemAdmin/ViewUser';
 import EditStaff from './SystemAdmin/EditStaff';
-//import ListStaff from './SystemAdmin/ListStaff';
 import AdminHome from './SystemAdmin/AdminHome';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import AccountList from './admin/AccountList';
+
+
 
 // Remove unused placeholder components
 const Unauthorized = () => <div>Unauthorized Access</div>;
@@ -58,11 +57,19 @@ const AppContent = () => {
   const url = 'http://localhost:4000';
   const [showLogin, setShowLogin] = useState(false);
   const location = useLocation();
+  const { isLoggedIn, userRole } = useStore();
   const isManagerRoute = location.pathname.startsWith('/manager');
   const isSystemRoute =
     location.pathname.startsWith('/system') ||
     location.pathname.startsWith('/admin');
   const isChefRoute = location.pathname.startsWith('/chef');
+
+  // Reset showLogin when login state changes
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setShowLogin(false);
+    }
+  }, [isLoggedIn]);
 
   return (
     <>
@@ -118,19 +125,12 @@ const AppContent = () => {
             }
           >
             <Route index element={<AdminHome />} />
-            <Route
-              path="create-account"
-              element={<CreateAccount url={url} />}
-            />
+            <Route path="create-account" element={<CreateAccount url={url} />}/>
             <Route path="edit-user" element={<EditStaff url={url} />} />
             <Route path="settings" element={<SystemSettings url={url} />} />
-            <Route
-              path="user-management"
-              element={<UserManagement url={url} />}
-            />
-            {/* <Route path="staff-list" element={<ListStaff url={url} />} /> */}
+            <Route path="user-management" element={<UserManagement url={url} />}/>
             <Route path="view-user" element={<ViewUser url={url} />} />
-            <Route path="account-list" element={<AccountList />} />
+           
           </Route>
 
           {/* Chef Routes */}
@@ -145,6 +145,7 @@ const AppContent = () => {
             <Route index element={<OrderManagement />} />
             <Route path="orders" element={<OrderManagement />} />
             <Route path="inventory" element={<InventoryManagement />} />
+            <Route path="profile" element={<CustomerProfile />} />
           </Route>
 
           {/* Manager Routes */}
@@ -160,7 +161,7 @@ const AppContent = () => {
             <Route path="add-food" element={<Add url={url} />} />
             <Route path="food-list" element={<List url={url} />} />
             <Route path="orders" element={<Orders />} />
-            <Route path="profile" element={<Profile />} />
+            <Route path="profile" element={<CustomerProfile />} />
             <Route path="stock" element={<StockManagement />} />
             <Route path="generate-report" element={<GenerateReport />} />
             <Route path="schedule" element={<ScheduleManagement />} />
@@ -187,9 +188,10 @@ const AppContent = () => {
           <Route path="/view-feedback" element={<ViewFeedback />} />
           <Route path="/contact" element={<Footer />} />
           <Route path="/place-order" element={<PlaceOrder />} />
+          
           <Route
             path="/customer/orders"
-            element={
+             element={
               <ProtectedRoute allowedRoles={['Customer']}>
                 <CustomerOrders />
               </ProtectedRoute>

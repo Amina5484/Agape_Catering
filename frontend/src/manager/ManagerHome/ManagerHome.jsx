@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaBoxOpen, FaCubes, FaChartBar, FaComments } from 'react-icons/fa';
+import { FaBoxOpen, FaCubes, FaChartBar, FaComments, FaPlus, FaListUl, FaClipboardList, FaCog, FaUserCircle } from 'react-icons/fa';
 import { StoreContext } from '../../context/StoreContext';
 
 const Home = () => {
@@ -13,68 +13,100 @@ const Home = () => {
     fetchFeedbackList();
   };
 
+  const dashboardCards = [
+    {
+      title: 'Menu Management',
+      description: 'Add, edit, or remove menu items',
+      icon: <FaPlus className="w-8 h-8" />,
+      path: '/manager/menu',
+      color: 'bg-green-500',
+      hoverColor: 'hover:bg-green-600'
+    },
+    {
+      title: 'Stock Management',
+      description: 'Manage inventory and stock levels',
+      icon: <FaListUl className="w-8 h-8" />,
+      path: '/manager/stock',
+      color: 'bg-purple-500',
+      hoverColor: 'hover:bg-purple-600'
+    },
+    {
+      title: 'Order Management',
+      description: 'View and manage customer orders',
+      icon: <FaClipboardList className="w-8 h-8" />,
+      path: '/manager/orders',
+      color: 'bg-yellow-500',
+      hoverColor: 'hover:bg-yellow-600'
+    },
+    {
+      title: 'Schedule Management',
+      description: 'Manage staff schedules and shifts',
+      icon: <FaCog className="w-8 h-8" />,
+      path: '/manager/schedule',
+      color: 'bg-indigo-500',
+      hoverColor: 'hover:bg-indigo-600'
+    },
+    {
+      title: 'Generate Report',
+      description: 'Generate sales and performance reports',
+      icon: <FaChartBar className="w-8 h-8" />,
+      path: '/manager/generate-report',
+      color: 'bg-red-500',
+      hoverColor: 'hover:bg-red-600'
+    },
+    {
+      title: 'View Feedback',
+      description: 'Read and respond to customer feedback',
+      icon: <FaComments className="w-8 h-8" />,
+      path: '/manager/feedback',
+      color: 'bg-teal-500',
+      hoverColor: 'hover:bg-teal-600'
+    },
+    {
+      title: 'Profile',
+      description: 'Manage your account settings',
+      icon: <FaUserCircle className="w-8 h-8" />,
+      path: '/manager/profile',
+      color: 'bg-blue-500',
+      hoverColor: 'hover:bg-blue-600'
+    }
+  ];
+
   return (
     <div className="pt-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">Welcome to Your Dashboard</h1>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Orders Card */}
-            <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 border border-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                  <p className="text-2xl font-semibold text-gray-900 mt-1">24</p>
-                </div>
-                <div className="bg-blue-50 rounded-full p-3">
-                  <FaBoxOpen className="w-6 h-6 text-blue-600" />
-                </div>
-          </div>
-        </div>
 
-            {/* Stock Card */}
-            <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 border border-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Stock Items</p>
-                  <p className="text-2xl font-semibold text-gray-900 mt-1">156</p>
+          {/* Dashboard Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {dashboardCards.map((card, index) => (
+              <div
+                key={index}
+                onClick={() => navigate(card.path)}
+                className={`
+                  bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300
+                  p-6 border border-gray-100 cursor-pointer
+                  transform hover:-translate-y-1
+                `}
+              >
+                <div className="flex items-center space-x-4">
+                  <div className={`${card.color} text-white p-3 rounded-lg`}>
+                    {card.icon}
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-800">{card.title}</h2>
+                    <p className="text-gray-600 text-sm">{card.description}</p>
+                  </div>
                 </div>
-                <div className="bg-green-50 rounded-full p-3">
-                  <FaCubes className="w-6 h-6 text-green-600" />
-                </div>
+              </div>
+            ))}
           </div>
-        </div>
 
-            {/* Reports Card */}
-            <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 border border-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Reports</p>
-                  <p className="text-2xl font-semibold text-gray-900 mt-1">12</p>
-                </div>
-                <div className="bg-yellow-50 rounded-full p-3">
-                  <FaChartBar className="w-6 h-6 text-yellow-600" />
-                </div>
-          </div>
-        </div>
 
-            {/* Feedback Card */}
-            <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 border border-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Feedback</p>
-                  <p className="text-2xl font-semibold text-gray-900 mt-1">8</p>
-                </div>
-                <div className="bg-red-50 rounded-full p-3">
-                  <FaComments className="w-6 h-6 text-red-600" />
-                </div>
-          </div>
-        </div>
-      </div>
 
           {/* Feedback Section */}
-      {showFeedback && (
+          {showFeedback && (
             <div className="mt-8 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">Recent Feedback</h2>
@@ -85,17 +117,17 @@ const Home = () => {
                   Close
                 </button>
               </div>
-              
-          {feedbackList.length === 0 ? (
+
+              {feedbackList.length === 0 ? (
                 <div className="text-center py-8">
                   <FaComments className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">No feedback submitted yet.</p>
                 </div>
-          ) : (
-            <div className="space-y-4">
-              {feedbackList.map((feedback, index) => (
-                <div
-                  key={index}
+              ) : (
+                <div className="space-y-4">
+                  {feedbackList.map((feedback, index) => (
+                    <div
+                      key={index}
                       className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors duration-300"
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -103,12 +135,12 @@ const Home = () => {
                         <span className="text-sm text-gray-500">{feedback.email}</span>
                       </div>
                       <p className="text-gray-600">{feedback.feedback}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           )}
-        </div>
-      )}
         </div>
       </div>
     </div>

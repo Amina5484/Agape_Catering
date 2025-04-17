@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../SystemAdmin/axiosInstance';
 import { toast } from 'react-toastify';
 import { useNavigate, Link, Outlet } from 'react-router-dom';
-import { 
-  FaClipboardList, 
-  FaBoxes, 
-  FaCalendarAlt, 
+import {
+  FaClipboardList,
+  FaBoxes,
+  FaCalendarAlt,
   FaSignOutAlt,
   FaUser,
   FaHome,
@@ -139,7 +139,7 @@ const ChefDashboard = () => {
               <FaUtensils className="text-3xl text-orange-500 mr-2" />
               <h2 className="text-2xl font-bold text-gray-800">Chef Dashboard</h2>
             </div>
-            
+
             {/* User Profile Section */}
             <div className="mb-8 p-4 bg-orange-50 rounded-lg">
               <div className="flex items-center">
@@ -158,11 +158,10 @@ const ChefDashboard = () => {
               <Link
                 to="/chef"
                 onClick={() => setActiveMenu('dashboard')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${
-                  activeMenu === 'dashboard'
-                    ? 'bg-orange-100 text-orange-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'dashboard'
+                  ? 'bg-orange-100 text-orange-600'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <FaHome className="mr-3" />
                 <span>Dashboard</span>
@@ -171,11 +170,10 @@ const ChefDashboard = () => {
               <Link
                 to="/chef/orders"
                 onClick={() => setActiveMenu('orders')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${
-                  activeMenu === 'orders'
-                    ? 'bg-orange-100 text-orange-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'orders'
+                  ? 'bg-orange-100 text-orange-600'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <FaClipboardList className="mr-3" />
                 <span>Orders</span>
@@ -184,11 +182,10 @@ const ChefDashboard = () => {
               <Link
                 to="/chef/inventory"
                 onClick={() => setActiveMenu('inventory')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${
-                  activeMenu === 'inventory'
-                    ? 'bg-orange-100 text-orange-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'inventory'
+                  ? 'bg-orange-100 text-orange-600'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <FaBoxes className="mr-3" />
                 <span>Inventory</span>
@@ -197,27 +194,25 @@ const ChefDashboard = () => {
               <Link
                 to="/chef/schedule"
                 onClick={() => setActiveMenu('schedule')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${
-                  activeMenu === 'schedule'
-                    ? 'bg-orange-100 text-orange-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'schedule'
+                  ? 'bg-orange-100 text-orange-600'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <FaCalendarAlt className="mr-3" />
                 <span>Schedule</span>
               </Link>
 
               <Link
-                to="/chef/performance"
-                onClick={() => setActiveMenu('performance')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${
-                  activeMenu === 'performance'
-                    ? 'bg-orange-100 text-orange-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                to="/chef/profile"
+                onClick={() => setActiveMenu('profile ')}
+                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'profile'
+                  ? 'bg-orange-100 text-orange-600'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <FaChartLine className="mr-3" />
-                <span>Performance</span>
+                <span>profile</span>
               </Link>
             </nav>
 

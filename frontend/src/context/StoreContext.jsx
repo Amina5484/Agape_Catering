@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import axiosInstance from '../SystemAdmin/axiosInstance';
 
 export const StoreContext = createContext(null);
 
@@ -16,38 +17,41 @@ export const useStore = () => {
 const StoreContextProvider = (props) => {
   const [cartItems, setCartItems] = useState({});
   const [food_list, setFoodList] = useState([]);
-  const [token, setToken] = useState(localStorage.getItem('token') || '');
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
-  const [userRole, setUserRole] = useState(
-    localStorage.getItem('userRole') || ''
-  );
-  const [userId, setUserId] = useState(localStorage.getItem('userId') || '');
+  const [token, setToken] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState('');
+  const [userId, setUserId] = useState('');
 
   const url = 'http://localhost:4000';
 
-  // Default system admin credentials
-  const DEFAULT_ADMIN = {
-    email: 'admin@system.com',
-    password: 'Admin@123',
-    role: 'System Admin',
-  };
+  // Check login state on mount
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    const storedRole = localStorage.getItem('userRole');
+    const storedUserId = localStorage.getItem('userId');
 
-  // Login function
-  const login = async (email, password) => {
-    try {
-      // Clear any existing state first
+    if (storedToken && storedRole && storedUserId) {
+      setToken(storedToken);
+      setUserRole(storedRole);
+      setUserId(storedUserId);
+      setIsLoggedIn(true);
+    } else {
+      // Clear any partial data
+      localStorage.removeItem('token');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userId');
       setToken('');
       setUserRole('');
       setUserId('');
       setIsLoggedIn(false);
-      setCartItems({});
-      setFoodList([]);
-      localStorage.removeItem('token');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userId');
+    }
+  }, []);
 
+  // Login function
+  const login = async (email, password) => {
+    try {
       console.log('Attempting login with:', { email, password: '***' });
-      const response = await axios.post(`${url}/api/auth/login`, {
+      const response = await axiosInstance.post('/auth/login', {
         email,
         password,
       });
@@ -56,15 +60,14 @@ const StoreContextProvider = (props) => {
 
       if (response.data.success) {
         const { token, user } = response.data;
-        const role = user.role;
         setToken(token);
-        setUserRole(role);
+        setUserRole(user.role);
         setUserId(user._id);
         setIsLoggedIn(true);
         localStorage.setItem('token', token);
-        localStorage.setItem('userRole', role);
+        localStorage.setItem('userRole', user.role);
         localStorage.setItem('userId', user._id);
-        return { success: true, role };
+        return { success: true, user };
       }
       return { success: false, message: response.data.message };
     } catch (error) {
@@ -72,7 +75,6 @@ const StoreContextProvider = (props) => {
       const errorMessage =
         error.response?.data?.message ||
         'Login failed. Please check your credentials.';
-      toast.error(errorMessage);
       return {
         success: false,
         message: errorMessage,
@@ -89,16 +91,17 @@ const StoreContextProvider = (props) => {
     setIsLoggedIn(false);
     setCartItems({});
     setFoodList([]);
-    
+
     // Clear localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userId');
-    
+    localStorage.removeItem('user');
+
     // Show success message
     toast.success('Logged out successfully');
-    
-    // Force a page reload to ensure clean state
+
+    // Force a page reload to ensure all states are reset
     window.location.href = '/';
   };
 
@@ -140,36 +143,36 @@ const StoreContextProvider = (props) => {
   const fetchCart = async () => {
     if (!isLoggedIn || userRole !== 'Customer') return;
     try {
-      const response = await axios.post(
-        `${url}/api/cart/get`,
-        { userId },
+      const response = await axios.get(
+        `${url}/api/cart/${userId}`,
         {
           headers: {
-            token: token,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       if (response.data.success) {
-        console.log('Raw cart data:', response.data.cartData);
         // Convert cart data to proper format
         const formattedCartData = {};
-        if (response.data.cartData) {
-          Object.entries(response.data.cartData).forEach(([key, value]) => {
-            // Handle both string and object keys
+        if (response.data.cart) {
+          Object.entries(response.data.cart).forEach(([key, value]) => {
             const itemId = typeof key === 'object' ? key._id || key.toString() : key;
             formattedCartData[itemId] = {
               quantity: value.quantity || 0,
               price: value.price || 0,
-              selectedType: value.selectedType || ''
+              selectedType: value.selectedType || '',
             };
           });
         }
-        console.log('Formatted cart data:', formattedCartData);
-        setCartItems(formattedCartData);
+        // Only update if the data has changed
+        if (JSON.stringify(cartItems) !== JSON.stringify(formattedCartData)) {
+          setCartItems(formattedCartData);
+        }
       }
     } catch (error) {
       console.error('Error fetching cart:', error);
+      toast.error(error.response?.data?.message || 'Failed to fetch cart');
       setCartItems({});
     }
   };
@@ -188,63 +191,50 @@ const StoreContextProvider = (props) => {
     }
 
     try {
-      // Ensure itemId is a string
-      const stringItemId = itemId.toString();
-      
-      // Optimistic update
-      const currentQuantity = cartItems[stringItemId]?.quantity || 0;
-      const newQuantity = currentQuantity + parseInt(quantity);
-      const newCartItems = {
-        ...cartItems,
-        [stringItemId]: {
-          quantity: newQuantity,
-          selectedType,
-          price: parseFloat(price)
-        }
-      };
-      setCartItems(newCartItems);
-      
       const response = await axios.post(
-        `${url}/api/cart/add`,
+        `${url}/api/cart/${userId}/cart`,
         {
-          itemId: stringItemId,
-          quantity: parseInt(quantity),
-          selectedType,
-          price: parseFloat(price),
-          userId,
+          item: {
+            id: itemId.toString(),
+            quantity: parseInt(quantity),
+            selectedType,
+            price: parseFloat(price),
+          }
         },
         {
           headers: {
-            token: token,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       if (response.data.success) {
-        console.log('Added to cart:', response.data.cartData);
-        // Convert cart data to proper format
         const formattedCartData = {};
-        if (response.data.cartData) {
-          Object.entries(response.data.cartData).forEach(([key, value]) => {
+        if (response.data.cart) {
+          Object.entries(response.data.cart).forEach(([key, value]) => {
             const itemId = typeof key === 'object' ? key._id || key.toString() : key;
             formattedCartData[itemId] = {
               quantity: value.quantity || 0,
               price: value.price || 0,
-              selectedType: value.selectedType || ''
+              selectedType: value.selectedType || '',
             };
           });
         }
-        setCartItems(formattedCartData);
+        // Only update if the data has changed
+        if (JSON.stringify(cartItems) !== JSON.stringify(formattedCartData)) {
+          setCartItems(formattedCartData);
+        }
         toast.success('Added to cart successfully!');
+        return { success: true };
+      } else {
+        toast.error(response.data.message || 'Failed to add item to cart');
+        return { success: false, message: response.data.message };
       }
     } catch (error) {
-      // Revert optimistic update on error
-      setCartItems(cartItems);
       console.error('Error adding item to cart:', error);
-      console.error('Error response:', error.response?.data);
-      toast.error(
-        error.response?.data?.message || 'Failed to add item to cart'
-      );
+      const errorMessage = error.response?.data?.message || 'Failed to add item to cart';
+      toast.error(errorMessage);
+      return { success: false, message: errorMessage };
     }
   };
 
@@ -254,44 +244,38 @@ const StoreContextProvider = (props) => {
     if (!cartItems[itemId]) return;
 
     try {
-      // Optimistic update
-      const newCartItems = { ...cartItems };
-      if (removeAll) {
-        delete newCartItems[itemId];
-      } else {
-        newCartItems[itemId].quantity = Math.max(0, newCartItems[itemId].quantity - 1);
-        if (newCartItems[itemId].quantity === 0) {
-          delete newCartItems[itemId];
-        }
-      }
-      setCartItems(newCartItems);
-
-      const response = await axios.post(
-        `${url}/api/cart/remove`,
-        {
-          itemId,
-          removeAll,
-          userId,
-        },
+      const response = await axios.delete(
+        `${url}/api/cart/${userId}/${itemId}`,
         {
           headers: {
-            token: token,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       if (response.data.success) {
-        console.log('Removed from cart:', response.data.cartData);
-        setCartItems(response.data.cartData || {});
+        const formattedCartData = {};
+        if (response.data.cart) {
+          Object.entries(response.data.cart).forEach(([key, value]) => {
+            const itemId = typeof key === 'object' ? key._id || key.toString() : key;
+            formattedCartData[itemId] = {
+              quantity: value.quantity || 0,
+              price: value.price || 0,
+              selectedType: value.selectedType || '',
+            };
+          });
+        }
+        // Only update if the data has changed
+        if (JSON.stringify(cartItems) !== JSON.stringify(formattedCartData)) {
+          setCartItems(formattedCartData);
+        }
         toast.success('Item removed from cart');
+      } else {
+        throw new Error(response.data.message || 'Failed to remove item');
       }
     } catch (error) {
-      // Revert optimistic update on error
-      setCartItems(cartItems);
       console.error('Error removing item from cart:', error);
-      toast.error(
-        error.response?.data?.message || 'Failed to remove item from cart'
-      );
+      toast.error(error.response?.data?.message || 'Failed to remove item from cart');
     }
   };
 
@@ -332,6 +316,17 @@ const StoreContextProvider = (props) => {
     }
   }, [isLoggedIn, userRole]);
 
+  // Add a function to reset login state
+  const resetLoginState = () => {
+    setToken('');
+    setUserRole('');
+    setUserId('');
+    setIsLoggedIn(false);
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
+  };
+
   // Context value
   const contextValue = {
     cartItems,
@@ -355,7 +350,7 @@ const StoreContextProvider = (props) => {
     createUser,
     fetchFoodList,
     fetchCart,
-    DEFAULT_ADMIN,
+    resetLoginState,
   };
 
   return (
