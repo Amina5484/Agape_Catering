@@ -65,10 +65,18 @@ const Navbar = ({ setShowLogin }) => {
     // Reset login state before showing login form
     resetLoginState();
     setShowLogin(true);
+    // Close any open menus
+    setIsOpen(false);
+    setIsProfileOpen(false);
   };
 
   // Check if user is logged in and is a customer
   const isCustomerLoggedIn = isLoggedIn && userRole === 'Customer';
+
+  // Debug log to help track state
+  useEffect(() => {
+    console.log('Login state:', { isLoggedIn, userRole, isCustomerLoggedIn });
+  }, [isLoggedIn, userRole, isCustomerLoggedIn]);
 
   return (
     <div className="p-2 flex items-center bg-white dark:bg-gray-900 dark:text-white shadow-md fixed top-0 left-0 w-full z-10 transition-colors">
@@ -128,7 +136,7 @@ const Navbar = ({ setShowLogin }) => {
           {!isCustomerLoggedIn ? (
             <button
               onClick={handleLoginClick}
-              className="bg-blue-500 rounded-full text-white px-6 hover:text-gray-400 transition"
+              className="bg-blue-500 rounded-full text-white px-6 py-2 hover:bg-blue-600 transition duration-300"
             >
               Login/Sign Up
             </button>

@@ -220,7 +220,7 @@ const CreateAccount = () => {
             </div>
 
                 {/* Password */}
-                <div className="md:col-span-2 space-y-2">
+                {/* <div className="md:col-span-2 space-y-2">
                   <label className="block text-sm font-medium text-gray-700">
                     Password
                   </label>
@@ -243,9 +243,9 @@ const CreateAccount = () => {
                         <FaEye className="h-5 w-5" />
                       )}
                     </button>
-                  </div>
-            </div>
-          </div>
+                  </div> */}
+            {/* </div>
+          </div> */}
 
           {/* Submit Button */}
               <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4">
@@ -275,6 +275,7 @@ const CreateAccount = () => {
                     'Create Account'
                   )}
             </button>
+          </div>
           </div>
         </form>
           </div>

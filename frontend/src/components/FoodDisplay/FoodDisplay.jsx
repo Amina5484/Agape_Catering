@@ -2,10 +2,10 @@ import React, { useEffect, useState, useContext } from 'react';
 import { StoreContext } from '../../context/StoreContext';
 import FoodItem from '../FoodItem/FoodItem';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 
 const FoodDisplay = () => {
-  const { food_list, fetchFoodList } =
-    useContext(StoreContext);
+  const { food_list, url, setFoodList } = useContext(StoreContext);
   const [categorizedFood, setCategorizedFood] = useState({});
   const [isLoading, setIsLoading] = useState(true);
 
@@ -13,7 +13,15 @@ const FoodDisplay = () => {
     const loadFoodList = async () => {
       try {
         setIsLoading(true);
-        await fetchFoodList();
+        const response = await axios.get(`${url}/api/food/list`);
+        if (response.data.success) {
+          const foodData = response.data.foods || [];
+          const processedFoods = foodData.map(food => ({
+            ...food,
+            image: food.image?.startsWith('/') ? food.image : `/uploads/${food.image}`
+          }));
+          setFoodList(processedFoods);
+        }
       } catch (error) {
         console.error('Error fetching food list:', error);
         toast.error('Failed to load menu items');
@@ -21,8 +29,9 @@ const FoodDisplay = () => {
         setIsLoading(false);
       }
     };
+
     loadFoodList();
-  }, []);
+  }, [url, setFoodList]);
 
   useEffect(() => {
     if (food_list && food_list.length > 0) {
@@ -30,7 +39,6 @@ const FoodDisplay = () => {
         const { category, subcategory } = item;
         if (!acc[category]) acc[category] = {};
         
-        // Handle items without subcategory
         const subcategoryKey = subcategory || 'General';
         
         if (!acc[category][subcategoryKey]) acc[category][subcategoryKey] = [];

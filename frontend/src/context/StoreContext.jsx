@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useContext } from 'react';
+import { createContext, useEffect, useState, useContext, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import axiosInstance from '../SystemAdmin/axiosInstance';
@@ -140,16 +140,17 @@ const StoreContextProvider = (props) => {
   };
 
   // Fetch cart from backend
-  const fetchCart = async () => {
-    if (!isLoggedIn || userRole !== 'Customer') return;
+  const fetchCart = useCallback(async () => {
+    if (!isLoggedIn || !userId || !token) {
+      setCartItems({});
+      return;
+    }
+
     try {
-      const response = await axios.post(
-        `${url}/api/cart/get`,
-        { userId },
+      const response = await axios.get(
+        `${url}/api/cart/${userId}`,
         {
-          headers: {
-            token: token,
-          },
+          headers: { token }
         }
       );
 
@@ -158,174 +159,154 @@ const StoreContextProvider = (props) => {
         const formattedCartData = {};
         if (response.data.cartData) {
           Object.entries(response.data.cartData).forEach(([key, value]) => {
-            const itemId = typeof key === 'object' ? key._id || key.toString() : key;
-            formattedCartData[itemId] = {
+            formattedCartData[key] = {
               quantity: value.quantity || 0,
               price: value.price || 0,
-              selectedType: value.selectedType || '',
+              selectedType: value.selectedType || ''
             };
           });
         }
-        // Only update if the data has changed
-        if (JSON.stringify(cartItems) !== JSON.stringify(formattedCartData)) {
-          setCartItems(formattedCartData);
-        }
+        setCartItems(formattedCartData);
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch cart');
       }
     } catch (error) {
       console.error('Error fetching cart:', error);
+      toast.error(error.message || 'Failed to load cart');
       setCartItems({});
     }
-  };
+  }, [isLoggedIn, userId, token, url]);
 
   // Add item to cart
-  const addToCart = async (itemId, quantity = 1, selectedType = '', price) => {
+  const addToCart = useCallback(async (itemId, quantity = 1, selectedType = '', price) => {
     if (!isLoggedIn) {
       toast.error('Please login to add items to cart');
-      return;
-    }
-
-    if (!itemId || !price) {
-      console.error('Missing required fields:', { itemId, price });
-      toast.error('Missing required item information');
-      return;
+      return false;
     }
 
     try {
       const stringItemId = itemId.toString();
       const response = await axios.post(
-        `${url}/api/cart/add`,
+        `${url}/api/cart/${userId}/cart`,
         {
           itemId: stringItemId,
           quantity: parseInt(quantity),
           selectedType,
-          price: parseFloat(price),
-          userId,
+          price: parseFloat(price)
         },
         {
-          headers: {
-            token: token,
-          },
+          headers: { token }
         }
       );
 
       if (response.data.success) {
-        const formattedCartData = {};
-        if (response.data.cartData) {
-          Object.entries(response.data.cartData).forEach(([key, value]) => {
-            const itemId = typeof key === 'object' ? key._id || key.toString() : key;
-            formattedCartData[itemId] = {
-              quantity: value.quantity || 0,
-              price: value.price || 0,
-              selectedType: value.selectedType || '',
-            };
-          });
-        }
-        // Only update if the data has changed
-        if (JSON.stringify(cartItems) !== JSON.stringify(formattedCartData)) {
-          setCartItems(formattedCartData);
-        }
-        toast.success('Added to cart successfully!');
+        await fetchCart(); // Refresh cart data
+        return true;
       } else {
-        throw new Error(response.data.message || 'Failed to add item');
+        throw new Error(response.data.message || 'Failed to add item to cart');
       }
     } catch (error) {
-      console.error('Error adding item to cart:', error);
+      console.error('Error adding to cart:', error);
       toast.error(error.response?.data?.message || 'Failed to add item to cart');
+      return false;
     }
-  };
+  }, [isLoggedIn, userId, token, url, fetchCart]);
 
   // Remove item from cart
-  const removeFromCart = async (itemId, removeAll = false) => {
-    if (!isLoggedIn) return;
-    if (!cartItems[itemId]) return;
+  const removeFromCart = useCallback(async (itemId) => {
+    if (!isLoggedIn) {
+      toast.error('Please login to remove items from cart');
+      return false;
+    }
+
+    try {
+      const stringItemId = itemId.toString();
+      const response = await axios.delete(
+        `${url}/api/cart/${userId}/${stringItemId}`,
+        {
+          headers: { token }
+        }
+      );
+
+      if (response.data.success) {
+        await fetchCart(); // Refresh cart data
+        return true;
+      } else {
+        throw new Error(response.data.message || 'Failed to remove item from cart');
+      }
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+      toast.error(error.response?.data?.message || 'Failed to remove item from cart');
+      return false;
+    }
+  }, [isLoggedIn, userId, token, url, fetchCart]);
+
+  // Place order
+  const placeOrder = async () => {
+    if (!isLoggedIn) {
+      toast.error('Please login to place an order');
+      return;
+    }
 
     try {
       const response = await axios.post(
-        `${url}/api/cart/remove`,
-        {
-          itemId,
-          removeAll,
-          userId,
-        },
+        `${url}/api/cart/${userId}/order`,
+        {},
         {
           headers: {
-            token: token,
+            token,
           },
         }
       );
 
       if (response.data.success) {
-        const formattedCartData = {};
-        if (response.data.cartData) {
-          Object.entries(response.data.cartData).forEach(([key, value]) => {
-            const itemId = typeof key === 'object' ? key._id || key.toString() : key;
-            formattedCartData[itemId] = {
-              quantity: value.quantity || 0,
-              price: value.price || 0,
-              selectedType: value.selectedType || '',
-            };
-          });
-        }
-        // Only update if the data has changed
-        if (JSON.stringify(cartItems) !== JSON.stringify(formattedCartData)) {
-          setCartItems(formattedCartData);
-        }
-        toast.success('Item removed from cart');
+        await fetchCart(); // Refresh cart after order placement
+        toast.success('Order placed successfully');
+        return { success: true };
       } else {
-        throw new Error(response.data.message || 'Failed to remove item');
+        throw new Error(response.data.message || 'Failed to place order');
       }
     } catch (error) {
-      console.error('Error removing item from cart:', error);
-      toast.error(error.response?.data?.message || 'Failed to remove item from cart');
+      console.error('Place order error:', error);
+      toast.error(error.response?.data?.message || 'Failed to place order');
+      return { success: false, message: error.response?.data?.message || 'Failed to place order' };
     }
   };
 
-  // Calculate total cart price
-  const totalCartPrice = Object.keys(cartItems).reduce((total, itemId) => {
-    const item = food_list.find((food) => food._id === itemId);
-    if (item) {
-      const cartItem = cartItems[itemId];
-      return total + (cartItem.price || item.price) * cartItem.quantity;
-    }
-    return total;
-  }, 0);
-
   // Fetch food list
-  const fetchFoodList = async () => {
+  const fetchFoodList = useCallback(async () => {
     try {
       const response = await axios.get(`${url}/api/food/list`);
       if (response.data.success) {
-        // Check if the response has a 'foods' property, otherwise use 'data'
-        const foodData = response.data.foods || response.data.data || [];
-        setFoodList(foodData);
-        return foodData;
+        setFoodList(response.data.foods || []);
       }
-      return [];
     } catch (error) {
       console.error('Error fetching food list:', error);
-      toast.error('Failed to fetch menu items');
+      toast.error('Failed to load food items');
       setFoodList([]);
-      return [];
     }
-  };
+  }, [url]);
 
-  // Fetch initial data
+  // Fetch food list on mount
   useEffect(() => {
     fetchFoodList();
-    if (isLoggedIn && userRole === 'Customer') {
-      fetchCart();
-    }
-  }, [isLoggedIn, userRole]);
+  }, [fetchFoodList]);
 
-  // Add a function to reset login state
+  // Fetch cart when login state changes
+  useEffect(() => {
+    if (isLoggedIn && userId && token) {
+      fetchCart();
+    } else {
+      setCartItems({});
+    }
+  }, [isLoggedIn, userId, token, fetchCart]);
+
+  // Reset login state function
   const resetLoginState = () => {
     setToken('');
     setUserRole('');
     setUserId('');
     setIsLoggedIn(false);
-    localStorage.removeItem('token');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userId');
   };
 
   // Context value
@@ -334,10 +315,6 @@ const StoreContextProvider = (props) => {
     setCartItems,
     food_list,
     setFoodList,
-    addToCart,
-    removeFromCart,
-    totalCartPrice,
-    url,
     token,
     setToken,
     isLoggedIn,
@@ -346,12 +323,15 @@ const StoreContextProvider = (props) => {
     setUserRole,
     userId,
     setUserId,
+    url,
     login,
     logout,
-    createUser,
-    fetchFoodList,
-    fetchCart,
     resetLoginState,
+    createUser,
+    fetchCart,
+    addToCart,
+    removeFromCart,
+    placeOrder,
   };
 
   return (

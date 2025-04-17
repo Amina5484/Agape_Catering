@@ -13,12 +13,15 @@ const addFood = async (req, res) => {
         .json({ success: false, message: 'Image upload failed' });
     }
 
+    // Save the full path to the image
+    const imagePath = `/uploads/${image_filename}`;
+
     const food = new foodModel({
       name: req.body.name,
       description: req.body.description,
       price: req.body.price,
       category: req.body.category,
-      image: image_filename,
+      image: imagePath, // Save the full path
     });
 
     await food.save();
@@ -36,15 +39,30 @@ const listFood = async (req, res) => {
     const foods = await foodModel.find({});
     const menuItems = await Menu.find({});
     
-    // Combine the results
-    const allFoods = [...foods, ...menuItems];
+    // Process image paths for both collections
+    const processedFoods = foods.map(food => ({
+      ...food.toObject(),
+      image: food.image?.startsWith('/') ? food.image : `/uploads/${food.image}`
+    }));
     
-    res.json({ success: true, data: allFoods });
+    const processedMenuItems = menuItems.map(item => ({
+      ...item.toObject(),
+      image: item.image?.startsWith('/') ? item.image : `/uploads/${item.image}`
+    }));
+    
+    // Combine the results
+    const allFoods = [...processedFoods, ...processedMenuItems];
+    
+    res.json({ 
+      success: true, 
+      foods: allFoods 
+    });
   } catch (error) {
     console.log(error);
-    res
-      .status(500)
-      .json({ success: false, message: 'Error fetching food list' });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error fetching food list' 
+    });
   }
 };
 
@@ -53,7 +71,7 @@ const removeFood = async (req, res) => {
   try {
     const food = await foodModel.findById(req.body.id);
     if (food) {
-      fs.unlink(`uploads/${food.image}`, () => {});
+      fs.unlink(`uploads/${food.image.replace('/uploads/', '')}`, () => {});
       await foodModel.findByIdAndDelete(req.body.id);
       res.json({ success: true, message: 'Food Removed' });
     } else {
@@ -82,10 +100,10 @@ const updateFood = async (req, res) => {
 
     // If a new image is uploaded, delete the old image
     if (image_filename) {
-      fs.unlink(`uploads/${food.image}`, (err) => {
+      fs.unlink(`uploads/${food.image.replace('/uploads/', '')}`, (err) => {
         if (err) console.log(err); // Log error if deletion fails
       });
-      food.image = image_filename; // Update with new image
+      food.image = `/uploads/${image_filename}`; // Update with new image
     }
 
     // Update the food item with the new data

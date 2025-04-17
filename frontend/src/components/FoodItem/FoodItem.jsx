@@ -14,8 +14,15 @@ const FoodItem = ({ name, description, image, price, _id }) => {
   const getImageUrl = (img) => {
     if (!img) return 'https://via.placeholder.com/300x200?text=No+Image';
     if (img.startsWith('http')) return img;
-    if (img.startsWith('/uploads/')) return `${url}${img}`;
-    return `${url}/uploads/${img}`;
+    
+    // Handle both cases: full path and filename only
+    if (img.includes('/')) {
+      // If it's a full path, ensure it starts with the correct URL
+      return img.startsWith('/') ? `${url}${img}` : `${url}/${img}`;
+    } else {
+      // If it's just a filename, add it to the uploads directory
+      return `${url}/uploads/${img}`;
+    }
   };
 
   const handleAddToCart = async () => {
