@@ -21,8 +21,8 @@ import CustomerOrders from './pages/Orders/Orders';
 
 // Chef Imports
 import ChefDashboard from './chef/ChefDashboard';
-import OrderManagement from './components/chef/OrderManagement';
-import InventoryManagement from './components/chef/InventoryManagement';
+import OrderManagement from './chef/OrderManagement';
+import InventoryManagement from './chef/InventoryManagement';
 
 // Manager Imports
 import ManagerSidebar from './manager/managerSidebar/managerSidebar';
@@ -45,7 +45,6 @@ import SystemSidebar from './SystemAdmin/SystemSidebar';
 import SystemNavbar from './SystemAdmin/SystemNavbar';
 import ViewUser from './SystemAdmin/ViewUser';
 import EditStaff from './SystemAdmin/EditStaff';
-//import ListStaff from './SystemAdmin/ListStaff';
 import AdminHome from './SystemAdmin/AdminHome';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
@@ -126,19 +125,12 @@ const AppContent = () => {
             }
           >
             <Route index element={<AdminHome />} />
-            <Route
-              path="create-account"
-              element={<CreateAccount url={url} />}
-            />
+            <Route path="create-account" element={<CreateAccount url={url} />}/>
             <Route path="edit-user" element={<EditStaff url={url} />} />
             <Route path="settings" element={<SystemSettings url={url} />} />
-            <Route
-              path="user-management"
-              element={<UserManagement url={url} />}
-            />
-            {/* <Route path="staff-list" element={<ListStaff url={url} />} /> */}
+            <Route path="user-management" element={<UserManagement url={url} />}/>
             <Route path="view-user" element={<ViewUser url={url} />} />
-            {/* <Route path="account-list" element={<AccountList />} /> */}
+           
           </Route>
 
           {/* Chef Routes */}
@@ -199,7 +191,7 @@ const AppContent = () => {
           
           <Route
             path="/customer/orders"
-            element={
+             element={
               <ProtectedRoute allowedRoles={['Customer']}>
                 <CustomerOrders />
               </ProtectedRoute>

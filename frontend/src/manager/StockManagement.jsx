@@ -30,7 +30,7 @@ const StockManagement = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (response.data && response.data.success) {
         setStockItems(response.data.data || []);
       } else if (Array.isArray(response.data)) {
@@ -80,12 +80,12 @@ const StockManagement = () => {
             },
           }
         );
-        
+
         if (response.data && response.data.success) {
           // Update the item in the local state
-          setStockItems(prevItems => 
-            prevItems.map(item => 
-              item._id === selectedItem._id 
+          setStockItems(prevItems =>
+            prevItems.map(item =>
+              item._id === selectedItem._id
                 ? { ...item, ...response.data.data }
                 : item
             )
@@ -113,7 +113,7 @@ const StockManagement = () => {
             },
           }
         );
-        
+
         if (response.data && response.data.success) {
           // Add the new item to the local state
           setStockItems(prevItems => [...prevItems, response.data.data]);
@@ -148,7 +148,7 @@ const StockManagement = () => {
             },
           }
         );
-        
+
         if (response.data && response.data.success) {
           // Remove the item from the local state
           setStockItems(prevItems => prevItems.filter(item => item._id !== itemId));
@@ -187,7 +187,7 @@ const StockManagement = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h2 className="text-3xl font-bold text-gray-800">Stock Management</h2>
-            
+
           </div>
           <button
             onClick={() => {

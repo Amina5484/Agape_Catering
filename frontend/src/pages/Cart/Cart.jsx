@@ -120,28 +120,48 @@ const Cart = () => {
         return;
       }
 
-      const response = await axios.post(
-        `${url}/api/cart/${change > 0 ? 'add' : 'remove'}`,
-        {
-          itemId,
-          quantity: change > 0 ? 1 : undefined,
-          price: change > 0 ? item.price : undefined,
-          userId,
-          selectedType: cartItems[itemId]?.selectedType || '',
-          removeAll: false
-        },
-        {
-          headers: {
-            token
+      if (change > 0) {
+        // Add item to cart
+        const response = await axios.post(
+          `${url}/api/cart/${userId}/cart`,
+          {
+            item: {
+              id: itemId,
+              quantity: 1,
+              price: item.price,
+              selectedType: cartItems[itemId]?.selectedType || ''
+            }
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           }
-        }
-      );
+        );
 
-      if (response.data.success) {
-        await fetchCart();
-        toast.success(change > 0 ? 'Item added to cart' : 'Item removed from cart');
+        if (response.data.success) {
+          await fetchCart();
+          toast.success('Item added to cart');
+        } else {
+          throw new Error(response.data.message || 'Failed to add item');
+        }
       } else {
-        throw new Error(response.data.message || 'Failed to update quantity');
+        // Remove item from cart
+        const response = await axios.delete(
+          `${url}/api/cart/${userId}/${itemId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        if (response.data.success) {
+          await fetchCart();
+          toast.success('Item removed from cart');
+        } else {
+          throw new Error(response.data.message || 'Failed to remove item');
+        }
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message || 'Failed to update quantity';
@@ -159,16 +179,11 @@ const Cart = () => {
     setUpdatingItemId(itemId);
 
     try {
-      const response = await axios.post(
-        `${url}/api/cart/remove`,
-        {
-          itemId,
-          removeAll: true,
-          userId
-        },
+      const response = await axios.delete(
+        `${url}/api/cart/${userId}/${itemId}`,
         {
           headers: {
-            token
+            Authorization: `Bearer ${token}`
           }
         }
       );
@@ -204,7 +219,7 @@ const Cart = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-center p-8">
         <div className="text-red-500 text-xl mb-4 font-medium">{error}</div>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md"
         >
@@ -232,7 +247,7 @@ const Cart = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-8">
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
         <h2 className="text-3xl font-bold text-gray-800 mb-8">Your Cart</h2>
-        
+
         {/* Cart Header */}
         <div className="hidden sm:grid grid-cols-7 font-bold border-b border-gray-200 py-4 text-gray-600">
           <div>Item</div>
@@ -248,7 +263,7 @@ const Cart = () => {
         {cartData.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-xl text-gray-600 mb-4">Your cart is empty</p>
-            <button 
+            <button
               onClick={() => navigate('/')}
               className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md"
             >
@@ -270,9 +285,8 @@ const Cart = () => {
                 return (
                   <div
                     key={itemId}
-                    className={`grid grid-cols-4 sm:grid-cols-7 items-center border-b border-gray-200 py-4 gap-4 hover:bg-gray-50 transition-colors ${
-                      isItemUpdating ? 'opacity-50' : ''
-                    }`}
+                    className={`grid grid-cols-4 sm:grid-cols-7 items-center border-b border-gray-200 py-4 gap-4 hover:bg-gray-50 transition-colors ${isItemUpdating ? 'opacity-50' : ''
+                      }`}
                   >
                     <div className="relative">
                       <img
@@ -288,15 +302,14 @@ const Cart = () => {
                     <p className="col-span-2 sm:col-span-1 font-medium text-gray-800">{item.name}</p>
                     <p className="hidden sm:block text-gray-600">{selectedType || 'Standard'}</p>
                     <p className="hidden sm:block text-gray-600">{price} ETB</p>
-                    
+
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleQuantityChange(itemId, -1)}
-                        className={`w-8 h-8 flex items-center justify-center rounded-lg shadow-sm transition-colors ${
-                          quantity <= 1 || isItemUpdating
+                        className={`w-8 h-8 flex items-center justify-center rounded-lg shadow-sm transition-colors ${quantity <= 1 || isItemUpdating
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             : 'bg-red-100 text-red-600 hover:bg-red-200'
-                        }`}
+                          }`}
                         disabled={quantity <= 1 || isItemUpdating}
                       >
                         -
@@ -304,26 +317,24 @@ const Cart = () => {
                       <p className="font-medium text-gray-800">{quantity}</p>
                       <button
                         onClick={() => handleQuantityChange(itemId, 1)}
-                        className={`w-8 h-8 flex items-center justify-center rounded-lg shadow-sm transition-colors ${
-                          isItemUpdating
+                        className={`w-8 h-8 flex items-center justify-center rounded-lg shadow-sm transition-colors ${isItemUpdating
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             : 'bg-green-100 text-green-600 hover:bg-green-200'
-                        }`}
+                          }`}
                         disabled={isItemUpdating}
                       >
                         +
                       </button>
                     </div>
-                    
+
                     <p className="hidden sm:block text-gray-800 font-medium">
                       {itemTotal} ETB
                     </p>
-                    
+
                     <button
                       onClick={() => handleRemoveItem(itemId)}
-                      className={`text-red-600 hover:text-red-800 transition-colors ${
-                        isItemUpdating ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
+                      className={`text-red-600 hover:text-red-800 transition-colors ${isItemUpdating ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
                       disabled={isItemUpdating}
                       title="Remove Item"
                     >
@@ -345,9 +356,8 @@ const Cart = () => {
               <button
                 onClick={handleCheckout}
                 disabled={isCheckingOut || isUpdating}
-                className={`w-full py-3 px-4 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-md ${
-                  (isCheckingOut || isUpdating) ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                className={`w-full py-3 px-4 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-md ${(isCheckingOut || isUpdating) ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
               >
                 {isCheckingOut ? 'Processing...' : 'Proceed to Checkout'}
               </button>

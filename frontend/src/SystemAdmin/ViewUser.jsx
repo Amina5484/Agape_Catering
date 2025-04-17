@@ -27,13 +27,13 @@ const ViewUser = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (response.data && Array.isArray(response.data)) {
         setUsers(response.data);
       } else {
         toast.error("Invalid response format");
       }
-      } catch (error) {
+    } catch (error) {
       console.error("Error fetching users:", error);
       if (error.response?.status === 401) {
         toast.error("Session expired. Please login again");
@@ -75,9 +75,8 @@ const ViewUser = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.phone || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.isactivated ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.isactivated ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
                       {user.isactivated ? 'Active' : 'Inactive'}
                     </span>
                   </td>

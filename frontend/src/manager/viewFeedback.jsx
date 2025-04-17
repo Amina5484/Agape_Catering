@@ -74,9 +74,9 @@ const ViewFeedback = () => {
 
   const filteredFeedbacks = feedbackList.filter(feedback => {
     const matchesSearch = feedback.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         feedback.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         feedback.feedback?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      feedback.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      feedback.feedback?.toLowerCase().includes(searchTerm.toLowerCase());
+
     if (selectedFilter === 'all') return matchesSearch;
     if (selectedFilter === 'today') {
       const today = new Date().toDateString();
@@ -109,7 +109,7 @@ const ViewFeedback = () => {
             <h2 className="text-3xl font-bold text-slate-800">Customer Feedback</h2>
             <p className="text-slate-600 mt-1">Manage and review customer feedback</p>
           </div>
-          
+
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
             <div className="relative w-full md:w-64">
               <input
@@ -237,7 +237,7 @@ const ViewFeedback = () => {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="bg-slate-50 rounded-lg p-4">
                     <p className="text-slate-800 leading-relaxed">{feedback.feedback}</p>
                   </div>

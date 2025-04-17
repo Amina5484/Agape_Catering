@@ -74,12 +74,12 @@ const FeedbackForm = () => {
 
       if (response.data) {
         toast.success('Thank you for your feedback!');
-    setFormData({
+        setFormData({
           name: '',
           email: '',
           phone: '',
-      feedback: '',
-    });
+          feedback: '',
+        });
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
@@ -99,7 +99,7 @@ const FeedbackForm = () => {
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-6 sm:p-8">
-      <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -112,9 +112,8 @@ const FeedbackForm = () => {
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Your Name"
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${
-                      errors.name ? 'border-red-500 bg-red-50' : 'border-slate-200'
-                    }`}
+                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${errors.name ? 'border-red-500 bg-red-50' : 'border-slate-200'
+                      }`}
                   />
                   {errors.name && (
                     <p className="mt-1 text-sm text-red-500">{errors.name}</p>
@@ -132,9 +131,8 @@ const FeedbackForm = () => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Your Email"
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${
-                      errors.email ? 'border-red-500 bg-red-50' : 'border-slate-200'
-                    }`}
+                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${errors.email ? 'border-red-500 bg-red-50' : 'border-slate-200'
+                      }`}
                   />
                   {errors.email && (
                     <p className="mt-1 text-sm text-red-500">{errors.email}</p>
@@ -152,9 +150,8 @@ const FeedbackForm = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="Your Phone Number"
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${
-                      errors.phone ? 'border-red-500 bg-red-50' : 'border-slate-200'
-                    }`}
+                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${errors.phone ? 'border-red-500 bg-red-50' : 'border-slate-200'
+                      }`}
                   />
                   {errors.phone && (
                     <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
@@ -165,26 +162,25 @@ const FeedbackForm = () => {
                   <div className="absolute top-3 left-3 flex items-start pointer-events-none">
                     <FaComment className="h-5 w-5 text-slate-400" />
                   </div>
-          <textarea
-            id="feedback"
-            name="feedback"
-            value={formData.feedback}
-            onChange={handleChange}
+                  <textarea
+                    id="feedback"
+                    name="feedback"
+                    value={formData.feedback}
+                    onChange={handleChange}
                     placeholder="Share your thoughts with us..."
                     rows="6"
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${
-                      errors.feedback ? 'border-red-500 bg-red-50' : 'border-slate-200'
-                    }`}
+                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${errors.feedback ? 'border-red-500 bg-red-50' : 'border-slate-200'
+                      }`}
                   />
-          {errors.feedback && (
+                  {errors.feedback && (
                     <p className="mt-1 text-sm text-red-500">{errors.feedback}</p>
-          )}
+                  )}
                 </div>
-        </div>
+              </div>
 
               <div className="pt-4">
-        <button
-          type="submit"
+                <button
+                  type="submit"
                   disabled={loading}
                   className="w-full flex items-center justify-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
@@ -199,12 +195,12 @@ const FeedbackForm = () => {
                   ) : (
                     <div className="flex items-center">
                       <FaPaperPlane className="mr-2" />
-          Submit Feedback
+                      Submit Feedback
                     </div>
                   )}
-        </button>
+                </button>
               </div>
-      </form>
+            </form>
           </div>
         </div>
       </div>

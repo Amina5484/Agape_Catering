@@ -63,7 +63,7 @@ const ChefProfile = () => {
     if (!formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
-    
+
     // Password validation only if any password field is filled
     if (formData.currentPassword || formData.newPassword || formData.confirmPassword) {
       if (!formData.currentPassword) newErrors.currentPassword = 'Current password is required';
@@ -149,9 +149,8 @@ const ChefProfile = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.name ? 'border-red-500' : 'border-slate-300'
-                    }`}
+                    className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-500' : 'border-slate-300'
+                      }`}
                   />
                 </div>
                 {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
@@ -172,9 +171,8 @@ const ChefProfile = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.email ? 'border-red-500' : 'border-slate-300'
-                    }`}
+                    className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? 'border-red-500' : 'border-slate-300'
+                      }`}
                   />
                 </div>
                 {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
@@ -195,9 +193,8 @@ const ChefProfile = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.phone ? 'border-red-500' : 'border-slate-300'
-                    }`}
+                    className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.phone ? 'border-red-500' : 'border-slate-300'
+                      }`}
                   />
                 </div>
                 {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
@@ -206,7 +203,7 @@ const ChefProfile = () => {
               {/* Password Change Section */}
               <div className="border-t border-slate-200 pt-6">
                 <h3 className="text-lg font-medium text-slate-800 mb-4">Change Password</h3>
-                
+
                 {/* Current Password */}
                 <div className="mb-4">
                   <label htmlFor="currentPassword" className="block text-sm font-medium text-slate-700">
@@ -222,9 +219,8 @@ const ChefProfile = () => {
                       name="currentPassword"
                       value={formData.currentPassword}
                       onChange={handleChange}
-                      className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.currentPassword ? 'border-red-500' : 'border-slate-300'
-                      }`}
+                      className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.currentPassword ? 'border-red-500' : 'border-slate-300'
+                        }`}
                     />
                   </div>
                   {errors.currentPassword && (
@@ -247,9 +243,8 @@ const ChefProfile = () => {
                       name="newPassword"
                       value={formData.newPassword}
                       onChange={handleChange}
-                      className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.newPassword ? 'border-red-500' : 'border-slate-300'
-                      }`}
+                      className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.newPassword ? 'border-red-500' : 'border-slate-300'
+                        }`}
                     />
                   </div>
                   {errors.newPassword && (
@@ -272,9 +267,8 @@ const ChefProfile = () => {
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.confirmPassword ? 'border-red-500' : 'border-slate-300'
-                      }`}
+                      className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.confirmPassword ? 'border-red-500' : 'border-slate-300'
+                        }`}
                     />
                   </div>
                   {errors.confirmPassword && (

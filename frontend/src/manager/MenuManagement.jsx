@@ -60,14 +60,14 @@ const MenuManagement = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       // Ensure each menu item has both category and subcategory
       const processedItems = response.data.map(item => ({
         ...item,
         category: item.category || 'Uncategorized',
         subcategory: item.subcategory || 'General'
       }));
-      
+
       setMenuItems(processedItems);
     } catch (error) {
       console.error('Error fetching menu items:', error);
@@ -114,7 +114,7 @@ const MenuManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
@@ -122,7 +122,7 @@ const MenuManagement = () => {
       formDataToSend.append('description', formData.description);
       formDataToSend.append('category', formData.category);
       formDataToSend.append('subcategory', formData.subcategory);
-      
+
       // Only append image if it's a new file
       if (formData.image instanceof File) {
         formDataToSend.append('image', formData.image);
@@ -158,14 +158,14 @@ const MenuManagement = () => {
         );
         toast.success('Menu item added successfully');
       }
-      
+
       setIsModalOpen(false);
       resetForm();
       fetchMenuItems();
-      
+
       // Refresh the food list in the StoreContext to update the home page and customer page
       await fetchFoodList();
-      
+
     } catch (error) {
       console.error('Error saving menu item:', error);
       toast.error(error.response?.data?.message || 'Failed to save menu item');
@@ -202,7 +202,7 @@ const MenuManagement = () => {
         });
         toast.success('Menu item deleted successfully');
         fetchMenuItems();
-        
+
         // Refresh the food list in the StoreContext to update the home page and customer page
         await fetchFoodList();
       } catch (error) {
@@ -216,23 +216,31 @@ const MenuManagement = () => {
   const groupedMenuItems = menuItems.reduce((acc, item) => {
     const category = item.category || 'Uncategorized';
     const subcategory = item.subcategory || 'General';
-    
+
     if (!acc[category]) {
       acc[category] = {};
     }
-    
+
     if (!acc[category][subcategory]) {
       acc[category][subcategory] = [];
     }
-    
-    acc[category][subcategory].push(item);
+
+    // Check if item already exists in this subcategory
+    const itemExists = acc[category][subcategory].some(
+      existingItem => existingItem.name === item.name
+    );
+
+    if (!itemExists) {
+      acc[category][subcategory].push(item);
+    }
+
     return acc;
   }, {});
 
   // Filter menu items based on search term and selected category
   const filteredMenuItems = menuItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase());
+      item.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !selectedCategory || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -251,7 +259,7 @@ const MenuManagement = () => {
         {/* Header Section */}
         <div className="flex justify-between items-center mb-8">
           <div>
-          <h2 className="text-3xl font-bold text-gray-800">Menu Management</h2>
+            <h2 className="text-3xl font-bold text-gray-800">Menu Management</h2>
             <p className="text-gray-600 mt-1">Manage your menu items and categories</p>
           </div>
           <button
@@ -285,7 +293,7 @@ const MenuManagement = () => {
             </div>
             <div className="flex items-center space-x-2">
               <FaFilter className="text-gray-400" />
-              <select 
+              <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -299,99 +307,67 @@ const MenuManagement = () => {
               </select>
             </div>
           </div>
-              </div>
-              
-        {/* Table Display */}
+        </div>
+
+        {/* Menu Items Display */}
         <div className="bg-white rounded-xl shadow-xl overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-indigo-600">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Image</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Name</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Category</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Subcategory</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Price</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Description</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredMenuItems.length > 0 ? (
-                filteredMenuItems.map((item) => (
-                  <tr key={item._id} className="hover:bg-gray-50 transition duration-150">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                            {item.image ? (
-                              <img 
-                          src={`http://localhost:4000/uploads/${item.image}`} 
-                                alt={item.name} 
-                          className="h-16 w-16 rounded-md object-cover shadow-sm"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.style.display = 'none';
-                            const placeholderDiv = document.createElement('div');
-                            placeholderDiv.className = 'h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center shadow-sm';
-                            placeholderDiv.innerHTML = '<span class="text-gray-500 text-xs">No Image</span>';
-                            e.target.parentNode.appendChild(placeholderDiv);
-                          }}
-                              />
-                            ) : (
-                        <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center shadow-sm">
-                          <span className="text-gray-500 text-xs">No Image</span>
-                              </div>
-                            )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                        {item.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                        {item.subcategory}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-indigo-600">Birr {item.price}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500 max-w-xs truncate">{item.description}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
-                            <button 
-                              onClick={() => handleEdit(item)}
-                        className="text-indigo-600 hover:text-indigo-900 transition duration-300 hover:scale-110 flex items-center"
-                            >
-                        <FaEdit className="mr-1" />
-                              Edit
-                            </button>
-                            <button 
-                              onClick={() => handleDelete(item._id)}
-                        className="text-red-600 hover:text-red-900 transition duration-300 hover:scale-110 flex items-center"
-                            >
-                        <FaTrash className="mr-1" />
-                              Delete
-                            </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
-                    <div className="flex flex-col items-center space-y-2">
-                      <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <p className="text-lg">No menu items found matching your criteria</p>
-                      <p className="text-sm text-gray-500">Try adjusting your search or filter</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          {Object.keys(groupedMenuItems).map((category) => (
+            <div key={category} className="mb-8">
+              <h3 className="text-2xl font-bold text-gray-800 p-6 border-b border-gray-200">
+                {category}
+              </h3>
+
+              {Object.keys(groupedMenuItems[category]).map((subcategory) => (
+                <div key={subcategory} className="p-6 border-b border-gray-200 last:border-b-0">
+                  <h4 className="text-lg font-semibold text-gray-700 mb-4">
+                    {subcategory}
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {groupedMenuItems[category][subcategory].map((item) => (
+                      <div
+                        key={item._id}
+                        className="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow duration-300"
+                      >
+                        <div className="flex items-start space-x-4">
+                          {item.image && (
+                            <img
+                              src={`http://localhost:4000/uploads/${item.image}`}
+                              alt={item.name}
+                              className="w-20 h-20 object-cover rounded-lg"
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h5 className="text-lg font-semibold text-gray-800">{item.name}</h5>
+                            <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                            <p className="text-lg font-bold text-indigo-600 mt-2">
+                              Birr {item.price}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex justify-end space-x-2 mt-4">
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="text-indigo-600 hover:text-indigo-900 transition duration-300 hover:scale-110 flex items-center"
+                          >
+                            <FaEdit className="mr-1" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item._id)}
+                            className="text-red-600 hover:text-red-900 transition duration-300 hover:scale-110 flex items-center"
+                          >
+                            <FaTrash className="mr-1" />
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -415,7 +391,7 @@ const MenuManagement = () => {
                 </svg>
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>

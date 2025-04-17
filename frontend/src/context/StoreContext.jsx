@@ -143,12 +143,11 @@ const StoreContextProvider = (props) => {
   const fetchCart = async () => {
     if (!isLoggedIn || userRole !== 'Customer') return;
     try {
-      const response = await axios.post(
-        `${url}/api/cart/get`,
-        { userId },
+      const response = await axios.get(
+        `${url}/api/cart/${userId}`,
         {
           headers: {
-            token: token,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -156,8 +155,8 @@ const StoreContextProvider = (props) => {
       if (response.data.success) {
         // Convert cart data to proper format
         const formattedCartData = {};
-        if (response.data.cartData) {
-          Object.entries(response.data.cartData).forEach(([key, value]) => {
+        if (response.data.cart) {
+          Object.entries(response.data.cart).forEach(([key, value]) => {
             const itemId = typeof key === 'object' ? key._id || key.toString() : key;
             formattedCartData[itemId] = {
               quantity: value.quantity || 0,
@@ -173,6 +172,7 @@ const StoreContextProvider = (props) => {
       }
     } catch (error) {
       console.error('Error fetching cart:', error);
+      toast.error(error.response?.data?.message || 'Failed to fetch cart');
       setCartItems({});
     }
   };
@@ -191,27 +191,27 @@ const StoreContextProvider = (props) => {
     }
 
     try {
-      const stringItemId = itemId.toString();
       const response = await axios.post(
-        `${url}/api/cart/add`,
+        `${url}/api/cart/${userId}/cart`,
         {
-          itemId: stringItemId,
-          quantity: parseInt(quantity),
-          selectedType,
-          price: parseFloat(price),
-          userId,
+          item: {
+            id: itemId.toString(),
+            quantity: parseInt(quantity),
+            selectedType,
+            price: parseFloat(price),
+          }
         },
         {
           headers: {
-            token: token,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       if (response.data.success) {
         const formattedCartData = {};
-        if (response.data.cartData) {
-          Object.entries(response.data.cartData).forEach(([key, value]) => {
+        if (response.data.cart) {
+          Object.entries(response.data.cart).forEach(([key, value]) => {
             const itemId = typeof key === 'object' ? key._id || key.toString() : key;
             formattedCartData[itemId] = {
               quantity: value.quantity || 0,
@@ -225,12 +225,16 @@ const StoreContextProvider = (props) => {
           setCartItems(formattedCartData);
         }
         toast.success('Added to cart successfully!');
+        return { success: true };
       } else {
-        throw new Error(response.data.message || 'Failed to add item');
+        toast.error(response.data.message || 'Failed to add item to cart');
+        return { success: false, message: response.data.message };
       }
     } catch (error) {
       console.error('Error adding item to cart:', error);
-      toast.error(error.response?.data?.message || 'Failed to add item to cart');
+      const errorMessage = error.response?.data?.message || 'Failed to add item to cart';
+      toast.error(errorMessage);
+      return { success: false, message: errorMessage };
     }
   };
 
@@ -240,24 +244,19 @@ const StoreContextProvider = (props) => {
     if (!cartItems[itemId]) return;
 
     try {
-      const response = await axios.post(
-        `${url}/api/cart/remove`,
-        {
-          itemId,
-          removeAll,
-          userId,
-        },
+      const response = await axios.delete(
+        `${url}/api/cart/${userId}/${itemId}`,
         {
           headers: {
-            token: token,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       if (response.data.success) {
         const formattedCartData = {};
-        if (response.data.cartData) {
-          Object.entries(response.data.cartData).forEach(([key, value]) => {
+        if (response.data.cart) {
+          Object.entries(response.data.cart).forEach(([key, value]) => {
             const itemId = typeof key === 'object' ? key._id || key.toString() : key;
             formattedCartData[itemId] = {
               quantity: value.quantity || 0,

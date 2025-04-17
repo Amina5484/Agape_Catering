@@ -35,7 +35,7 @@ const SystemSettings = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (data) {
         setFormData(prev => ({
           ...prev,
@@ -153,7 +153,7 @@ const SystemSettings = () => {
     <div className="p-6 ml-64">
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Admin Profile Management</h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex items-center space-x-4 mb-6">
             <div className="relative">
@@ -199,7 +199,7 @@ const SystemSettings = () => {
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700">Email</label>
               <input
@@ -257,18 +257,18 @@ const SystemSettings = () => {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 placeholder="Confirm new password"
               />
-        </div>
-        </div>
+            </div>
+          </div>
 
           <div className="flex justify-end">
             <button
               type="submit"
               className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
-          Save Changes
-        </button>
+              Save Changes
+            </button>
           </div>
-      </form>
+        </form>
       </div>
     </div>
   );

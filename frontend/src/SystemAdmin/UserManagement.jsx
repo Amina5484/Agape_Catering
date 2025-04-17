@@ -39,7 +39,7 @@ const UserManagement = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (response.data && Array.isArray(response.data)) {
         setUsers(response.data);
       } else {
@@ -92,7 +92,7 @@ const UserManagement = () => {
           }
         );
         toast.success("User updated successfully");
-    } else {
+      } else {
         await axios.post(
           "http://localhost:4000/api/users",
           formData,
@@ -157,7 +157,7 @@ const UserManagement = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">User Management</h2>
-         
+
         </div>
 
         {isEditing && (
@@ -169,36 +169,36 @@ const UserManagement = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Name</label>
-        <input
-          type="text"
-          name="name"
+                  <input
+                    type="text"
+                    name="name"
                     value={formData.name}
-          onChange={handleChange}
+                    onChange={handleChange}
                     className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
-        />
+                    required
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Email</label>
-        <input
-          type="email"
-          name="email"
+                  <input
+                    type="email"
+                    name="email"
                     value={formData.email}
-          onChange={handleChange}
+                    onChange={handleChange}
                     className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
-        />
+                    required
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Phone</label>
-        <input
+                  <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
-          onChange={handleChange}
+                    onChange={handleChange}
                     className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
-        />
+                    required
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Role</label>
@@ -212,7 +212,7 @@ const UserManagement = () => {
                     <option value="">Select a role</option>
                     <option value="Excutive Chef">Excutive Chef</option>
                     <option value="Catering Manager">Catering Manager</option>
-                   
+
                   </select>
                 </div>
               </div>
@@ -249,10 +249,10 @@ const UserManagement = () => {
                   className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                 >
                   {selectedUser ? "Update User" : "Create User"}
-        </button>
+                </button>
               </div>
-      </form>
-            </div>
+            </form>
+          </div>
         )}
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -273,19 +273,17 @@ const UserManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                        user.role === 'manager' ? 'bg-blue-100 text-blue-800' :
-                        user.role === 'staff' ? 'bg-green-100 text-green-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                          user.role === 'manager' ? 'bg-blue-100 text-blue-800' :
+                            user.role === 'staff' ? 'bg-green-100 text-green-800' :
+                              'bg-gray-100 text-gray-800'
+                        }`}>
                         {user.role}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.isactivated ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.isactivated ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
                         {user.isactivated ? 'Active' : 'Inactive'}
                       </span>
                     </td>
@@ -304,15 +302,15 @@ const UserManagement = () => {
                           title="Edit User"
                         >
                           <FaEdit className="w-4 h-4" />
-              </button>
+                        </button>
                         <button
                           onClick={() => handleDelete(user._id)}
                           className="text-red-600 hover:text-red-900"
                           title="Delete User"
                         >
                           <FaTrash className="w-4 h-4" />
-              </button>
-            </div>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
