@@ -55,6 +55,7 @@ const isValidPhoneNumber = (phone) => {
 
 import { sendEmail } from '../utils/sendEmail.js';
 import crypto from 'crypto'; // for random password
+import welcomeEmailHTML from '../email_templates/welcomeEmail.js'; // for email template
 
 const generateRandomPassword = () => {
   return crypto.randomBytes(6).toString('base64'); // Generates a short secure password
@@ -90,8 +91,9 @@ const registerUser = async (req, res, role) => {
       await sendEmail({
         to: email,
         subject: 'Your Account Credentials',
-        text: `Hello ${name},\n\nYou have been registered as a ${role}.\nYour temporary password is: ${userPassword}\nPlease change it after logging in.\n\nRegards,\nCatering App Team`
+        html: welcomeEmailHTML(name, email, userPassword, role)
       });
+      
     }
 
     const user = new User({ name, email, phone, password: userPassword, role });
