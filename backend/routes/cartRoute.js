@@ -10,20 +10,20 @@ const cartRouter = express.Router();
  *     summary: Add item to cart
  *     tags: [Cart]
  */
-cartRouter.post('/:userId/cart', addItemToCart);
+cartRouter.post('/:userId', addItemToCart);
 
 /**
  * @swagger
- * /api/cart/{userId}/{itemId}:
+ * /api/cart/:
  *   delete:
  *     summary: Remove item from cart
  *     tags: [Cart]
  */
-cartRouter.delete('/:userId/:itemId', removeItemFromCart);
+cartRouter.delete('/', removeItemFromCart);
 
 /**
  * @swagger
- * /api/cart/{userId}:
+ * /api/:
  *   get:
  *     summary: View cart
  *     tags: [Cart]
