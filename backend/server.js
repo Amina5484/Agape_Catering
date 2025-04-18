@@ -39,6 +39,7 @@ app.use(express.json()); // For parsing application/json
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ✅ Swagger Configuration with Authorization
 const swaggerOptions = {
@@ -84,7 +85,6 @@ app.use('/api/food', foodRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRoutes);
 app.use('/api/feedback', feedbackRouter);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // ✅ Database Connection
 mongoose
   .connect(process.env.MONGODB_URI, {

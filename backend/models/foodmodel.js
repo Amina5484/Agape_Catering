@@ -8,6 +8,7 @@ const foodSchema = new mongoose.Schema({
   image: { type: String, required: true },
 });
 
-const Food = mongoose.model('Food', foodSchema);
+// Check if the model already exists before creating it
+const Food = mongoose.models.Food || mongoose.model('Food', foodSchema);
 
 export default Food;

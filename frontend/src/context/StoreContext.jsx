@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useContext, useCallback } from 'react';
+import { createContext, useEffect, useState, useContext, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import axiosInstance from '../SystemAdmin/axiosInstance';
@@ -15,16 +15,16 @@ export const useStore = () => {
 };
 
 const StoreContextProvider = (props) => {
-  const [cartItems, setCartItems] = useState({});
+  const [cartItems, setCartItems] = useState([]);
   const [food_list, setFoodList] = useState([]);
-  const [token, setToken] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState('');
-  const [userId, setUserId] = useState('');
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [userRole, setUserRole] = useState(localStorage.getItem('userRole'));
+  const [userId, setUserId] = useState(localStorage.getItem('userId'));
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
 
   const url = 'http://localhost:4000';
 
-  // Check login state on mount
+  // Check login state on mount and when token changes
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedRole = localStorage.getItem('userRole');
@@ -36,285 +36,232 @@ const StoreContextProvider = (props) => {
       setUserId(storedUserId);
       setIsLoggedIn(true);
     } else {
-      // Clear any partial data
-      localStorage.removeItem('token');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userId');
-      setToken('');
-      setUserRole('');
-      setUserId('');
-      setIsLoggedIn(false);
+      resetLoginState();
     }
-  }, []);
+  }, [token]);
 
   // Login function
   const login = async (email, password) => {
     try {
-      console.log('Attempting login with:', { email, password: '***' });
       const response = await axiosInstance.post('/auth/login', {
         email,
         password,
       });
 
-      console.log('Login response:', response.data);
-
       if (response.data.success) {
         const { token, user } = response.data;
+        localStorage.setItem('token', token);
+        localStorage.setItem('userRole', user.role);
+        localStorage.setItem('userId', user._id);
+
         setToken(token);
         setUserRole(user.role);
         setUserId(user._id);
         setIsLoggedIn(true);
-        localStorage.setItem('token', token);
-        localStorage.setItem('userRole', user.role);
-        localStorage.setItem('userId', user._id);
+
         return { success: true, user };
       }
       return { success: false, message: response.data.message };
     } catch (error) {
-      console.error('Login error details:', error.response?.data || error);
-      const errorMessage =
-        error.response?.data?.message ||
-        'Login failed. Please check your credentials.';
-      return {
-        success: false,
-        message: errorMessage,
-      };
+      const errorMessage = error.response?.data?.message || 'Login failed. Please check your credentials.';
+      return { success: false, message: errorMessage };
     }
   };
 
   // Logout function
   const logout = () => {
-    // Clear all state
+    resetLoginState();
+    toast.success('Logged out successfully');
+    window.location.href = '/';
+  };
+
+  // Reset login state
+  const resetLoginState = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
     setToken('');
     setUserRole('');
     setUserId('');
     setIsLoggedIn(false);
-    setCartItems({});
-    setFoodList([]);
-
-    // Clear localStorage
-    localStorage.removeItem('token');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('user');
-
-    // Show success message
-    toast.success('Logged out successfully');
-
-    // Force a page reload to ensure all states are reset
-    window.location.href = '/';
-  };
-
-  // Create user account (for system admin only)
-  const createUser = async (userData) => {
-    if (userRole !== 'system_admin') {
-      return {
-        success: false,
-        message: 'Only system admin can create new users',
-      };
-    }
-
-    try {
-      const response = await axios.post(
-        `${url}/api/auth/register/${userData.role}`,
-        userData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.data.success) {
-        toast.success('User created successfully');
-        return { success: true };
-      }
-      return { success: false, message: response.data.message };
-    } catch (error) {
-      console.error('Create user error:', error);
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Failed to create user',
-      };
-    }
+    setCartItems([]);
   };
 
   // Fetch cart from backend
   const fetchCart = useCallback(async () => {
-    if (!isLoggedIn || !userId || !token) {
-      setCartItems({});
+    if (!token || !userId) {
+      setCartItems([]);
       return;
     }
 
     try {
-      const response = await axios.get(
-        `${url}/api/cart/${userId}`,
-        {
-          headers: { token }
-        }
-      );
+      const response = await axios.get(`${url}/api/cart/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
       if (response.data.success) {
-        // Convert cart data to proper format
-        const formattedCartData = {};
-        if (response.data.cartData) {
-          Object.entries(response.data.cartData).forEach(([key, value]) => {
-            formattedCartData[key] = {
-              quantity: value.quantity || 0,
-              price: value.price || 0,
-              selectedType: value.selectedType || ''
-            };
-          });
-        }
-        setCartItems(formattedCartData);
-      } else {
-        throw new Error(response.data.message || 'Failed to fetch cart');
+        // Convert the cartData object to an array format
+        const cartData = response.data.cartData;
+        const cartItemsArray = Object.entries(cartData).map(([itemId, itemData]) => {
+          // Find the corresponding food item from food_list
+          const foodItem = food_list.find(food => food._id === itemId);
+          return {
+            itemId,
+            quantity: itemData.quantity,
+            selectedType: itemData.selectedType,
+            price: itemData.price,
+            // Include food item details if found
+            ...(foodItem && {
+              name: foodItem.name,
+              image: foodItem.image,
+              description: foodItem.description
+            })
+          };
+        });
+
+        setCartItems(cartItemsArray);
       }
-    } catch (error) {
-      console.error('Error fetching cart:', error);
-      toast.error(error.message || 'Failed to load cart');
-      setCartItems({});
+    } catch {
+      setCartItems([]);
     }
-  }, [isLoggedIn, userId, token, url]);
+  }, [token, userId, url, food_list]);
 
   // Add item to cart
-  const addToCart = useCallback(async (itemId, quantity = 1, selectedType = '', price) => {
-    if (!isLoggedIn) {
+  const addToCart = async (foodId, quantity, instructions, price) => {
+    if (!token || !userId) {
       toast.error('Please login to add items to cart');
-      return false;
+      return;
     }
 
     try {
-      const stringItemId = itemId.toString();
       const response = await axios.post(
         `${url}/api/cart/${userId}/cart`,
         {
-          itemId: stringItemId,
+          itemId: foodId,
           quantity: parseInt(quantity),
-          selectedType,
+          selectedType: instructions,
           price: parseFloat(price)
         },
-        {
-          headers: { token }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       if (response.data.success) {
-        await fetchCart(); // Refresh cart data
-        return true;
-      } else {
-        throw new Error(response.data.message || 'Failed to add item to cart');
+        await fetchCart();
+        toast.success('Item added to cart successfully');
       }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast.error(error.response?.data?.message || 'Failed to add item to cart');
-      return false;
+    } catch {
+      toast.error('Failed to add item to cart');
     }
-  }, [isLoggedIn, userId, token, url, fetchCart]);
+  };
 
   // Remove item from cart
-  const removeFromCart = useCallback(async (itemId) => {
-    if (!isLoggedIn) {
-      toast.error('Please login to remove items from cart');
-      return false;
-    }
+  const removeFromCart = async (foodId) => {
+    if (!token || !userId) return;
 
     try {
-      const stringItemId = itemId.toString();
-      const response = await axios.delete(
-        `${url}/api/cart/${userId}/${stringItemId}`,
-        {
-          headers: { token }
-        }
-      );
-
+      const response = await axios.delete(`${url}/api/cart/${userId}/${foodId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (response.data.success) {
-        await fetchCart(); // Refresh cart data
-        return true;
-      } else {
-        throw new Error(response.data.message || 'Failed to remove item from cart');
+        await fetchCart();
+        toast.success('Item removed from cart');
       }
-    } catch (error) {
-      console.error('Error removing from cart:', error);
-      toast.error(error.response?.data?.message || 'Failed to remove item from cart');
-      return false;
+    } catch {
+      toast.error('Failed to remove item from cart');
     }
-  }, [isLoggedIn, userId, token, url, fetchCart]);
+  };
+
+  // Update cart item quantity
+  const updateCartItem = async (foodId, quantity) => {
+    if (!token || !userId) return;
+
+    try {
+      const response = await axios.put(
+        `${url}/api/cart/${userId}/${foodId}`,
+        { quantity: parseInt(quantity) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        await fetchCart();
+      }
+    } catch {
+      toast.error('Failed to update cart item');
+    }
+  };
 
   // Place order
   const placeOrder = async () => {
-    if (!isLoggedIn) {
+    if (!token || !userId) {
       toast.error('Please login to place an order');
       return;
     }
 
     try {
       const response = await axios.post(
-        `${url}/api/cart/${userId}/order`,
+        `${url}/api/customer/order/placeorder`,
         {},
-        {
-          headers: {
-            token,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       if (response.data.success) {
-        await fetchCart(); // Refresh cart after order placement
+        await fetchCart();
         toast.success('Order placed successfully');
-        return { success: true };
-      } else {
-        throw new Error(response.data.message || 'Failed to place order');
+        return true;
       }
-    } catch (error) {
-      console.error('Place order error:', error);
-      toast.error(error.response?.data?.message || 'Failed to place order');
-      return { success: false, message: error.response?.data?.message || 'Failed to place order' };
+    } catch {
+      toast.error('Failed to place order');
+      return false;
     }
   };
 
+  // Calculate total cart price
+  const totalCartPrice = useMemo(() => {
+    if (!Array.isArray(cartItems)) return 0;
+
+    return cartItems.reduce((total, item) => {
+      const foodItem = food_list.find(food => food._id === item.itemId);
+      if (foodItem) {
+        return total + (item.price || foodItem.price) * item.quantity;
+      }
+      return total;
+    }, 0);
+  }, [cartItems, food_list]);
+
   // Fetch food list
-  const fetchFoodList = useCallback(async () => {
+  const fetchFoodList = async () => {
     try {
       const response = await axios.get(`${url}/api/food/list`);
       if (response.data.success) {
-        setFoodList(response.data.foods || []);
+        const foodData = response.data.foods || response.data.data || [];
+        setFoodList(Array.isArray(foodData) ? foodData : []);
+        return foodData;
       }
+      return [];
     } catch (error) {
       console.error('Error fetching food list:', error);
-      toast.error('Failed to load food items');
+      toast.error('Failed to fetch menu items');
       setFoodList([]);
+      return [];
     }
-  }, [url]);
-
-  // Fetch food list on mount
-  useEffect(() => {
-    fetchFoodList();
-  }, [fetchFoodList]);
-
-  // Fetch cart when login state changes
-  useEffect(() => {
-    if (isLoggedIn && userId && token) {
-      fetchCart();
-    } else {
-      setCartItems({});
-    }
-  }, [isLoggedIn, userId, token, fetchCart]);
-
-  // Reset login state function
-  const resetLoginState = () => {
-    setToken('');
-    setUserRole('');
-    setUserId('');
-    setIsLoggedIn(false);
   };
 
+  // Fetch initial data
+  useEffect(() => {
+    fetchFoodList();
+    if (isLoggedIn && userRole === 'Customer') {
+      fetchCart();
+    }
+  }, [isLoggedIn, userRole]);
+
   // Context value
-  const contextValue = {
+  const contextValue = useMemo(() => ({
     cartItems,
     setCartItems,
     food_list,
     setFoodList,
+    addToCart,
+    removeFromCart,
+    updateCartItem,
+    totalCartPrice,
+    url,
     token,
     setToken,
     isLoggedIn,
@@ -323,16 +270,21 @@ const StoreContextProvider = (props) => {
     setUserRole,
     userId,
     setUserId,
-    url,
     login,
     logout,
-    resetLoginState,
-    createUser,
+    fetchFoodList,
     fetchCart,
-    addToCart,
-    removeFromCart,
+    resetLoginState,
     placeOrder,
-  };
+  }), [
+    cartItems,
+    food_list,
+    token,
+    isLoggedIn,
+    userRole,
+    userId,
+    totalCartPrice
+  ]);
 
   return (
     <StoreContext.Provider value={contextValue}>
