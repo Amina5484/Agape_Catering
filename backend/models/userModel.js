@@ -1,13 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
-// const userSchema = new mongoose.Schema({
-//   name: { type: String, required: true },
-//   email: { type: String, required: true, unique: true },
-//   password: { type: String, required: true },
-// });
 
-// export default mongoose.model('User', userSchema);
 
 const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -21,7 +15,8 @@ const UserSchema = new mongoose.Schema({
     enum: ['Customer', 'Catering Manager', 'Executive Chef', 'System Admin'],
     default: 'Customer',
   },
-  cartData: { type: Object, default: {} },
+  cartData: { type: [Object] },
+  // cartData: { type: Object, default: {} },
   createdAt: { type: Date, default: Date.now },
 });
 
