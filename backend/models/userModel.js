@@ -8,15 +8,13 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   phone: { type: String, required: true, unique: true },
   gender: { type: String, enum: ['male', 'female', 'other'], default: 'male' },
-  photo: { type: String },
+  photo: { type: String, default: 'default-profile-pic.jpg' },
   password: { type: String, required: true },
   role: {
     type: String,
     enum: ['Customer', 'Catering Manager', 'Executive Chef', 'System Admin'],
     default: 'Customer',
   },
-  // cartData: { type: [Object] },
-  // cartData: { type: Object, default: {} },
   cartData: [
     {
       menuId: { type: mongoose.Schema.Types.ObjectId, ref: 'Menu' },

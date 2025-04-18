@@ -8,8 +8,6 @@ import category_router from '../routes/categoryRoute.js';
 
 export const addMenuItem = async (req, res) => {
     try {
-        console.log("Request Body:", req.body);
-        console.log("Uploaded File:", req.file);
 
         const { name, price, description, category, subcategory } = req.body;
 
