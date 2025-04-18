@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const Cart = () => {
-  const {
-    cartItems,
+  const { 
+    cartItems, 
     removeFromCart,
     updateCartItem,
     token,
@@ -19,18 +19,18 @@ const Cart = () => {
 
   const loadCart = useCallback(async () => {
     if (!token) {
-      setIsLoading(false);
-      return;
-    }
+        setIsLoading(false);
+        return;
+      }
 
-    try {
-      setIsLoading(true);
-      await fetchCart();
+      try {
+        setIsLoading(true);
+        await fetchCart();
     } catch {
-      toast.error('Failed to load cart items');
-    } finally {
-      setIsLoading(false);
-    }
+        toast.error('Failed to load cart items');
+      } finally {
+        setIsLoading(false);
+      }
   }, [token, fetchCart]);
 
   useEffect(() => {
@@ -125,7 +125,7 @@ const Cart = () => {
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Cart</h1>
-
+        
         {cartData.length === 0 ? (
           <div className="text-center py-12">
             <h2 className="text-2xl font-semibold text-gray-600">Your cart is empty</h2>
@@ -140,14 +140,14 @@ const Cart = () => {
         ) : (
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             <div className="divide-y divide-gray-200">
-              {cartData.map((item) => (
+                {cartData.map((item) => (
                 <div key={item.itemId} className="p-6 flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="relative w-20 h-20">
                       {item.image ? (
-                        <img
+                    <img
                           src={`${url}/uploads/${item.image.replace(/^\/uploads\//, '')}`}
-                          alt={item.name}
+                      alt={item.name}
                           className="absolute inset-0 w-full h-full object-cover rounded-lg"
                           onError={(e) => {
                             e.target.onerror = null;
@@ -167,19 +167,19 @@ const Cart = () => {
                   </div>
                   <div className="flex items-center space-x-6">
                     <div className="flex items-center space-x-2">
-                      <button
+                        <button
                         onClick={() => handleQuantityChange(item.itemId, item.quantity - 1)}
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
-                      >
-                        -
-                      </button>
+                        >
+                          -
+                        </button>
                       <span className="w-8 text-center">{item.quantity}</span>
-                      <button
+                        <button
                         onClick={() => handleQuantityChange(item.itemId, item.quantity + 1)}
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
-                      >
-                        +
-                      </button>
+                        >
+                          +
+                        </button>
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-semibold text-gray-900">
@@ -189,15 +189,15 @@ const Cart = () => {
                         {(item.price || 0).toLocaleString()} Birr each
                       </p>
                     </div>
-                    <button
+                      <button
                       onClick={() => handleRemoveItem(item.itemId)}
                       className="text-red-600 hover:text-red-800"
-                    >
-                      Remove
-                    </button>
-                  </div>
+                      >
+                        Remove
+                      </button>
+                    </div>
                 </div>
-              ))}
+                ))}
             </div>
             <div className="p-6 bg-gray-50">
               <div className="flex justify-between items-center mb-4">

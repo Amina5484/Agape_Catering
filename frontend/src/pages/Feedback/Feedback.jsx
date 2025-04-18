@@ -1,4 +1,5 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { StoreContext } from '../../context/StoreContext';
@@ -6,6 +7,7 @@ import axios from 'axios';
 import { FaUser, FaEnvelope, FaPhone, FaComment, FaPaperPlane } from 'react-icons/fa';
 
 const FeedbackForm = () => {
+  const navigate = useNavigate();
   const { isLoggedIn, token } = useContext(StoreContext);
   const [formData, setFormData] = useState({
     name: '',
@@ -15,6 +17,36 @@ const FeedbackForm = () => {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Fetch user data when component mounts
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!isLoggedIn || !token) return;
+
+      try {
+        const response = await axios.get('http://localhost:4000/api/user/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.data.success) {
+          const userData = response.data.user;
+          setFormData(prevData => ({
+            ...prevData,
+            name: userData.name || '',
+            email: userData.email || '',
+            phone: userData.phone || '',
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        toast.error('Failed to load user information');
+      }
+    };
+
+    fetchUserData();
+  }, [isLoggedIn, token]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,17 +58,6 @@ const FeedbackForm = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    }
     if (!formData.feedback.trim()) {
       newErrors.feedback = 'Feedback message is required';
     }
@@ -74,15 +95,14 @@ const FeedbackForm = () => {
 
       if (response.data) {
         toast.success('Thank you for your feedback!');
-    setFormData({
-          name: '',
-          email: '',
-          phone: '',
-      feedback: '',
-    });
+        setFormData(prevData => ({
+          ...prevData,
+          feedback: '',
+        }));
+        // Navigate to home page after successful submission
+        navigate('/');
       }
     } catch (error) {
-      console.error('Error submitting feedback:', error);
       toast.error(error.response?.data?.message || 'Failed to submit feedback');
     } finally {
       setLoading(false);
@@ -99,7 +119,7 @@ const FeedbackForm = () => {
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-6 sm:p-8">
-      <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -112,13 +132,9 @@ const FeedbackForm = () => {
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Your Name"
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${
-                      errors.name ? 'border-red-500 bg-red-50' : 'border-slate-200'
-                    }`}
+                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200"
+                    disabled
                   />
-                  {errors.name && (
-                    <p className="mt-1 text-sm text-red-500">{errors.name}</p>
-                  )}
                 </div>
 
                 <div className="relative">
@@ -132,13 +148,9 @@ const FeedbackForm = () => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Your Email"
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${
-                      errors.email ? 'border-red-500 bg-red-50' : 'border-slate-200'
-                    }`}
+                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200"
+                    disabled
                   />
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-                  )}
                 </div>
 
                 <div className="relative">
@@ -152,39 +164,34 @@ const FeedbackForm = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="Your Phone Number"
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${
-                      errors.phone ? 'border-red-500 bg-red-50' : 'border-slate-200'
-                    }`}
+                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200"
+                    disabled
                   />
-                  {errors.phone && (
-                    <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
-                  )}
                 </div>
 
                 <div className="relative">
                   <div className="absolute top-3 left-3 flex items-start pointer-events-none">
                     <FaComment className="h-5 w-5 text-slate-400" />
                   </div>
-          <textarea
-            id="feedback"
-            name="feedback"
-            value={formData.feedback}
-            onChange={handleChange}
+                  <textarea
+                    id="feedback"
+                    name="feedback"
+                    value={formData.feedback}
+                    onChange={handleChange}
                     placeholder="Share your thoughts with us..."
                     rows="6"
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${
-                      errors.feedback ? 'border-red-500 bg-red-50' : 'border-slate-200'
-                    }`}
+                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${errors.feedback ? 'border-red-500 bg-red-50' : 'border-slate-200'
+                      }`}
                   />
-          {errors.feedback && (
+                  {errors.feedback && (
                     <p className="mt-1 text-sm text-red-500">{errors.feedback}</p>
-          )}
+                  )}
                 </div>
-        </div>
+              </div>
 
               <div className="pt-4">
-        <button
-          type="submit"
+                <button
+                  type="submit"
                   disabled={loading}
                   className="w-full flex items-center justify-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
@@ -199,12 +206,12 @@ const FeedbackForm = () => {
                   ) : (
                     <div className="flex items-center">
                       <FaPaperPlane className="mr-2" />
-          Submit Feedback
+                      Submit Feedback
                     </div>
                   )}
-        </button>
+                </button>
               </div>
-      </form>
+            </form>
           </div>
         </div>
       </div>
