@@ -5,30 +5,34 @@ import { processChapaPayment } from '../utils/chapaPayment.js';
 // 🛒 Place order with 50% initial payment
 const placeOrder = async (req, res) => {
   try {
-    const { customerId, items, totalAmount } = req.body;
+    const { userId, items,totalAmount } = req.body;
 
-    if (!customerId || !items || !totalAmount) {
+    if (!userId || !items  || !totalAmount) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    const customer = await userModel.findById(customerId);
-    if (!customer) {
-      return res.status(404).json({ message: 'Customer not found' });
+    const user = await userModel.findById(userId);
+    console.log(user.name);
+    if (!user) {
+      return res.status(404).json({ message: 'user not found' });
     }
 
-    const halfAmount = totalAmount / 2;
 
+    const halfAmount = totalAmount / 1.8;
+
+        console.log('first_name:', user.name);
     // Process half payment
     const chapaResponse = await processChapaPayment({
       amount: halfAmount,
-      description: 'Initial 50% Payment',
+      description: 'Initial 40% Payment',
       user: {
-        first_name: customer.firstName || 'Customer',
-        last_name: customer.lastName || '',
-        email: customer.email,
-        phone_number: customer.phone || '0911121314',
+        first_name:  user.name.toString() || 'user',
+        last_name:  user.name || '',
+        email: user.email,
+        phone_number: user.phone || '0911121314',
       },
     });
+    console.log('chapaResponse:', chapaResponse);
 
     if (!chapaResponse.success || !chapaResponse.transactionId) {
       return res.status(400).json({
@@ -39,7 +43,7 @@ const placeOrder = async (req, res) => {
 
     // Save order
     const order = await orderModel.create({
-      customerId,
+      userId,
       items,
       totalAmount,
       paidAmount: halfAmount,

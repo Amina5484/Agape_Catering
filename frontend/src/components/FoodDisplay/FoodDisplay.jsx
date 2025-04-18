@@ -16,9 +16,9 @@ const FoodDisplay = () => {
 
   const loadFoodList = useCallback(async () => {
     try {
-      setIsLoading(true);list
-      const response = await axios.get(`${url}/api/customer/menu
-`);
+      setIsLoading(true);
+      const response = await axios.get(`${url}/api/customer/menu`);
+      console.log(response);
       const foodData = Array.isArray(response.data) ? response.data : [];
       const processedFoods = foodData.map(food => ({
         ...food,
@@ -61,7 +61,7 @@ const FoodDisplay = () => {
     }
 
     try {
-      await addToCart(selectedFood._id, quantity, '', selectedFood.price);
+      await addToCart(selectedFood._id, quantity, '',);
       toast.success('Added to cart successfully!');
       setSelectedFood(null);
       setQuantity(1);
