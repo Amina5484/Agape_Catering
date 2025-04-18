@@ -7,48 +7,106 @@ const isValidPhoneNumber = (phone) => {
   return phoneRegex.test(phone);
 };
 
+// const registerUser = async (req, res, role) => {
+//   try {
+//     const { name, email, phone, password } = req.body;
+
+//     console.log(req.body); // Debugging log
+
+//     if (!name || !email || !phone || !password) {
+//       return res.status(400).json({ message: 'Please fill all fields' });
+//     }
+
+//     if (!isValidPhoneNumber(phone)) {
+//       return res.status(400).json({ message: 'Invalid phone number format' });
+//     }
+
+//     // Check if the email already exists
+//     let existingUser = await User.findOne({ email });
+//     if (existingUser) {
+//       return res.status(400).json({ message: 'Email is already registered' });
+//     }
+
+//     // Check if the phone number already exists
+//     let existingPhone = await User.findOne({ phone });
+//     if (existingPhone) {
+//       return res
+//         .status(400)
+//         .json({ message: 'Phone number is already registered' });
+//     }
+
+//     // Create a new user
+//     const user = new User({ name, email, phone, password, role });
+//     await user.save();
+
+//     res.status(201).json({ message: `${role} registered successfully` });
+//   } catch (error) {
+//     console.error('Error during registration:', error); // Log error for debugging
+
+//     if (error.name === 'ValidationError') {
+//       return res.status(400).json({ message: error.message });
+//     } else if (error.code === 11000) {
+//       return res.status(400).json({ message: 'Duplicate entry detected' });
+//     }
+
+//     res.status(500).json({ message: 'Internal Server Error' });
+//   }
+// };
+
+import { sendEmail } from '../utils/sendEmail.js';
+import crypto from 'crypto'; // for random password
+import welcomeEmailHTML from '../email_templates/welcomeEmail.js'; // for email template
+
+const generateRandomPassword = () => {
+  return crypto.randomBytes(6).toString('base64'); // Generates a short secure password
+};
+
 const registerUser = async (req, res, role) => {
   try {
     const { name, email, phone, password } = req.body;
 
-    console.log(req.body); // Debugging log
-
-    if (!name || !email || !phone || !password) {
-      return res.status(400).json({ message: 'Please fill all fields' });
+    if (!name || !email || !phone || (role === ROLES.CUSTOMER && !password)) {
+      return res.status(400).json({ message: 'Please fill all required fields' });
     }
 
     if (!isValidPhoneNumber(phone)) {
       return res.status(400).json({ message: 'Invalid phone number format' });
     }
 
-    // Check if the email already exists
     let existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Email is already registered' });
     }
 
-    // Check if the phone number already exists
     let existingPhone = await User.findOne({ phone });
     if (existingPhone) {
-      return res
-        .status(400)
-        .json({ message: 'Phone number is already registered' });
+      return res.status(400).json({ message: 'Phone number is already registered' });
     }
 
-    // Create a new user
-    const user = new User({ name, email, phone, password, role });
+    // Generate password for non-customer
+    let userPassword = password;
+    if (role !== ROLES.CUSTOMER) {
+      userPassword = generateRandomPassword();
+
+      await sendEmail({
+        to: email,
+        subject: 'Your Account Credentials',
+        html: welcomeEmailHTML(name, email, userPassword, role)
+      });
+      
+    }
+
+    const user = new User({ name, email, phone, password: userPassword, role });
     await user.save();
 
-    res.status(201).json({ message: `${role} registered successfully` });
+    res.status(201).json({ message: `${role} registered successfully. ${role !== ROLES.CUSTOMER ? 'Password sent to email.' : ''}` });
   } catch (error) {
-    console.error('Error during registration:', error); // Log error for debugging
-
+    console.error('Error during registration:', error);
     if (error.name === 'ValidationError') {
       return res.status(400).json({ message: error.message });
     } else if (error.code === 11000) {
       return res.status(400).json({ message: 'Duplicate entry detected' });
     }
-
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };

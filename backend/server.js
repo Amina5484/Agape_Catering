@@ -85,8 +85,11 @@ app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRoutes);
 app.use('/api/feedback', feedbackRouter);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 6c75af36e9b9f7b704f714da674ece91f6db5ced
 // ✅ Database Connection
 mongoose
   .connect(process.env.MONGODB_URI, {
