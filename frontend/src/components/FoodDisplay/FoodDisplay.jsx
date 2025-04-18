@@ -61,10 +61,11 @@ const FoodDisplay = () => {
     }
 
     try {
-      await addToCart(selectedFood._id, quantity, '',);
+      await addToCart(selectedFood._id, quantity, '');
       toast.success('Added to cart successfully!');
       setSelectedFood(null);
       setQuantity(1);
+      setModalVisible(false);
     } catch {
       toast.error('Failed to add item to cart');
     }
@@ -171,9 +172,13 @@ const FoodDisplay = () => {
               <div className="h-48 overflow-hidden">
                 {selectedFood?.image ? (
                   <img
-                    src={selectedFood.image}
+                    src={`${url}/uploads/${selectedFood.image.replace(/^\/uploads\//, '')}`}
                     alt={selectedFood.name}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full bg-slate-200 flex items-center justify-center">
