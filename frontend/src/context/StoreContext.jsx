@@ -2,6 +2,7 @@ import { createContext, useEffect, useState, useContext, useMemo, useCallback } 
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import axiosInstance from '../SystemAdmin/axiosInstance';
+import { useNavigate } from 'react-router-dom';
 
 export const StoreContext = createContext(null);
 
@@ -21,6 +22,7 @@ const StoreContextProvider = (props) => {
   const [userRole, setUserRole] = useState(localStorage.getItem('userRole'));
   const [userId, setUserId] = useState(localStorage.getItem('userId'));
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+  const navigate = useNavigate();
 
   const url = 'http://localhost:4000';
 
@@ -89,84 +91,83 @@ const StoreContextProvider = (props) => {
 
   // Fetch cart from backend
   const fetchCart = useCallback(async () => {
-    if (!token || !userId) {
-      setCartItems([]);
-      return;
-    }
+    if (!isLoggedIn) return;
 
     try {
       const response = await axios.get(`${url}/api/cart/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.data.success) {
-        // Convert the cartData object to an array format
-        const cartData = response.data.cartData;
-        const cartItemsArray = Object.entries(cartData).map(([itemId, itemData]) => {
-          // Find the corresponding food item from food_list
-          const foodItem = food_list.find(food => food._id === itemId);
-          return {
-            itemId,
-            quantity: itemData.quantity,
-            selectedType: itemData.selectedType,
-            price: itemData.price,
-            // Include food item details if found
-            ...(foodItem && {
-              name: foodItem.name,
-              image: foodItem.image,
-              description: foodItem.description
-            })
-          };
-        });
-
-        setCartItems(cartItemsArray);
+        setCartItems(response.data.cartData || []);
+      } else {
+        setCartItems([]);
+        toast.error(response.data.message || 'Failed to fetch cart');
       }
-    } catch {
+    } catch (error) {
+      console.error('Error fetching cart:', error);
       setCartItems([]);
+      toast.error(error.response?.data?.message || 'Failed to fetch cart');
     }
-  }, [token, userId, url, food_list]);
+  }, [isLoggedIn, token, userId]);
 
   // Add item to cart
-  const addToCart = async (foodId, quantity, instructions, price) => {
-    if (!token || !userId) {
+  const addToCart = async (menuId, quantity = 1) => {
+    if (!isLoggedIn) {
       toast.error('Please login to add items to cart');
+      navigate('/login');
       return;
     }
 
     try {
       const response = await axios.post(
-        `${url}/api/cart/${userId}/cart`,
+        `${url}/api/cart/${userId}`,
+        { menuId, quantity },
         {
-          itemId: foodId,
-          quantity: parseInt(quantity),
-          selectedType: instructions,
-          price: parseFloat(price)
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+
       if (response.data.success) {
-        await fetchCart();
-        toast.success('Item added to cart successfully');
+        toast.success('Added to cart successfully');
+        fetchCart(); // Refresh cart data
+      } else {
+        toast.error(response.data.message || 'Failed to add to cart');
       }
-    } catch {
-      toast.error('Failed to add item to cart');
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error(error.response?.data?.message || 'Failed to add to cart');
     }
   };
 
   // Remove item from cart
-  const removeFromCart = async (foodId) => {
-    if (!token || !userId) return;
+  const removeFromCart = async (menuId) => {
+    if (!isLoggedIn) {
+      toast.error('Please login to remove items from cart');
+      return;
+    }
 
     try {
-      const response = await axios.delete(`${url}/api/cart/${userId}/${foodId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await axios.delete(`${url}/api/cart`, {
+        data: { userId, itemId: menuId },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+
       if (response.data.success) {
-        await fetchCart();
         toast.success('Item removed from cart');
+        fetchCart(); // Refresh cart data
+      } else {
+        toast.error(response.data.message || 'Failed to remove from cart');
       }
-    } catch {
-      toast.error('Failed to remove item from cart');
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+      toast.error(error.response?.data?.message || 'Failed to remove from cart');
     }
   };
 

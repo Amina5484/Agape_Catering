@@ -16,8 +16,9 @@ const FoodDisplay = () => {
 
   const loadFoodList = useCallback(async () => {
     try {
-      setIsLoading(true);
-      const response = await axios.get(`${url}/api/food/list`);
+      setIsLoading(true);list
+      const response = await axios.get(`${url}/api/customer/menu
+`);
       const foodData = Array.isArray(response.data) ? response.data : [];
       const processedFoods = foodData.map(food => ({
         ...food,
