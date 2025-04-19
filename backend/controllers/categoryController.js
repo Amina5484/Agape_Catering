@@ -234,17 +234,26 @@ export const deleteSubSubCategoryItem = async (req, res) => {
         res.status(500).json({ message: "Server Error", error });
     }
 };
-
 export const getSubSubCategory = async (req, res) => {
-    try {
-        const subSubcategory = await SubSubcategory.find();
-        res.status(200).json(subSubcategory);
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error });
-    }
-};
+  console.log("===========================getSubSubCategory called");
 
+  try {
+    const subSubcategories = await SubSubcategory.find(); // Fetch all sub-subcategories
+    res.status(200).json({
+      success: true,
+      data: subSubcategories,
+    });
+  } catch (error) {
+    console.error("Error fetching sub-subcategories:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error,
+    });
+  }
+};
 export const getSubSubCategoryWithId = async (req, res) => {
+  console.log("=======================getSubSubCategoryWithId called");
   const { id } = req.params;
 
   if (!id) {
