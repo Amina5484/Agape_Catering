@@ -58,7 +58,24 @@ export const addMenuItem = async (req, res) => {
         if (!name || !description || !category || !subcategory || !subSubcategory || !image) {
             return res.status(400).json({ message: "All fields are required" });
         }
-
+        const categoryCheck = await Category.findById(category);
+        if (!categoryCheck) {
+            return res.status(400).json({ message: "Category not found" });
+        }
+        const subcategoryCheck = await SubCategory.findById(subcategory);
+        if (!subcategoryCheck) {    
+            return res.status(400).json({ message: "Subcategory not found" });
+        }
+        const subSubcategoryCheck = await SubSubCategory.findById(subSubcategory);  
+        if (!subSubcategoryCheck) {
+            return res.status(400).json({ message: "Subsubcategory not found" });
+        }
+        // Check if the menu item already exists    
+        const existingMenuItem = await Menu.findOne({ name, category, subcategory, subSubcategory });
+        if (existingMenuItem) {
+            return res.status(400).json({ message: "Menu item already exists" });
+        }
+        // Create a new menu item   
         const menuItem = new Menu({
             name,
             description,
@@ -75,6 +92,7 @@ export const addMenuItem = async (req, res) => {
         res.status(500).json({ message: "Server Error", error });
     }
 };
+
 
 export const updateMenuItem = async (req, res) => {
     try {

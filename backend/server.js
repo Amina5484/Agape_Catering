@@ -80,7 +80,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/admin', admin_router);
 app.use('/api/catering', catering_router);
 app.use('/api/category', category_router);
-// app.use('/api', category_router);
+app.use('/api/menu', menuRoutes);
 app.use('/api/customer', customer_router);
 app.use('/api/user', userRouter);
 app.use('/api/food', foodRouter);
