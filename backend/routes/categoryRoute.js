@@ -183,7 +183,7 @@ category_router.get('/', getCategory);
  *       500:
  *         description: Server error
  */
-category_router.get("/:id", getCategoryWithId);
+category_router.get("/id/:id", getCategoryWithId);
 
 
 
@@ -336,7 +336,7 @@ category_router.get("/subcategory", getSubCategory);
  *       500:
  *         description: Server error
  */
-category_router.get("/subcategory/:id", getSubCategoryWithId);
+category_router.get("/subcategory/id/:id", getSubCategoryWithId);
 
 // ---- SubSubcategory Routes ----
 
@@ -452,7 +452,7 @@ category_router.get("/subsubcategory", getSubSubCategory);
  *       500:
  *         description: Server error
  */
-category_router.get("/subsubcategory/:id", getSubSubCategoryWithId);
+category_router.get("/subsubcategory/id/:id", getSubSubCategoryWithId);
 
 
 export default category_router;
