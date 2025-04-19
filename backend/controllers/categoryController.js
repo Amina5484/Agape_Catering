@@ -2,8 +2,7 @@ import Category, { Subcategory, SubSubcategory } from "../models/category.js";
 
 export const addCategoryItem = async (req, res) => {
     try {
-      console.log("Request Body:", req.body);
-      console.log("Uploaded File:", req.file);
+   
   
       const image = req.file ? `/uploads/${req.file.filename}` : null;
       const { categoryName, description, subcategories, subSubCategory } = req.body;
@@ -90,8 +89,7 @@ export const getCategoryWithId = async (req, res) => {
 // subcategory 
 export const addSubCategoryItem = async (req, res) => {
   try {
-    console.log("Request Body:", req.body);
-    console.log("Uploaded File:", req.file);
+
 
     const image = req.file ? `/uploads/${req.file.filename}` : null;
     const { subcategoryName, description, subSubcategoriesId } = req.body;
@@ -108,7 +106,7 @@ export const addSubCategoryItem = async (req, res) => {
 
     
         const subsub = await SubSubcategory.findById(subSubcategoriesId);
-        console.log(subsub);
+
         if (!subsub) {
           return res.status(404).json({
             success: false,
@@ -172,7 +170,7 @@ export const getSubCategoryWithId = async (req, res) => {
   }
 
   const subcategory = await Subcategory.findById(id);
-  console.log(subcategory);
+
 
   if (!subcategory) {
     return res.status(404).json({ message: "subcategory not found" });
@@ -185,8 +183,7 @@ export const getSubCategoryWithId = async (req, res) => {
 export const addSubSubCategoryItem = async (req, res) => {
     try {
       
-      console.log("Request Body:", req.body);
-      console.log("Uploaded File:", req.file);
+
   
       const image = req.file ? `/uploads/${req.file.filename}` : null;
       const { subSubcategoryName, description } = req.body;
@@ -235,7 +232,7 @@ export const deleteSubSubCategoryItem = async (req, res) => {
     }
 };
 export const getSubSubCategory = async (req, res) => {
-  console.log("===========================getSubSubCategory called");
+
 
   try {
     const subSubcategories = await SubSubcategory.find(); // Fetch all sub-subcategories
@@ -253,7 +250,7 @@ export const getSubSubCategory = async (req, res) => {
   }
 };
 export const getSubSubCategoryWithId = async (req, res) => {
-  console.log("=======================getSubSubCategoryWithId called");
+
   const { id } = req.params;
 
   if (!id) {
@@ -261,7 +258,7 @@ export const getSubSubCategoryWithId = async (req, res) => {
   }
 
   const subSubcategory = await SubSubcategory.findById(id);
-  console.log(subSubcategory);
+
 
   if (!subSubcategory) {
     return res.status(404).json({ message: "SubSubcategory not found" });

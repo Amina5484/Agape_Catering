@@ -43,23 +43,48 @@ const CategoryManagement = () => {
         fetchAllData();
     }, []);
 
+    // const fetchAllData = async () => {
+    //     try {
+    //         setLoading(true);
+    //         const [categoriesRes, subcategoriesRes, subSubcategoriesRes] = await Promise.all([
+    //             axios.get('http://localhost:4000/api/category', {
+    //                 headers: { Authorization: `Bearer ${token}` }
+    //             }),
+    //             axios.get('http://localhost:4000/api/category/subcategory', {
+    //                 headers: { Authorization: `Bearer ${token}` }
+    //             }),
+    //             axios.get('http://localhost:4000/api/category/subsubcategory', {
+    //                 headers: { Authorization: `Bearer ${token}` }
+    //             })
+    //         ]);
+    //         setCategories(categoriesRes.data);
+    //         setSubcategories(subcategoriesRes.data);
+    //         setSubSubcategories(subSubcategoriesRes.data);
+    //     } catch (error) {
+    //         console.error('Error fetching data:', error);
+    //         toast.error('Failed to fetch data');
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
     const fetchAllData = async () => {
         try {
             setLoading(true);
             const [categoriesRes, subcategoriesRes, subSubcategoriesRes] = await Promise.all([
                 axios.get('http://localhost:4000/api/category', {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { Authorization: `Bearer ${token}` },
                 }),
                 axios.get('http://localhost:4000/api/category/subcategory', {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { Authorization: `Bearer ${token}` },
                 }),
                 axios.get('http://localhost:4000/api/category/subsubcategory', {
-                    headers: { Authorization: `Bearer ${token}` }
-                })
+                    headers: { Authorization: `Bearer ${token}` },
+                }),
             ]);
+
             setCategories(categoriesRes.data);
             setSubcategories(subcategoriesRes.data);
-            setSubSubcategories(subSubcategoriesRes.data);
+            setSubSubcategories(subSubcategoriesRes.data.data || subSubcategoriesRes.data); // Handle wrapped response
         } catch (error) {
             console.error('Error fetching data:', error);
             toast.error('Failed to fetch data');
@@ -345,7 +370,7 @@ const CategoryManagement = () => {
                                 />
                             </div>
 
-                            <div>
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Linked Sub-subcategory ID *</label>
                                 <input
                                     type="text"
@@ -356,8 +381,28 @@ const CategoryManagement = () => {
                                     required
                                     readOnly
                                 />
+                            </div> */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Linked Sub-subcategory *
+                                </label>
+                                <select
+                                    name="subSubcategoriesId"
+                                    value={subcategoryForm.subSubcategoriesId}
+                                    onChange={(e) => handleInputChange(e, 'subcategory')}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    required
+                                >
+                                    <option value="" disabled>
+                                        Select a Sub-subcategory
+                                    </option>
+                                    {(Array.isArray(subSubcategories) ? subSubcategories : []).map((subSubcategory) => (
+                                        <option key={subSubcategory._id} value={subSubcategory._id}>
+                                            {subSubcategory.subSubcategoryName}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Image *</label>
                                 <div className="flex items-center space-x-4">
@@ -429,7 +474,7 @@ const CategoryManagement = () => {
                                 />
                             </div>
 
-                            <div>
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Linked Sub-subcategory ID *</label>
                                 <input
                                     type="text"
@@ -440,8 +485,28 @@ const CategoryManagement = () => {
                                     required
                                     readOnly
                                 />
+                            </div> */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Linked Sub-subcategory *
+                                </label>
+                                <select
+                                    name="subSubcategoriesId"
+                                    value={subcategoryForm.subSubcategoriesId}
+                                    onChange={(e) => handleInputChange(e, 'subcategory')}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    required
+                                >
+                                    <option value="" disabled>
+                                        Select a Sub-subcategory
+                                    </option>
+                                    {(Array.isArray(subSubcategories) ? subSubcategories : []).map((subSubcategory) => (
+                                        <option key={subSubcategory._id} value={subSubcategory._id}>
+                                            {subSubcategory.subSubcategoryName}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Image *</label>
                                 <div className="flex items-center space-x-4">
@@ -507,55 +572,55 @@ const CategoryManagement = () => {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {items.map((item) => (
-                                <tr key={item._id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {item.image ? (
-                                            <img
-                                                src={`http://localhost:4000/${item.image}`}
-                                                alt={item[`${type}Name`]}
-                                                className="h-16 w-16 rounded-md object-cover shadow-sm"
-                                            />
-                                        ) : (
-                                            <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center shadow-sm">
-                                                <span className="text-gray-500 text-xs">No Image</span>
-                                            </div>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">
-                                            {item[`${type}Name`]}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="text-sm text-gray-500">{item.description}</div>
-                                    </td>
-                                    {type === 'category' && (
-                                        <>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">{item.subcategoriesId}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">{item.subSubcategoriesId}</div>
-                                            </td>
-                                        </>
-                                    )}
-                                    {type === 'subcategory' && (
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{item.subSubcategoriesId}</div>
-                                        </td>
-                                    )}
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button
-                                            onClick={() => handleDelete(item._id, type)}
-                                            className="text-red-600 hover:text-red-900"
-                                        >
-                                            <FaTrash className="inline-block mr-1" />
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
+                            {/* {items.map((item) => (
+                    <tr key={item._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                            {item.image ? (
+                                <img
+                                    src={`http://localhost:4000/${item.image}`}
+                                    alt={item[`${type}Name`]}
+                                    className="h-16 w-16 rounded-md object-cover shadow-sm"
+                                />
+                            ) : (
+                                <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center shadow-sm">
+                                    <span className="text-gray-500 text-xs">No Image</span>
+                                </div>
+                            )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                                {item[`${type}Name`]}
+                            </div>
+                        </td>
+                        <td className="px-6 py-4">
+                            <div className="text-sm text-gray-500">{item.description}</div>
+                        </td>
+                        {type === 'category' && (
+                            <>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm text-gray-900">{item.subcategoriesId}</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm text-gray-900">{item.subSubcategoriesId}</div>
+                                </td>
+                            </>
+                        )}
+                        {type === 'subcategory' && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">{item.subSubcategoriesId}</div>
+                            </td>
+                        )}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button
+                                onClick={() => handleDelete(item._id, type)}
+                                className="text-red-600 hover:text-red-900"
+                            >
+                                <FaTrash className="inline-block mr-1" />
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                ))} */}
                         </tbody>
                     </table>
                 </div>
