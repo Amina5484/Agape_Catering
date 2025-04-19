@@ -1,5 +1,5 @@
 import express from 'express';
-import { getMenuByCategoryAndSubcategory } from '../controllers/menuController.js';
+// import { getMenuByCategoryAndSubcategory } from '../controllers/menuController.js';
 
 const router = express.Router();
 
@@ -68,6 +68,6 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.get('/filter', getMenuByCategoryAndSubcategory);
+// router.get('/filter', getMenuByCategoryAndSubcategory);
 
 export default router; 
