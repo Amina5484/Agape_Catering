@@ -37,6 +37,7 @@ import GenerateReport from './manager/GenerateReport';
 import ScheduleManagement from './manager/ScheduleManagement';
 import MenuManagement from './manager/MenuManagement';
 import StockManagement from './manager/StockManagement';
+import CategoryManagement from './manager/CategoryManagement';
 
 // System Admin Imports
 import CreateAccount from './SystemAdmin/CreateAccount/createaccount';
@@ -140,7 +141,7 @@ const AppContent = () => {
             />
             {/* <Route path="staff-list" element={<ListStaff url={url} />} /> */}
             <Route path="view-user" element={<ViewUser url={url} />} />
-          
+
           </Route>
 
           {/* Chef Routes */}
@@ -177,6 +178,7 @@ const AppContent = () => {
             <Route path="schedule" element={<ScheduleManagement />} />
             <Route path="feedback" element={<ViewFeedback />} />
             <Route path="menu" element={<MenuManagement />} />
+            <Route path="categories" element={<CategoryManagement />} />
           </Route>
 
           {/* Customer Routes */}
@@ -190,7 +192,7 @@ const AppContent = () => {
             path="/categories"
             element={
               <div className="pt-16">
-                <Explore category="All" setCatagory={() => {}} />
+                <Explore category="All" setCatagory={() => { }} />
               </div>
             }
           />
@@ -198,7 +200,7 @@ const AppContent = () => {
           <Route path="/view-feedback" element={<ViewFeedback />} />
           <Route path="/contact" element={<Footer />} />
           <Route path="/place-order" element={<PlaceOrder />} />
-          
+
           <Route
             path="/customer/orders"
             element={

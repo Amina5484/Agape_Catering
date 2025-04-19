@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaPlus, FaCog, FaListUl, FaUserCircle, FaHome, FaClipboardList, FaChartBar } from 'react-icons/fa';
+import { FaPlus, FaCog, FaListUl, FaUserCircle, FaHome, FaClipboardList, FaChartBar, FaList } from 'react-icons/fa';
 import { NavLink, Outlet } from 'react-router-dom';
 import ManagerNavbar from '../managerNavbar/Navbar';
 
@@ -15,10 +15,9 @@ const ManagerSidebar = () => {
           <NavLink
             to="/manager"
             className={({ isActive }) =>
-              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
-                isActive 
-                  ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-500' 
-                  : 'text-gray-600 hover:bg-gray-50'
+              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
+                ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-500'
+                : 'text-gray-600 hover:bg-gray-50'
               }`
             }
           >
@@ -29,10 +28,9 @@ const ManagerSidebar = () => {
           <NavLink
             to="/manager/menu"
             className={({ isActive }) =>
-              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
-                isActive 
-                  ? 'bg-green-50 text-green-600 border-l-4 border-green-500' 
-                  : 'text-gray-600 hover:bg-gray-50'
+              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
+                ? 'bg-green-50 text-green-600 border-l-4 border-green-500'
+                : 'text-gray-600 hover:bg-gray-50'
               }`
             }
           >
@@ -41,12 +39,24 @@ const ManagerSidebar = () => {
           </NavLink>
 
           <NavLink
+            to="/manager/categories"
+            className={({ isActive }) =>
+              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
+                ? 'bg-orange-50 text-orange-600 border-l-4 border-orange-500'
+                : 'text-gray-600 hover:bg-gray-50'
+              }`
+            }
+          >
+            <FaList className="w-5 h-5" />
+            <span className="font-medium">Category Management</span>
+          </NavLink>
+
+          <NavLink
             to="/manager/stock"
             className={({ isActive }) =>
-              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
-                isActive 
-                  ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-500' 
-                  : 'text-gray-600 hover:bg-gray-50'
+              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
+                ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-500'
+                : 'text-gray-600 hover:bg-gray-50'
               }`
             }
           >
@@ -57,10 +67,9 @@ const ManagerSidebar = () => {
           <NavLink
             to="/manager/orders"
             className={({ isActive }) =>
-              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
-                isActive 
-                  ? 'bg-yellow-50 text-yellow-600 border-l-4 border-yellow-500' 
-                  : 'text-gray-600 hover:bg-gray-50'
+              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
+                ? 'bg-yellow-50 text-yellow-600 border-l-4 border-yellow-500'
+                : 'text-gray-600 hover:bg-gray-50'
               }`
             }
           >
@@ -71,10 +80,9 @@ const ManagerSidebar = () => {
           <NavLink
             to="/manager/schedule"
             className={({ isActive }) =>
-              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
-                isActive 
-                  ? 'bg-purple-50 text-purple-600 border-l-4 border-purple-500' 
-                  : 'text-gray-600 hover:bg-gray-50'
+              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
+                ? 'bg-purple-50 text-purple-600 border-l-4 border-purple-500'
+                : 'text-gray-600 hover:bg-gray-50'
               }`
             }
           >
@@ -85,10 +93,9 @@ const ManagerSidebar = () => {
           <NavLink
             to="/manager/generate-report"
             className={({ isActive }) =>
-              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
-                isActive 
-                  ? 'bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500' 
-                  : 'text-gray-600 hover:bg-gray-50'
+              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
+                ? 'bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500'
+                : 'text-gray-600 hover:bg-gray-50'
               }`
             }
           >
@@ -99,10 +106,9 @@ const ManagerSidebar = () => {
           <NavLink
             to="/manager/feedback"
             className={({ isActive }) =>
-              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
-                isActive 
-                  ? 'bg-red-50 text-red-600 border-l-4 border-red-500' 
-                  : 'text-gray-600 hover:bg-gray-50'
+              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
+                ? 'bg-red-50 text-red-600 border-l-4 border-red-500'
+                : 'text-gray-600 hover:bg-gray-50'
               }`
             }
           >
@@ -113,10 +119,9 @@ const ManagerSidebar = () => {
           <NavLink
             to="/manager/profile"
             className={({ isActive }) =>
-              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
-                isActive 
-                  ? 'bg-teal-50 text-teal-600 border-l-4 border-teal-500' 
-                  : 'text-gray-600 hover:bg-gray-50'
+              `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
+                ? 'bg-teal-50 text-teal-600 border-l-4 border-teal-500'
+                : 'text-gray-600 hover:bg-gray-50'
               }`
             }
           >

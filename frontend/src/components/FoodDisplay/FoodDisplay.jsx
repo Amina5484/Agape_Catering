@@ -19,7 +19,7 @@ const FoodDisplay = ({ category }) => {
   const loadFoodList = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(`${url}/api/customer/menu/`, {
+      const response = await axios.get(`${url}/api/customer/menu`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
