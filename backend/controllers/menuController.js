@@ -1,4 +1,5 @@
 import Menu from '../models/menu.js';
+import Category , {SubSubcategory,Subcategory } from '../models/category.js';
 
 // /**
 //  * Get menu items filtered by category and subcategory
@@ -51,33 +52,48 @@ import Menu from '../models/menu.js';
 
 
 export const addMenuItem = async (req, res) => {
+    console.log("==========requested===========");
+    console.log(req.body);
     try {
-        const { name, description, category, subcategory, subSubcategory } = req.body;
+        const { name, price, description, category, subcategory, subSubcategory } = req.body;
         const image = req.file ? `/uploads/${req.file.filename}` : null;
-
-        if (!name || !description || !category || !subcategory || !subSubcategory || !image) {
-            return res.status(400).json({ message: "All fields are required" });
+        
+        const missingFields = [];
+        if (!name) missingFields.push("name");
+        if (!price) missingFields.push("price");
+        if (!description) missingFields.push("description");
+        if (!category) missingFields.push("category");
+        if (!subcategory) missingFields.push("subcategory");
+        if (!subSubcategory) missingFields.push("SubSubcategory");
+        if (!image) missingFields.push("image");
+        
+        if (missingFields.length > 0) {
+            return res.status(400).json({ 
+            message: "The following fields are required", 
+            missingFields 
+            });
         }
         const categoryCheck = await Category.findById(category);
         if (!categoryCheck) {
             return res.status(400).json({ message: "Category not found" });
         }
-        const subcategoryCheck = await SubCategory.findById(subcategory);
+        const subcategoryCheck = await Subcategory.findById(subcategory);
         if (!subcategoryCheck) {    
             return res.status(400).json({ message: "Subcategory not found" });
         }
-        const subSubcategoryCheck = await SubSubCategory.findById(subSubcategory);  
+        const subSubcategoryCheck = await SubSubcategory.findById(subSubcategory);  
         if (!subSubcategoryCheck) {
-            return res.status(400).json({ message: "Subsubcategory not found" });
+            return res.status(400).json({ message: "SubSubcategory not found" });
         }
         // Check if the menu item already exists    
-        const existingMenuItem = await Menu.findOne({ name, category, subcategory, subSubcategory });
+        const existingMenuItem = await Menu.findOne({ name,price, category, subcategory, SubSubcategory });
         if (existingMenuItem) {
             return res.status(400).json({ message: "Menu item already exists" });
         }
         // Create a new menu item   
         const menuItem = new Menu({
             name,
+            price,
             description,
             category,
             subcategory,

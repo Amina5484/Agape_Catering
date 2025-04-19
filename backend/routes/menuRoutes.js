@@ -1,8 +1,7 @@
 import express from 'express';
-// import { getMenuByCategoryAndSubcategory } from '../controllers/menuController.js';
 import {addMenuItem, deleteMenuItem, getAllMenuItems, getMenuItemById, updateMenuItem} from '../controllers/menuController.js'
 const menuRouter = express.Router();
-
+import { upload } from '../middleware/multer.js';
 /**
  * @swagger
  * components:
@@ -75,7 +74,7 @@ const menuRouter = express.Router();
  *       500:
  *         description: Server error
  */
-menuRouter.post('/', addMenuItem);
+menuRouter.post('/',  upload.single('image'),addMenuItem);
 /**
  * @swagger
  * /api/menu/{id}:
