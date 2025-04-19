@@ -5,41 +5,50 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 
-const FoodDisplay = () => {
-  const { food_list, url, setFoodList, addToCart, token, isLoggedIn } = useContext(StoreContext);
+const FoodDisplay = ({ category }) => {
+  const { url, setFoodList, addToCart, token, isLoggedIn } = useContext(StoreContext);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedFood, setSelectedFood] = useState(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [localFoodList, setLocalFoodList] = useState([]);
+  const [selectedSubSubcategory, setSelectedSubSubcategory] = useState(null);
 
   const loadFoodList = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(`${url}/api/customer/menu`);
-      console.log(response);
+      const response = await axios.get(`${url}/api/customer/menu/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
       const foodData = Array.isArray(response.data) ? response.data : [];
       const processedFoods = foodData.map(food => ({
         ...food,
-        image: food.image ? `${url}/uploads/${food.image.replace(/^\/uploads\//, '')}` : null
+        image: food.image ? `${url}/uploads/${food.image}` : null
       }));
+      setLocalFoodList(processedFoods);
       setFoodList(processedFoods);
-    } catch {
+    } catch (error) {
+      console.error('Error loading menu:', error);
       toast.error('Failed to load menu items');
+      setError('Failed to load menu items. Please try again later.');
     } finally {
       setIsLoading(false);
     }
-  }, [url, setFoodList]);
+  }, [url, setFoodList, token]);
 
   useEffect(() => {
     loadFoodList();
   }, [loadFoodList]);
 
   const categorizedFood = useMemo(() => {
-    if (!food_list || food_list.length === 0) return {};
+    if (!localFoodList || localFoodList.length === 0) return {};
 
-    return food_list.reduce((acc, item) => {
+    return localFoodList.reduce((acc, item) => {
       const { category, subcategory } = item;
       if (!acc[category]) acc[category] = {};
 
@@ -49,11 +58,9 @@ const FoodDisplay = () => {
       acc[category][subcategoryKey].push(item);
       return acc;
     }, {});
-  }, [food_list]);
+  }, [localFoodList]);
 
-  const handleAddToCart = useCallback(async () => {
-    if (!selectedFood) return;
-
+  const handleAddToCart = useCallback(async (item, subSubcategory) => {
     if (!isLoggedIn) {
       toast.error('Please login to add items to cart');
       navigate('/login');
@@ -61,28 +68,29 @@ const FoodDisplay = () => {
     }
 
     try {
-      await addToCart(selectedFood._id, quantity, '');
+      await addToCart(item._id, quantity, subSubcategory.name);
       toast.success('Added to cart successfully!');
-      setSelectedFood(null);
+      setSelectedSubcategory(null);
       setQuantity(1);
       setModalVisible(false);
-    } catch {
+    } catch (error) {
+      console.error('Error adding to cart:', error);
       toast.error('Failed to add item to cart');
     }
-  }, [selectedFood, quantity, isLoggedIn, addToCart, navigate]);
+  }, [quantity, isLoggedIn, addToCart, navigate]);
 
   const handleQuantityChange = useCallback((newQuantity) => {
     setQuantity(Math.max(1, newQuantity));
   }, []);
 
   const handleCloseModal = useCallback(() => {
-    setSelectedFood(null);
+    setSelectedSubcategory(null);
     setQuantity(1);
     setModalVisible(false);
   }, []);
 
-  const handleSelectFood = useCallback((food) => {
-    setSelectedFood(food);
+  const handleSelectSubcategory = useCallback((subcategory) => {
+    setSelectedSubcategory(subcategory);
     setQuantity(1);
     setModalVisible(true);
   }, []);
@@ -107,21 +115,21 @@ const FoodDisplay = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-center text-slate-800 mb-12">Our Menu</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-center text-slate-800 mb-8 sm:mb-12">Our Menu</h1>
 
-        {food_list && food_list.length > 0 ? (
+        {localFoodList && localFoodList.length > 0 ? (
           Object.keys(categorizedFood).map((category) => (
-            <div key={category} className="mb-16">
-              <h2 className="text-2xl font-semibold text-slate-700 mb-6">{category}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div key={category} className="mb-12 sm:mb-16">
+              <h2 className="text-xl sm:text-2xl font-semibold text-slate-700 mb-4 sm:mb-6">{category}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {Object.keys(categorizedFood[category]).map((subcategory) => (
                   <div
                     key={categorizedFood[category][subcategory][0]._id}
                     className="group bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                   >
-                    <div className="relative h-48 overflow-hidden">
+                    <div className="relative h-40 sm:h-48 overflow-hidden">
                       {categorizedFood[category][subcategory][0].image ? (
                         <img
                           src={categorizedFood[category][subcategory][0].image}
@@ -133,18 +141,20 @@ const FoodDisplay = () => {
                           <span className="text-slate-400">No Image</span>
                         </div>
                       )}
-                      <div className="absolute top-4 right-4 bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                        {categorizedFood[category][subcategory][0].price.toLocaleString()} Birr
+                      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-indigo-600 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold">
+                        {categorizedFood[category][subcategory][0].subSubcategories?.[0]?.price?.toLocaleString() || '0'} Birr
                       </div>
                     </div>
-                    <div className="p-6">
-                      <h3 className="text-xl font-semibold text-slate-800 mb-2">{categorizedFood[category][subcategory][0].name}</h3>
-                      <p className="text-slate-600 mb-4 line-clamp-2">{categorizedFood[category][subcategory][0].description}</p>
+                    <div className="p-4 sm:p-6">
+                      <h3 className="text-lg sm:text-xl font-semibold text-slate-800 mb-2">{subcategory}</h3>
+                      <p className="text-sm sm:text-base text-slate-600 mb-4 line-clamp-2">
+                        {categorizedFood[category][subcategory][0].description}
+                      </p>
                       <button
-                        onClick={() => handleSelectFood(categorizedFood[category][subcategory][0])}
-                        className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                        onClick={() => handleSelectSubcategory(categorizedFood[category][subcategory][0])}
+                        className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm sm:text-base"
                       >
-                        View Details
+                        See Details
                       </button>
                     </div>
                   </div>
@@ -169,16 +179,12 @@ const FoodDisplay = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-              <div className="h-48 overflow-hidden">
-                {selectedFood?.image ? (
+              <div className="h-40 sm:h-48 overflow-hidden">
+                {selectedSubcategory?.image ? (
                   <img
-                    src={`${url}/uploads/${selectedFood.image.replace(/^\/uploads\//, '')}`}
-                    alt={selectedFood.name}
+                    src={selectedSubcategory.image}
+                    alt={selectedSubcategory.name}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
-                    }}
                   />
                 ) : (
                   <div className="w-full h-full bg-slate-200 flex items-center justify-center">
@@ -186,44 +192,61 @@ const FoodDisplay = () => {
                   </div>
                 )}
               </div>
-              <div className="p-5">
+              <div className="p-4 sm:p-6">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h2 className="text-xl font-bold text-slate-800">{selectedFood?.name}</h2>
-                    <p className="text-slate-600 text-sm mt-1">{selectedFood?.description}</p>
-                  </div>
-                  <span className="text-xl font-bold text-indigo-600 whitespace-nowrap ml-4">
-                    {selectedFood?.price} Birr
-                  </span>
-                </div>
-                <div className="flex items-center justify-between bg-slate-50 rounded-lg p-3 mb-4">
-                  <span className="text-slate-700 font-medium">Quantity</span>
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-slate-100 transition-colors duration-200"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                      </svg>
-                    </button>
-                    <span className="text-lg font-semibold min-w-[2rem] text-center">{quantity}</span>
-                    <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-slate-100 transition-colors duration-200"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                    </button>
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-800">{selectedSubcategory?.name}</h2>
+                    <p className="text-sm sm:text-base text-slate-600 mt-1">{selectedSubcategory?.description}</p>
                   </div>
                 </div>
-                <button
-                  onClick={handleAddToCart}
-                  className="w-full bg-indigo-600 text-white py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-medium"
-                >
-                  Add to Cart
-                </button>
+                <div className="space-y-4">
+                  {selectedSubcategory?.subSubcategories?.map((subSub, index) => (
+                    <div
+                      key={index}
+                      className={`bg-slate-50 rounded-lg p-4 cursor-pointer transition-colors duration-200 ${selectedSubSubcategory?._id === subSub._id ? 'ring-2 ring-indigo-500' : 'hover:bg-slate-100'
+                        }`}
+                      onClick={() => setSelectedSubSubcategory(subSub)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm sm:text-base text-slate-700 font-medium">{subSub.name}</span>
+                        <span className="text-lg sm:text-xl font-bold text-indigo-600">
+                          {subSub.price.toLocaleString()} Birr
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {selectedSubSubcategory && (
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={() => handleQuantityChange(quantity - 1)}
+                          className="w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-slate-100 transition-colors duration-200"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                          </svg>
+                        </button>
+                        <span className="text-base sm:text-lg font-semibold min-w-[2rem] text-center">{quantity}</span>
+                        <button
+                          onClick={() => handleQuantityChange(quantity + 1)}
+                          className="w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-slate-100 transition-colors duration-200"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => handleAddToCart(selectedSubcategory, selectedSubSubcategory)}
+                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -233,4 +256,4 @@ const FoodDisplay = () => {
   );
 };
 
-export default React.memo(FoodDisplay);
+export default FoodDisplay;

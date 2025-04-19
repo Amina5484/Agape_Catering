@@ -26,10 +26,10 @@ const MenuManagement = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [formData, setFormData] = useState({
     name: '',
-    price: '',
     description: '',
     category: '',
     subcategory: '',
+    subSubcategories: [{ name: '', price: '' }],
     image: null
   });
   const [imagePreview, setImagePreview] = useState(null);
@@ -60,14 +60,13 @@ const MenuManagement = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      
-      // Ensure each menu item has both category and subcategory
+
+      // Only set default for category, not subcategory
       const processedItems = response.data.map(item => ({
         ...item,
-        category: item.category || 'Uncategorized',
-        subcategory: item.subcategory || 'General'
+        category: item.category || 'Uncategorized'
       }));
-      
+
       setMenuItems(processedItems);
     } catch (error) {
       console.error('Error fetching menu items:', error);
@@ -101,10 +100,10 @@ const MenuManagement = () => {
   const resetForm = () => {
     setFormData({
       name: '',
-      price: '',
       description: '',
       category: '',
       subcategory: '',
+      subSubcategories: [{ name: '', price: '' }],
       image: null
     });
     setImagePreview(null);
@@ -112,17 +111,58 @@ const MenuManagement = () => {
     setAvailableSubcategories([]);
   };
 
+  const handleSubSubcategoryChange = (index, field, value) => {
+    setFormData(prev => {
+      const newSubSubcategories = [...prev.subSubcategories];
+      newSubSubcategories[index] = {
+        ...newSubSubcategories[index],
+        [field]: value
+      };
+      return {
+        ...prev,
+        subSubcategories: newSubSubcategories
+      };
+    });
+  };
+
+  const addSubSubcategory = () => {
+    setFormData(prev => ({
+      ...prev,
+      subSubcategories: [...prev.subSubcategories, { name: '', price: '' }]
+    }));
+  };
+
+  const removeSubSubcategory = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      subSubcategories: prev.subSubcategories.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
-      formDataToSend.append('price', formData.price);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('category', formData.category);
       formDataToSend.append('subcategory', formData.subcategory);
-      
+
+      // Format subSubcategories as an array of objects with proper number conversion
+      const formattedSubSubcategories = formData.subSubcategories.map(subSub => ({
+        name: subSub.name,
+        price: Number(subSub.price) || 0
+      }));
+
+      // Validate that all subSubcategories have valid prices
+      if (formattedSubSubcategories.some(subSub => isNaN(subSub.price) || subSub.price <= 0)) {
+        toast.error('All sub-subcategories must have valid prices');
+        return;
+      }
+
+      formDataToSend.append('subSubcategories', JSON.stringify(formattedSubSubcategories));
+
       // Only append image if it's a new file
       if (formData.image instanceof File) {
         formDataToSend.append('image', formData.image);
@@ -158,14 +198,14 @@ const MenuManagement = () => {
         );
         toast.success('Menu item added successfully');
       }
-      
+
       setIsModalOpen(false);
       resetForm();
       fetchMenuItems();
-      
+
       // Refresh the food list in the StoreContext to update the home page and customer page
       await fetchFoodList();
-      
+
     } catch (error) {
       console.error('Error saving menu item:', error);
       toast.error(error.response?.data?.message || 'Failed to save menu item');
@@ -176,10 +216,10 @@ const MenuManagement = () => {
     setSelectedItem(item);
     setFormData({
       name: item.name,
-      price: item.price,
       description: item.description,
       category: item.category || '',
       subcategory: item.subcategory || '',
+      subSubcategories: item.subSubcategories || [{ name: '', price: '' }],
       image: null // Reset image to null when editing
     });
     // Set image preview if image exists
@@ -202,7 +242,7 @@ const MenuManagement = () => {
         });
         toast.success('Menu item deleted successfully');
         fetchMenuItems();
-        
+
         // Refresh the food list in the StoreContext to update the home page and customer page
         await fetchFoodList();
       } catch (error) {
@@ -215,16 +255,16 @@ const MenuManagement = () => {
   // Group menu items by category and subcategory
   const groupedMenuItems = menuItems.reduce((acc, item) => {
     const category = item.category || 'Uncategorized';
-    const subcategory = item.subcategory || 'General';
-    
+    const subcategory = item.subcategory || '';
+
     if (!acc[category]) {
       acc[category] = {};
     }
-    
+
     if (!acc[category][subcategory]) {
       acc[category][subcategory] = [];
     }
-    
+
     acc[category][subcategory].push(item);
     return acc;
   }, {});
@@ -232,7 +272,7 @@ const MenuManagement = () => {
   // Filter menu items based on search term and selected category
   const filteredMenuItems = menuItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase());
+      item.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !selectedCategory || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -251,7 +291,7 @@ const MenuManagement = () => {
         {/* Header Section */}
         <div className="flex justify-between items-center mb-8">
           <div>
-          <h2 className="text-3xl font-bold text-gray-800">Menu Management</h2>
+            <h2 className="text-3xl font-bold text-gray-800">Menu Management</h2>
             <p className="text-gray-600 mt-1">Manage your menu items and categories</p>
           </div>
           <button
@@ -285,7 +325,7 @@ const MenuManagement = () => {
             </div>
             <div className="flex items-center space-x-2">
               <FaFilter className="text-gray-400" />
-              <select 
+              <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -299,8 +339,8 @@ const MenuManagement = () => {
               </select>
             </div>
           </div>
-              </div>
-              
+        </div>
+
         {/* Table Display */}
         <div className="bg-white rounded-xl shadow-xl overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
@@ -320,10 +360,10 @@ const MenuManagement = () => {
                 filteredMenuItems.map((item) => (
                   <tr key={item._id} className="hover:bg-gray-50 transition duration-150">
                     <td className="px-6 py-4 whitespace-nowrap">
-                            {item.image ? (
-                              <img 
-                          src={`http://localhost:4000/uploads/${item.image}`} 
-                                alt={item.name} 
+                      {item.image ? (
+                        <img
+                          src={`http://localhost:4000/uploads/${item.image}`}
+                          alt={item.name}
                           className="h-16 w-16 rounded-md object-cover shadow-sm"
                           onError={(e) => {
                             e.target.onerror = null;
@@ -333,12 +373,12 @@ const MenuManagement = () => {
                             placeholderDiv.innerHTML = '<span class="text-gray-500 text-xs">No Image</span>';
                             e.target.parentNode.appendChild(placeholderDiv);
                           }}
-                              />
-                            ) : (
+                        />
+                      ) : (
                         <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center shadow-sm">
                           <span className="text-gray-500 text-xs">No Image</span>
-                              </div>
-                            )}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{item.name}</div>
@@ -353,27 +393,36 @@ const MenuManagement = () => {
                         {item.subcategory}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-indigo-600">Birr {item.price}</div>
+                    <td className="px-6 py-4">
+                      <div className="space-y-2">
+                        {item.subSubcategories?.map((subSub, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <span className="text-sm text-gray-700">{subSub.name}</span>
+                            <span className="text-sm font-semibold text-indigo-600">
+                              Birr {subSub.price.toLocaleString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-500 max-w-xs truncate">{item.description}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
-                            <button 
-                              onClick={() => handleEdit(item)}
+                      <button
+                        onClick={() => handleEdit(item)}
                         className="text-indigo-600 hover:text-indigo-900 transition duration-300 hover:scale-110 flex items-center"
-                            >
+                      >
                         <FaEdit className="mr-1" />
-                              Edit
-                            </button>
-                            <button 
-                              onClick={() => handleDelete(item._id)}
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item._id)}
                         className="text-red-600 hover:text-red-900 transition duration-300 hover:scale-110 flex items-center"
-                            >
+                      >
                         <FaTrash className="mr-1" />
-                              Delete
-                            </button>
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -415,8 +464,8 @@ const MenuManagement = () => {
                 </svg>
               </button>
             </div>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
+
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -430,30 +479,16 @@ const MenuManagement = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price (Birr)</label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formData.price}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    rows="3"
                     required
-                    min="0"
-                    step="0.01"
-                  />
+                  ></textarea>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  rows="3"
-                  required
-                ></textarea>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -492,6 +527,50 @@ const MenuManagement = () => {
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900">Sub-Subcategories</h3>
+                {formData.subSubcategories.map((subSub, index) => (
+                  <div key={index} className="flex gap-4 items-end">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700">Name</label>
+                      <input
+                        type="text"
+                        value={subSub.name}
+                        onChange={(e) => handleSubSubcategoryChange(index, 'name', e.target.value)}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        required
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700">Price</label>
+                      <input
+                        type="number"
+                        value={subSub.price}
+                        onChange={(e) => handleSubSubcategoryChange(index, 'price', e.target.value)}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        required
+                        min="0"
+                        step="0.01"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeSubSubcategory(index)}
+                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addSubSubcategory}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Add Sub-Subcategory
+                </button>
               </div>
 
               <div>

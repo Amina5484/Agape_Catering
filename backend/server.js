@@ -18,6 +18,7 @@ import customer_router from './routes/customerRoute.js';
 import category_router from './routes/categoryRoute.js';
 import admin_router from './routes/adminRoutes.js';
 import orderRoutes from './routes/orderRoute.js';
+import menuRoutes from './routes/menuRoutes.js';
 
 dotenv.config();
 
@@ -85,6 +86,8 @@ app.use('/api/food', foodRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRoutes);
 app.use('/api/feedback', feedbackRouter);
+app.use('/api/menu', menuRoutes);
+
 // ✅ Database Connection
 mongoose
   .connect(process.env.MONGODB_URI, {

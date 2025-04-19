@@ -15,7 +15,8 @@ const StockManagement = () => {
   const [formData, setFormData] = useState({
     name: "",
     quantity: "",
-    unit: ""
+    unit: "",
+    initialQuantity: ""
   });
 
   useEffect(() => {
@@ -30,11 +31,21 @@ const StockManagement = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (response.data && response.data.success) {
-        setStockItems(response.data.data || []);
+        // Set initialQuantity for each item if not already set
+        const itemsWithInitialQuantity = response.data.data.map(item => ({
+          ...item,
+          initialQuantity: item.initialQuantity || item.quantity
+        }));
+        setStockItems(itemsWithInitialQuantity || []);
       } else if (Array.isArray(response.data)) {
-        setStockItems(response.data);
+        // Set initialQuantity for each item if not already set
+        const itemsWithInitialQuantity = response.data.map(item => ({
+          ...item,
+          initialQuantity: item.initialQuantity || item.quantity
+        }));
+        setStockItems(itemsWithInitialQuantity);
       } else {
         setStockItems([]);
       }
@@ -60,7 +71,8 @@ const StockManagement = () => {
     setFormData({
       name: item.name || "",
       quantity: item.quantity || "",
-      unit: item.unit || ""
+      unit: item.unit || "",
+      initialQuantity: item.initialQuantity || item.quantity || ""
     });
     setIsEditing(true);
   };
@@ -68,11 +80,22 @@ const StockManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Convert quantity to number
+      const processedFormData = {
+        ...formData,
+        quantity: Number(formData.quantity)
+      };
+
       if (selectedItem) {
-        // Update existing item
+        // Update existing item - preserve the initial quantity
+        const updateData = {
+          ...processedFormData,
+          initialQuantity: selectedItem.initialQuantity || selectedItem.quantity
+        };
+
         const response = await axios.put(
           `http://localhost:4000/api/catering/stock/update/${selectedItem._id}`,
-          formData,
+          updateData,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -80,32 +103,32 @@ const StockManagement = () => {
             },
           }
         );
-        
-        if (response.data && response.data.success) {
-          // Update the item in the local state
-          setStockItems(prevItems => 
-            prevItems.map(item => 
-              item._id === selectedItem._id 
-                ? { ...item, ...response.data.data }
+
+        if (response.data) {
+          // Update the item in the local state, preserving initialQuantity
+          setStockItems(prevItems =>
+            prevItems.map(item =>
+              item._id === selectedItem._id
+                ? {
+                  ...item,
+                  ...response.data.updatedStock,
+                  initialQuantity: selectedItem.initialQuantity || selectedItem.quantity
+                }
                 : item
             )
           );
           toast.success("Stock item updated successfully");
-          setIsEditing(false);
-          setSelectedItem(null);
-          setFormData({
-            name: "",
-            quantity: "",
-            unit: ""
-          });
-        } else {
-          toast.error(response.data?.message || "Failed to update stock item");
         }
       } else {
-        // Add new item
+        // Add new item - set initial quantity
+        const newItemData = {
+          ...processedFormData,
+          initialQuantity: Number(formData.quantity)
+        };
+
         const response = await axios.post(
           "http://localhost:4000/api/catering/stock/add",
-          formData,
+          newItemData,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -113,22 +136,26 @@ const StockManagement = () => {
             },
           }
         );
-        
-        if (response.data && response.data.success) {
-          // Add the new item to the local state
-          setStockItems(prevItems => [...prevItems, response.data.data]);
+
+        if (response.data) {
+          // Add the new item to the local state with initialQuantity
+          setStockItems(prevItems => [...prevItems, {
+            ...response.data.stockItem,
+            initialQuantity: Number(formData.quantity)
+          }]);
           toast.success("Stock item added successfully");
-          setIsEditing(false);
-          setSelectedItem(null);
-          setFormData({
-            name: "",
-            quantity: "",
-            unit: ""
-          });
-        } else {
-          toast.error(response.data?.message || "Failed to add stock item");
         }
       }
+
+      // Reset form and state regardless of operation
+      setIsEditing(false);
+      setSelectedItem(null);
+      setFormData({
+        name: "",
+        quantity: "",
+        unit: "",
+        initialQuantity: ""
+      });
     } catch (error) {
       console.error("Error saving stock item:", error);
       toast.error(error.response?.data?.message || "Failed to save stock item");
@@ -148,7 +175,7 @@ const StockManagement = () => {
             },
           }
         );
-        
+
         if (response.data && response.data.success) {
           // Remove the item from the local state
           setStockItems(prevItems => prevItems.filter(item => item._id !== itemId));
@@ -167,7 +194,14 @@ const StockManagement = () => {
     }
   };
 
-  const filteredItems = stockItems.filter(item => {
+  const filteredItems = stockItems.map(item => {
+    // Calculate if stock is low (20% or less of initial quantity)
+    const isLowStock = item.quantity <= (item.initialQuantity || item.quantity) * 0.2;
+    return {
+      ...item,
+      isLowStock
+    };
+  }).filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesUnit = selectedUnit === "all" || item.unit === selectedUnit;
     return matchesSearch && matchesUnit;
@@ -187,7 +221,7 @@ const StockManagement = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h2 className="text-3xl font-bold text-gray-800">Stock Management</h2>
-            
+
           </div>
           <button
             onClick={() => {
@@ -195,7 +229,8 @@ const StockManagement = () => {
               setFormData({
                 name: "",
                 quantity: "",
-                unit: ""
+                unit: "",
+                initialQuantity: ""
               });
               setIsEditing(true);
             }}
@@ -297,7 +332,8 @@ const StockManagement = () => {
                     setFormData({
                       name: "",
                       quantity: "",
-                      unit: ""
+                      unit: "",
+                      initialQuantity: ""
                     });
                   }}
                   className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-300 transform hover:scale-105"
@@ -316,70 +352,85 @@ const StockManagement = () => {
         )}
 
         <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-blue-600">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Quantity
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Unit
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredItems.length > 0 ? (
-                filteredItems.map((item) => (
-                  <tr key={item._id} className="hover:bg-gray-50 transition duration-150">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-800">{item.name}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-800">{item.quantity}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                        {item.unit}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="text-blue-600 hover:text-blue-800 transition duration-300 hover:scale-110 flex items-center"
-                      >
-                        <FaEdit className="mr-1" />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item._id)}
-                        className="text-red-600 hover:text-red-800 transition duration-300 hover:scale-110 flex items-center"
-                      >
-                        <FaTrash className="mr-1" />
-                        Delete
-                      </button>
-                    </td>
+          <div className="overflow-x-auto">
+            <div className="min-w-full inline-block align-middle">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-blue-600">
+                  <tr>
+                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider whitespace-nowrap">
+                      Name
+                    </th>
+                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider whitespace-nowrap">
+                      Quantity
+                    </th>
+                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider whitespace-nowrap">
+                      Unit
+                    </th>
+                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider whitespace-nowrap">
+                      Stock Level
+                    </th>
+                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider whitespace-nowrap">
+                      Actions
+                    </th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
-                    <div className="flex flex-col items-center space-y-2">
-                      <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <p className="text-lg">No stock items found. Add your first stock item!</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredItems.length > 0 ? (
+                    filteredItems.map((item) => (
+                      <tr key={item._id} className="hover:bg-gray-50 transition duration-150">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-800">{item.name}</div>
+                        </td>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-800">{item.quantity}</div>
+                        </td>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                            {item.unit}
+                          </span>
+                        </td>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.isLowStock
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-green-100 text-green-800'
+                            }`}>
+                            {item.isLowStock ? 'Low' : 'Normal'}
+                          </span>
+                        </td>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 sm:space-x-3">
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="text-blue-600 hover:text-blue-800 transition duration-300 hover:scale-110 flex items-center"
+                          >
+                            <FaEdit className="mr-1" />
+                            <span className="hidden sm:inline">Edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item._id)}
+                            className="text-red-600 hover:text-red-800 transition duration-300 hover:scale-110 flex items-center"
+                          >
+                            <FaTrash className="mr-1" />
+                            <span className="hidden sm:inline">Delete</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="px-4 sm:px-6 py-8 text-center text-gray-500">
+                        <div className="flex flex-col items-center space-y-2">
+                          <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <p className="text-lg">No stock items found. Add your first stock item!</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>

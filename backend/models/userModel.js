@@ -8,7 +8,7 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   phone: { type: String, required: true, unique: true },
   gender: { type: String, enum: ['male', 'female', 'other'], default: 'male' },
-  photo: { type: String, default: '/uploads/1740571467659-cookies.png' },
+  photo: { type: String, default: './uploads/1740571467659-cookies.png' },
   password: { type: String, required: true },
   role: {
     type: String,

@@ -7,7 +7,7 @@ import Feedback from '../models/feedback.js';
 
 export const getMenu = async (req, res) => {
     try {
-        const menu = await Menu.find({}, 'name price description category image');
+        const menu = await Menu.find().select('name price description category subcategory image');
         res.status(200).json(menu);
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });

@@ -85,31 +85,31 @@ const Navbar = ({ setShowLogin }) => {
           <img
             src={assets.logo}
             alt="Logo"
-            className="w-16 h-8 sm:w-20 sm:h-10"
+            className="w-12 h-6 sm:w-16 sm:h-8 md:w-20 md:h-10"
           />
         </Link>
       </div>
 
-      <div className="sm:hidden flex items-center space-x-4">
+      <div className="sm:hidden flex items-center space-x-3">
         <FaSearch
-          className="w-6 h-6 cursor-pointer hover:text-gray-400"
+          className="w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hover:text-gray-400"
           title="Search"
         />
         <Link to="/cart">
           <FaShoppingCart
-            className="w-6 h-6 cursor-pointer hover:text-gray-400"
+            className="w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hover:text-gray-400"
             title="Cart"
           />
         </Link>
         <FaBars
-          className="w-6 h-6 cursor-pointer hover:text-gray-400"
+          className="w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hover:text-gray-400"
           onClick={() => setIsOpen(!isOpen)}
           title="Menu"
         />
       </div>
 
-      <div className="hidden sm:flex flex-1 justify-end px-4 sm:px-16">
-        <ul className="flex items-center space-x-4 sm:space-x-8 text-sm sm:text-md font-medium text-black dark:text-white">
+      <div className="hidden sm:flex flex-1 justify-end px-4 sm:px-8 md:px-16">
+        <ul className="flex items-center space-x-4 sm:space-x-6 md:space-x-8 text-xs sm:text-sm md:text-base font-medium text-black dark:text-white">
           <Link to="/" className="cursor-pointer hover:text-gray-400">
             Home
           </Link>
@@ -121,93 +121,41 @@ const Navbar = ({ setShowLogin }) => {
           </Link>
           <Link to="/cart">
             <FaShoppingCart
-              className="w-5 h-5 cursor-pointer hover:text-gray-400"
+              className="w-4 h-4 sm:w-5 sm:h-5 cursor-pointer hover:text-gray-400"
               title="Cart"
             />
           </Link>
           <FaSearch
-            className="w-5 h-5 cursor-pointer hover:text-gray-400"
+            className="w-4 h-4 sm:w-5 sm:h-5 cursor-pointer hover:text-gray-400"
             title="Search"
           />
           <Link to="/feedback" className="cursor-pointer hover:text-gray-400">
             Feedback
           </Link>
-
           {!isCustomerLoggedIn ? (
             <button
+              className="bg-blue-500 rounded text-white px-3 py-1 text-xs sm:text-sm hover:bg-blue-600 transition"
               onClick={handleLoginClick}
-              className="bg-blue-500 rounded-full text-white px-6 py-2 hover:bg-blue-600 transition duration-300"
             >
               Login/Sign Up
             </button>
           ) : (
-            <div className="relative flex items-center" ref={profileRef}>
-              <div onClick={() => setIsProfileOpen(!isProfileOpen)}>
-                <FaUser className="w-7 h-7 cursor-pointer text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100" />
-                {isProfileOpen && (
-                  <ul className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 dark:text-white shadow-lg rounded-lg py-2 border border-gray-200 dark:border-gray-700">
-                    <li
-                      className="flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                      onClick={() => {
-                        navigate('/customer/orders');
-                        setIsProfileOpen(false);
-                      }}
-                    >
-                      <FaShoppingBag className="mr-2" />
-                      Order
-                    </li>
-                    <li
-                      className="flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                      onClick={() => {
-                        navigate('/customer/orders');
-                        setIsProfileOpen(false);
-                      }}
-                    >
-                      <FaShoppingBag className="mr-2" />
-                      Order History
-                    </li>
-                    <li
-                      className="flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                      onClick={() => {
-                        navigate('/customer/profile');
-                        setIsProfileOpen(false);
-                      }}
-                    >
-                      <FaCog className="mr-2" />
-                      Manage Profile
-                    </li>
-                    <li
-                      onClick={() => {
-                        logout();
-                        setIsProfileOpen(false);
-                      }}
-                      className="flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-red-600 dark:text-red-400"
-                    >
-                      <FaSignOutAlt className="mr-2" />
-                      Logout
-                    </li>
-                  </ul>
-                )}
-              </div>
-
-              <button
-                onClick={toggleDarkMode}
-                className="ml-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-              >
-                {darkMode ? (
-                  <FaSun className="text-yellow-500 w-6 h-6" />
-                ) : (
-                  <FaMoon className="text-gray-600 w-6 h-6" />
-                )}
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                logout();
+                setIsOpen(false);
+              }}
+              className="text-red-600 dark:text-red-400 text-xs sm:text-sm hover:text-red-700 transition"
+            >
+              Logout
+            </button>
           )}
         </ul>
       </div>
 
       {isOpen && (
-        <div className="absolute top-14 left-0 w-full bg-white dark:bg-gray-800 shadow-lg p-4 sm:hidden">
-          <ul className="flex flex-col space-y-4 text-center text-black dark:text-white">
+        <div className="absolute top-12 sm:top-14 left-0 w-full bg-white dark:bg-gray-800 shadow-lg p-3 sm:p-4 sm:hidden">
+          <ul className="flex flex-col space-y-3 sm:space-y-4 text-center text-black dark:text-white">
             <li className="cursor-pointer hover:text-gray-400">
               <Link to="/">Home</Link>
             </li>
@@ -222,7 +170,7 @@ const Navbar = ({ setShowLogin }) => {
             </li>
             {!isCustomerLoggedIn ? (
               <button
-                className="bg-blue-500 rounded text-white px-4 py-1 hover:text-gray-400 transition"
+                className="bg-blue-500 rounded text-white px-4 py-1 text-sm hover:bg-blue-600 transition"
                 onClick={handleLoginClick}
               >
                 Login/Sign Up

@@ -22,7 +22,8 @@ import CustomerOrders from './pages/Orders/Orders';
 // Chef Imports
 import ChefDashboard from './chef/ChefDashboard';
 import OrderManagement from './components/chef/OrderManagement';
-import InventoryManagement from './components/chef/InventoryManagement';
+//import ChefStockManagement from './chef/ChefStockManagement';
+
 
 // Manager Imports
 import ManagerSidebar from './manager/managerSidebar/managerSidebar';
@@ -48,6 +49,7 @@ import EditStaff from './SystemAdmin/EditStaff';
 //import ListStaff from './SystemAdmin/ListStaff';
 import AdminHome from './SystemAdmin/AdminHome';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+
 
 
 
@@ -138,7 +140,7 @@ const AppContent = () => {
             />
             {/* <Route path="staff-list" element={<ListStaff url={url} />} /> */}
             <Route path="view-user" element={<ViewUser url={url} />} />
-            {/* <Route path="account-list" element={<AccountList />} /> */}
+          
           </Route>
 
           {/* Chef Routes */}
@@ -152,7 +154,7 @@ const AppContent = () => {
           >
             <Route index element={<OrderManagement />} />
             <Route path="orders" element={<OrderManagement />} />
-            <Route path="inventory" element={<InventoryManagement />} />
+            {/* <Route path="stock" element={<ChefStockManagement />} /> */}
             <Route path="profile" element={<CustomerProfile />} />
           </Route>
 

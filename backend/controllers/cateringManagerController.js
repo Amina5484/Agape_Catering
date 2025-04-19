@@ -8,58 +8,70 @@ import category_router from '../routes/categoryRoute.js';
 
 export const addMenuItem = async (req, res) => {
     try {
+        const { name, description, category, subcategory } = req.body;
+        let subSubcategories = [];
 
-        const { name, price, description, category, subcategory } = req.body;
+        // Parse subSubcategories from the form data
+        if (req.body.subSubcategories) {
+            if (typeof req.body.subSubcategories === 'string') {
+                subSubcategories = JSON.parse(req.body.subSubcategories);
+            } else {
+                subSubcategories = req.body.subSubcategories;
+            }
+        }
 
         // Ensure all required fields exist
-        if (!name || !price || !description || !category) {
-            return res.status(400).json({ message: "All fields are required" });
+        if (!name || !description || !category || !subcategory || !subSubcategories || subSubcategories.length === 0) {
+            return res.status(400).json({ message: "All fields including subSubcategories are required" });
+        }
+
+        // Validate subSubcategories
+        for (const subSub of subSubcategories) {
+            if (!subSub.name || subSub.price === undefined || subSub.price === null) {
+                return res.status(400).json({ message: "Each subSubcategory must have a name and price" });
+            }
+            if (isNaN(subSub.price) || Number(subSub.price) <= 0) {
+                return res.status(400).json({ message: "Price must be a positive number" });
+            }
+            subSub.price = Number(subSub.price);
         }
 
         // Handle image path
         let image = null;
         if (req.file) {
-            // Store only the filename, not the full path
             image = req.file.filename;
-            console.log("Image filename:", image);
         }
 
         // Create menu item
-        const menuItem = new Menu({ 
-            name, 
-            price, 
-            description, 
-            category, 
+        const menuItem = new Menu({
+            name,
+            description,
+            category,
             subcategory,
-            image 
+            subSubcategories,
+            image
         });
+
         await menuItem.save();
 
         // Also add to Food collection for home page display
         const foodItem = new Food({
             name,
-            price,
             description,
             category,
             subcategory,
-            image
+            image,
+            price: subSubcategories[0].price // Use the first subSubcategory price as default
         });
         await foodItem.save();
 
-        // Return both items with proper image URLs
-        const response = {
+        res.status(201).json({
             message: "Menu item added successfully",
             menuItem: {
                 ...menuItem.toObject(),
                 image: image ? `/uploads/${image}` : null
-            },
-            foodItem: {
-                ...foodItem.toObject(),
-                image: image ? `/uploads/${image}` : null
             }
-        };
-
-        res.status(201).json(response);
+        });
     } catch (error) {
         console.error("Error adding menu item:", error);
         res.status(500).json({ message: "Server Error", error: error.message });
@@ -69,31 +81,42 @@ export const addMenuItem = async (req, res) => {
 export const updateMenuItem = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, price, description, category, subcategory } = req.body;
-        
+        const { name, description, category, subcategory, subSubcategories } = req.body;
+
+        // Ensure all required fields exist
+        if (!name || !description || !category || !subcategory || !subSubcategories) {
+            return res.status(400).json({ message: "All fields including subSubcategories are required" });
+        }
+
         // Update menu item
         const updatedItem = await Menu.findByIdAndUpdate(
-            id, 
-            { name, price, description, category, subcategory }, 
+            id,
+            { name, description, category, subcategory, subSubcategories },
             { new: true }
         );
-        
+
+        if (!updatedItem) {
+            return res.status(404).json({ message: "Menu item not found" });
+        }
+
         // Also update in Food collection
-        // Find food item by name and category (since we don't have a direct ID mapping)
-        const foodItem = await Food.findOne({ 
-            name: updatedItem.name, 
-            category: updatedItem.category 
+        const foodItem = await Food.findOne({
+            name: updatedItem.name,
+            category: updatedItem.category
         });
-        
+
         if (foodItem) {
             await Food.findByIdAndUpdate(
                 foodItem._id,
-                { name, price, description, category, subcategory },
+                { name, description, category, subcategory },
                 { new: true }
             );
         }
-        
-        res.status(200).json({ message: "Menu item updated", updatedItem });
+
+        res.status(200).json({
+            message: "Menu item updated successfully",
+            updatedItem
+        });
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });
     }
@@ -102,21 +125,21 @@ export const updateMenuItem = async (req, res) => {
 export const deleteMenuItem = async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         // Get menu item before deleting to find corresponding food item
         const menuItem = await Menu.findById(id);
-        
+
         if (menuItem) {
             // Delete from Menu collection
             await Menu.findByIdAndDelete(id);
-            
+
             // Also delete from Food collection
-            await Food.findOneAndDelete({ 
-                name: menuItem.name, 
-                category: menuItem.category 
+            await Food.findOneAndDelete({
+                name: menuItem.name,
+                category: menuItem.category
             });
         }
-        
+
         res.status(200).json({ message: "Menu item deleted" });
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });
@@ -125,7 +148,7 @@ export const deleteMenuItem = async (req, res) => {
 
 export const getMenu = async (req, res) => {
     try {
-        const menu = await Menu.find();
+        const menu = await Menu.find().select('name description category subcategory subSubcategories image');
         res.status(200).json(menu);
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });

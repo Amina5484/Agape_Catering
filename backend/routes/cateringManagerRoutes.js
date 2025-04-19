@@ -1,7 +1,7 @@
 import express from 'express';
 import { protect, authorizeRoles } from '../config/authMiddleware.js';
 import ROLES from '../config/roles.js';
-import { 
+import {
     addMenuItem, updateMenuItem, deleteMenuItem, getMenu,
     addStockItem, updateStockItem, deleteStockItem, getStock,
     acceptOrder, assignSchedule, updateOrderStatus,
