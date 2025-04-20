@@ -214,7 +214,7 @@ const CategoryManagement = () => {
                 const endpoint = type === 'category' ? 'category' :
                     type === 'subcategory' ? 'subcategory' :
                         'subsubcategory';
-                await axios.delete(`http://localhost:4000/api/category/${endpoint}/${id}`, {
+                await axios.delete(`http://localhost:4000/api/category/${endpoint}/delete/${id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 toast.success(`${type} deleted successfully`);
@@ -231,7 +231,7 @@ const CategoryManagement = () => {
             const endpoint = type === 'category' ? 'category' :
                 type === 'subcategory' ? 'subcategory' :
                     'subsubcategory';
-            await axios.put(`http://localhost:4000/api/category/${endpoint}/${id}`, data, {
+            await axios.put(`http://localhost:4000/api/category/${endpoint}/update/${id}`, data, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success(`${type} updated successfully`);
