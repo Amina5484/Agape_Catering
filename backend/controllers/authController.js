@@ -3,7 +3,7 @@ import User from '../models/userModel.js';
 import ROLES from '../config/roles.js';
 
 const isValidPhoneNumber = (phone) => {
-  const phoneRegex = /^\+?[1-9]\d{1,14}$/; // Supports E.164 international format
+  const phoneRegex = /^(\+251|0)?9\d{8}$/; // Supports Ethiopian phone numbers in formats like +251943317021 or 0943317021
   return phoneRegex.test(phone);
 };
 
