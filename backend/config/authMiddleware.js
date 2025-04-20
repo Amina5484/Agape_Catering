@@ -25,7 +25,7 @@ export const protect = asyncHandler(async (req, res, next) => {
 
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
-    console.log(`User role: ${req.user.role}`); // Debugging line
+    // console.log(`User role: ${req.user.role}`); // Debugging line
     if (!roles.includes(req.user.role)) {
       res.status(403);
       throw new Error('User role not authorized');
