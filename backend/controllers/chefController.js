@@ -1,4 +1,5 @@
 import Stock from "../models/stock.js";
+import Schedule from "../models/schedule.js";
 
 
 // STOCK MANAGEMENT
@@ -31,6 +32,23 @@ export const getStock = async (req, res) => {
     try {
         const stock = await Stock.find();
         res.status(200).json(stock);
+    } catch (error) {
+        res.status(500).json({ message: "Server Error", error });
+    }
+};
+
+
+// scheduleSchema MANAGEMENT
+
+export const getScheduleById = async (req, res) => {
+    
+    try {
+        const { id } = req.params;
+        const schedule = await Schedule.findById(id);
+        if (!schedule) {
+            return res.status(200).json({ message: "Schedule not found" });
+        }
+        res.status(200).json(schedule);
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });
     }
