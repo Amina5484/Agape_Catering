@@ -1,24 +1,17 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useStore } from '../context/StoreContext';
 import { menu_list } from '../assets/assets';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaTimes } from 'react-icons/fa';
 
-// Define subcategories for each main category
-const subcategories = {
-  'Dessert': ['Cake', 'Baklava', "T'ef Cake", 'Dabo Kolo', 'Atayef', 'Pudding', 'Cookies', 'Pies', 'Pastries', 'Candy'],
-  'Vegetable': ['Salad', 'Steamed', 'Stir-fried', 'Roasted', 'Soup'],
-  'Global cuisine': ['Italian', 'Chinese', 'Indian', 'Mexican', 'Thai', 'Japanese', 'American', 'Mediterranean'],
-  'Full Package': ['Wedding', 'Birthday', 'Corporate', 'Family Gathering', 'Special Event'],
-  'የጾም': ['Fasting Food', 'Special Fasting', 'Traditional Fasting'],
-  'የፍስክ': ['Holiday Special', 'Traditional', 'Modern'],
-  'Drinks': ['Hot Drinks', 'Cold Drinks', 'Juices', 'Smoothies', 'Alcoholic', 'Non-Alcoholic']
-};
 
 const MenuManagement = () => {
   const { token, fetchFoodList } = useStore();
   const [menuItems, setMenuItems] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [subSubcategories, setSubSubcategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -26,17 +19,22 @@ const MenuManagement = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [formData, setFormData] = useState({
     name: '',
+    price: '',
     description: '',
     category: '',
     subcategory: '',
-    subSubcategories: [{ name: '', price: '' }],
+    subSubcategory: '',
     image: null
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [availableSubcategories, setAvailableSubcategories] = useState([]);
+  const [filteredSubcategories, setFilteredSubcategories] = useState([]);
+  const [filteredSubSubcategories, setFilteredSubSubcategories] = useState([]);
+  const [showSubcategory, setShowSubcategory] = useState(false);
+  const [showSubSubcategory, setShowSubSubcategory] = useState(false);
 
   useEffect(() => {
-    fetchMenuItems();
+    fetchAllData();
   }, []);
 
   // Update available subcategories when category changes
@@ -52,25 +50,68 @@ const MenuManagement = () => {
     }
   }, [formData.category]);
 
-  const fetchMenuItems = async () => {
+  // Update filtered subcategories when category changes
+  useEffect(() => {
+    if (formData.category) {
+      const filtered = subcategories.filter(sub => sub.subcategoriesId === formData.category);
+      setFilteredSubcategories(filtered);
+      setShowSubcategory(true);
+      // Reset subcategory and sub-subcategory when category changes
+      setFormData(prev => ({
+        ...prev,
+        subcategory: '',
+        subSubcategory: ''
+      }));
+      setShowSubSubcategory(false);
+    } else {
+      setFilteredSubcategories([]);
+      setShowSubcategory(false);
+      setShowSubSubcategory(false);
+    }
+  }, [formData.category, subcategories]);
+
+  // Update filtered sub-subcategories when subcategory changes
+  useEffect(() => {
+    if (formData.subcategory) {
+      const filtered = subSubcategories.filter(subSub => subSub.subSubcategoriesId === formData.subcategory);
+      setFilteredSubSubcategories(filtered);
+      setShowSubSubcategory(true);
+      // Reset sub-subcategory when subcategory changes
+      setFormData(prev => ({
+        ...prev,
+        subSubcategory: ''
+      }));
+    } else {
+      setFilteredSubSubcategories([]);
+      setShowSubSubcategory(false);
+    }
+  }, [formData.subcategory, subSubcategories]);
+
+  const fetchAllData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:4000/api/catering/menu', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const [menuRes, categoriesRes, subcategoriesRes, subSubcategoriesRes] = await Promise.all([
+        axios.get('http://localhost:4000/api/menu', {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get('http://localhost:4000/api/category', {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get('http://localhost:4000/api/category/subcategory', {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get('http://localhost:4000/api/category/subsubcategory', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
 
-      // Only set default for category, not subcategory
-      const processedItems = response.data.map(item => ({
-        ...item,
-        category: item.category || 'Uncategorized'
-      }));
-
-      setMenuItems(processedItems);
+      setMenuItems(menuRes.data);
+      setCategories(categoriesRes.data);
+      setSubcategories(subcategoriesRes.data);
+      setSubSubcategories(Array.isArray(subSubcategoriesRes.data) ? subSubcategoriesRes.data : []);
     } catch (error) {
-      console.error('Error fetching menu items:', error);
-      toast.error(error.response?.data?.message || 'Failed to fetch menu items');
+      console.error('Error fetching data:', error);
+      setSubSubcategories([]);
     } finally {
       setLoading(false);
     }
@@ -91,19 +132,22 @@ const MenuManagement = () => {
         ...prev,
         image: file
       }));
-      // Create a preview URL for the selected file
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const resetForm = () => {
     setFormData({
       name: '',
+      price: '',
       description: '',
       category: '',
       subcategory: '',
-      subSubcategories: [{ name: '', price: '' }],
+      subSubcategory: '',
       image: null
     });
     setImagePreview(null);
@@ -111,104 +155,36 @@ const MenuManagement = () => {
     setAvailableSubcategories([]);
   };
 
-  const handleSubSubcategoryChange = (index, field, value) => {
-    setFormData(prev => {
-      const newSubSubcategories = [...prev.subSubcategories];
-      newSubSubcategories[index] = {
-        ...newSubSubcategories[index],
-        [field]: value
-      };
-      return {
-        ...prev,
-        subSubcategories: newSubSubcategories
-      };
-    });
-  };
-
-  const addSubSubcategory = () => {
-    setFormData(prev => ({
-      ...prev,
-      subSubcategories: [...prev.subSubcategories, { name: '', price: '' }]
-    }));
-  };
-
-  const removeSubSubcategory = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      subSubcategories: prev.subSubcategories.filter((_, i) => i !== index)
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
+      setLoading(true);
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
+      formDataToSend.append('price', formData.price);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('category', formData.category);
       formDataToSend.append('subcategory', formData.subcategory);
-
-      // Format subSubcategories as an array of objects with proper number conversion
-      const formattedSubSubcategories = formData.subSubcategories.map(subSub => ({
-        name: subSub.name,
-        price: Number(subSub.price) || 0
-      }));
-
-      // Validate that all subSubcategories have valid prices
-      if (formattedSubSubcategories.some(subSub => isNaN(subSub.price) || subSub.price <= 0)) {
-        toast.error('All sub-subcategories must have valid prices');
-        return;
-      }
-
-      formDataToSend.append('subSubcategories', JSON.stringify(formattedSubSubcategories));
-
-      // Only append image if it's a new file
-      if (formData.image instanceof File) {
+      formDataToSend.append('subSubcategory', formData.subSubcategory);
+      if (formData.image) {
         formDataToSend.append('image', formData.image);
-      } else if (selectedItem?.image) {
-        // If editing and no new image selected, keep the existing image
-        formDataToSend.append('image', selectedItem.image);
       }
 
-      if (selectedItem) {
-        // Update existing item
-        const response = await axios.put(
-          `http://localhost:4000/api/catering/menu/update/${selectedItem._id}`,
-          formDataToSend,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-        toast.success('Menu item updated successfully');
-      } else {
-        // Add new item
-        const response = await axios.post(
-          'http://localhost:4000/api/catering/menu',
-          formDataToSend,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-        toast.success('Menu item added successfully');
-      }
+      const response = await axios.post('http://localhost:4000/api/menu', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-      setIsModalOpen(false);
+      toast.success('Menu item added successfully');
       resetForm();
-      fetchMenuItems();
-
-      // Refresh the food list in the StoreContext to update the home page and customer page
-      await fetchFoodList();
-
+      fetchAllData();
     } catch (error) {
-      console.error('Error saving menu item:', error);
-      toast.error(error.response?.data?.message || 'Failed to save menu item');
+      console.error('Error adding menu item:', error);
+      toast.error(error.response?.data?.message || 'Failed to add menu item');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -216,38 +192,33 @@ const MenuManagement = () => {
     setSelectedItem(item);
     setFormData({
       name: item.name,
+      price: item.price,
       description: item.description,
-      category: item.category || '',
-      subcategory: item.subcategory || '',
-      subSubcategories: item.subSubcategories || [{ name: '', price: '' }],
-      image: null // Reset image to null when editing
+      category: item.category,
+      subcategory: item.subcategory,
+      subSubcategory: item.subSubcategory,
+      image: null
     });
-    // Set image preview if image exists
-    if (item.image) {
-      const imageUrl = `http://localhost:4000/uploads/${item.image}`;
-      setImagePreview(imageUrl);
-    } else {
-      setImagePreview(null);
-    }
+    setImagePreview(item.image ? `http://localhost:4000${item.image}` : null);
     setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this menu item?')) {
       try {
-        await axios.delete(`http://localhost:4000/api/catering/menu/delete/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        setLoading(true);
+        await axios.delete(`http://localhost:4000/api/menu/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        toast.success('Menu item deleted successfully');
-        fetchMenuItems();
+        fetchAllData();
 
         // Refresh the food list in the StoreContext to update the home page and customer page
         await fetchFoodList();
       } catch (error) {
         console.error('Error deleting menu item:', error);
         toast.error(error.response?.data?.message || 'Failed to delete menu item');
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -286,334 +257,246 @@ const MenuManagement = () => {
   }
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-800">Menu Management</h2>
-            <p className="text-gray-600 mt-1">Manage your menu items and categories</p>
-          </div>
-          <button
-            onClick={() => {
-              resetForm();
-              setIsModalOpen(true);
-            }}
-            className="group relative inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-700 to-indigo-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative flex items-center space-x-2">
-              <FaPlus className="w-5 h-5 transform group-hover:rotate-90 transition-transform duration-300" />
-              <span className="font-semibold">Add New Menu Item</span>
-            </div>
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-          </button>
-        </div>
-
-        {/* Search and Filter Section */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search menu items..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <FaFilter className="text-gray-400" />
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              >
-                <option value="">All Categories</option>
-                {menu_list.map((item) => (
-                  <option key={item.menu_name} value={item.menu_name}>
-                    {item.menu_name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Table Display */}
-        <div className="bg-white rounded-xl shadow-xl overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-indigo-600">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Image</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Name</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Category</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Subcategory</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Price</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Description</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredMenuItems.length > 0 ? (
-                filteredMenuItems.map((item) => (
-                  <tr key={item._id} className="hover:bg-gray-50 transition duration-150">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {item.image ? (
-                        <img
-                          src={`http://localhost:4000/uploads/${item.image}`}
-                          alt={item.name}
-                          className="h-16 w-16 rounded-md object-cover shadow-sm"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.style.display = 'none';
-                            const placeholderDiv = document.createElement('div');
-                            placeholderDiv.className = 'h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center shadow-sm';
-                            placeholderDiv.innerHTML = '<span class="text-gray-500 text-xs">No Image</span>';
-                            e.target.parentNode.appendChild(placeholderDiv);
-                          }}
-                        />
-                      ) : (
-                        <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center shadow-sm">
-                          <span className="text-gray-500 text-xs">No Image</span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                        {item.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                        {item.subcategory}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-2">
-                        {item.subSubcategories?.map((subSub, index) => (
-                          <div key={index} className="flex items-center justify-between">
-                            <span className="text-sm text-gray-700">{subSub.name}</span>
-                            <span className="text-sm font-semibold text-indigo-600">
-                              Birr {subSub.price.toLocaleString()}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500 max-w-xs truncate">{item.description}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="text-indigo-600 hover:text-indigo-900 transition duration-300 hover:scale-110 flex items-center"
-                      >
-                        <FaEdit className="mr-1" />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item._id)}
-                        className="text-red-600 hover:text-red-900 transition duration-300 hover:scale-110 flex items-center"
-                      >
-                        <FaTrash className="mr-1" />
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
-                    <div className="flex flex-col items-center space-y-2">
-                      <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <p className="text-lg">No menu items found matching your criteria</p>
-                      <p className="text-sm text-gray-500">Try adjusting your search or filter</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Menu Management</h1>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors"
+        >
+          <FaPlus /> Add Menu Item
+        </button>
       </div>
 
-      {/* Modal for Add/Edit Menu Item */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full transform transition-all">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">
-                {selectedItem ? 'Edit Menu Item' : 'Add New Item'}
-              </h3>
+          <div className="bg-white rounded-lg shadow-xl p-4 max-w-sm w-full">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-lg font-semibold text-gray-800">Add Menu Item</h3>
               <button
                 onClick={() => {
                   setIsModalOpen(false);
                   resetForm();
                 }}
-                className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                className="text-gray-400 hover:text-gray-500"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <FaTimes />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <label className="block text-sm font-medium text-gray-700">Name</label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
                     required
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
+                  <label className="block text-sm font-medium text-gray-700">Price</label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={formData.price}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    rows="3"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
                     required
-                  ></textarea>
+                  />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                  >
-                    <option value="">Select category</option>
-                    {menu_list.map((item) => (
-                      <option key={item.menu_name} value={item.menu_name}>
-                        {item.menu_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                  rows="2"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Category</label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                  required
+                >
+                  <option value="">Select Category</option>
+                  {categories.map(category => (
+                    <option key={category._id} value={category._id}>
+                      {category.categoryName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {showSubcategory && (
+                <div className="transition-all duration-300 ease-in-out">
+                  <label className="block text-sm font-medium text-gray-700">Subcategory</label>
                   <select
                     name="subcategory"
                     value={formData.subcategory}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
                     required
-                    disabled={!formData.category || availableSubcategories.length === 0}
                   >
-                    <option value="">Select subcategory</option>
-                    {availableSubcategories.map((subcategory) => (
-                      <option key={subcategory} value={subcategory}>
-                        {subcategory}
+                    <option value="">Select Subcategory</option>
+                    {filteredSubcategories.map(subcategory => (
+                      <option key={subcategory._id} value={subcategory._id}>
+                        {subcategory.subcategoryName}
                       </option>
                     ))}
                   </select>
                 </div>
-              </div>
+              )}
 
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">Sub-Subcategories</h3>
-                {formData.subSubcategories.map((subSub, index) => (
-                  <div key={index} className="flex gap-4 items-end">
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700">Name</label>
-                      <input
-                        type="text"
-                        value={subSub.name}
-                        onChange={(e) => handleSubSubcategoryChange(index, 'name', e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        required
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700">Price</label>
-                      <input
-                        type="number"
-                        value={subSub.price}
-                        onChange={(e) => handleSubSubcategoryChange(index, 'price', e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        required
-                        min="0"
-                        step="0.01"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeSubSubcategory(index)}
-                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addSubSubcategory}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Add Sub-Subcategory
-                </button>
-              </div>
+              {showSubSubcategory && (
+                <div className="transition-all duration-300 ease-in-out">
+                  <label className="block text-sm font-medium text-gray-700">Sub-subcategory</label>
+                  <select
+                    name="subSubcategory"
+                    value={formData.subSubcategory}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                    required
+                  >
+                    <option value="">Select Sub-subcategory</option>
+                    {filteredSubSubcategories.map(subSubcategory => (
+                      <option key={subSubcategory._id} value={subSubcategory._id}>
+                        {subSubcategory.subSubcategoryName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                <div className="flex items-center space-x-4">
+                <label className="block text-sm font-medium text-gray-700">Image</label>
+                <div className="flex items-center gap-3">
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    required
                   />
                   {imagePreview && (
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="h-16 w-16 object-cover rounded-md shadow-sm"
+                      className="h-12 w-12 object-cover rounded-md"
                     />
                   )}
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-3 pt-4">
+              <div className="flex justify-end space-x-2">
                 <button
                   type="button"
                   onClick={() => {
                     setIsModalOpen(false);
                     resetForm();
                   }}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="px-3 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm"
+                  disabled={loading}
                 >
-                  {selectedItem ? 'Update' : 'Add'} Item
+                  {loading ? 'Adding...' : 'Add'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subcategory</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sub-subcategory</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredMenuItems.map((item) => (
+              <tr key={item._id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {item.image ? (
+                    <img
+                      src={`http://localhost:4000/uploads/${item.image}`}
+                      alt={item.name}
+                      className="h-16 w-16 rounded-md object-cover shadow-sm"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.style.display = 'none';
+                        const placeholderDiv = document.createElement('div');
+                        placeholderDiv.className = 'h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center shadow-sm';
+                        placeholderDiv.innerHTML = '<span class="text-gray-500 text-xs">No Image</span>';
+                        e.target.parentNode.appendChild(placeholderDiv);
+                      }}
+                    />
+                  ) : (
+                    <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center shadow-sm">
+                      <span className="text-gray-500 text-xs">No Image</span>
+                    </div>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                  <div className="text-sm text-gray-500 line-clamp-2">{item.description}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  ${item.price}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {item.category?.categoryName || 'N/A'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {item.subcategory?.subcategoryName || 'N/A'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {item.subSubcategory?.subSubcategoryName || 'N/A'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button
+                    onClick={() => handleEdit(item)}
+                    className="text-indigo-600 hover:text-indigo-900 mr-4"
+                  >
+                    <FaEdit />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item._id)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    <FaTrash />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
