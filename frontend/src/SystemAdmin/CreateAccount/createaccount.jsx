@@ -64,7 +64,7 @@ const CreateAccount = () => {
         `http://localhost:4000${endpoint}`,
         userData,
         {
-        headers: { 
+          headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
@@ -73,6 +73,11 @@ const CreateAccount = () => {
 
       if (response.data.message) {
         toast.success(response.data.message);
+        if (response.data.password) {
+          toast.info(
+            `Generated password: ${response.data.password}. Please save this password.`
+          );
+        }
         navigate('/admin/view-users');
       }
     } catch (error) {
@@ -103,11 +108,13 @@ const CreateAccount = () => {
                 >
                   <FaArrowLeft className="w-5 h-5" />
                 </button>
-                <h2 className="text-xl sm:text-2xl font-bold text-white">Create New Account</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-white">
+                  Create New Account
+                </h2>
               </div>
               <FaUserPlus className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-200" />
             </div>
-      </div>
+          </div>
 
           {/* Form */}
           <div className="p-4 sm:p-6">
@@ -115,57 +122,57 @@ const CreateAccount = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {/* First Name */}
                 <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        First Name
-                      </label>
-              <input
-                type="text"
-                name="firstName"
-                        value={user.firstName}
-                onChange={handleChange}
-                required
+                  <label className="block text-sm font-medium text-gray-700">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={user.firstName}
+                    onChange={handleChange}
+                    required
                     className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="Enter first name"
-              />
-            </div>
+                  />
+                </div>
 
                 {/* Last Name */}
                 <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Last Name
-                      </label>
-              <input
-                type="text"
-                name="lastName"
-                        value={user.lastName}
-                onChange={handleChange}
-                required
+                  <label className="block text-sm font-medium text-gray-700">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={user.lastName}
+                    onChange={handleChange}
+                    required
                     className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="Enter last name"
-              />
-            </div>
+                  />
+                </div>
 
                 {/* Email */}
                 <div className="md:col-span-2 space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Email
-                    </label>
-              <input
-                type="email"
-                name="email"
-                      value={user.email}
-                onChange={handleChange}
-                required
+                  <label className="block text-sm font-medium text-gray-700">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={user.email}
+                    onChange={handleChange}
+                    required
                     className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="Enter email address"
-              />
-            </div>
+                  />
+                </div>
 
                 {/* Phone */}
                 <div className="md:col-span-2 space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Phone
-                    </label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Phone
+                  </label>
                   <div className="relative">
                     <input
                       type="tel"
@@ -180,44 +187,44 @@ const CreateAccount = () => {
                       Format: +1234567890
                     </p>
                   </div>
-                  </div>
+                </div>
 
                 {/* Gender */}
                 <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Gender
-                    </label>
-              <select
-                name="gender"
-                      value={user.gender}
-                onChange={handleChange}
-                required
+                  <label className="block text-sm font-medium text-gray-700">
+                    Gender
+                  </label>
+                  <select
+                    name="gender"
+                    value={user.gender}
+                    onChange={handleChange}
+                    required
                     className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                      <option value="other">Other</option>
-              </select>
-            </div>
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
 
                 {/* Role */}
                 <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Role
-                    </label>
-              <select
-                name="role"
-                      value={user.role}
-                onChange={handleChange}
-                required
+                  <label className="block text-sm font-medium text-gray-700">
+                    Role
+                  </label>
+                  <select
+                    name="role"
+                    value={user.role}
+                    onChange={handleChange}
+                    required
                     className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              >
-                <option value="">Select Role</option>
-                      <option value="Catering Manager">Catering Manager</option>
-                      <option value="Executive Chef">Executive Chef</option>
-              </select>
-            </div>
+                  >
+                    <option value="">Select Role</option>
+                    <option value="Catering Manager">Catering Manager</option>
+                    <option value="Executive Chef">Executive Chef</option>
+                  </select>
+                </div>
 
                 {/* Password */}
                 {/* <div className="md:col-span-2 space-y-2">
@@ -244,40 +251,56 @@ const CreateAccount = () => {
                       )}
                     </button>
                   </div> */}
-            {/* </div>
+                {/* </div>
           </div> */}
 
-          {/* Submit Button */}
-              <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4">
-                <button
-                  type="button"
-                  onClick={() => navigate(-1)}
-                  className="w-full sm:w-auto px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                >
-                  Cancel
-                </button>
-            <button
-              type="submit"
-                      disabled={loading}
-                  className={`w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors ${
-                    loading ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Creating Account...
-                    </span>
-                  ) : (
-                    'Create Account'
-                  )}
-            </button>
-          </div>
-          </div>
-        </form>
+                {/* Submit Button */}
+                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    className="w-full sm:w-auto px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={`w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors ${
+                      loading ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center">
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Creating Account...
+                      </span>
+                    ) : (
+                      'Create Account'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       </div>

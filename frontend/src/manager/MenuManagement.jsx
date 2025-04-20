@@ -3,8 +3,14 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useStore } from '../context/StoreContext';
 import { menu_list } from '../assets/assets';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaTimes } from 'react-icons/fa';
-
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaSearch,
+  FaFilter,
+  FaTimes,
+} from 'react-icons/fa';
 
 const MenuManagement = () => {
   const { token, fetchFoodList } = useStore();
@@ -24,7 +30,7 @@ const MenuManagement = () => {
     category: '',
     subcategory: '',
     subSubcategory: '',
-    image: null
+    image: null,
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [availableSubcategories, setAvailableSubcategories] = useState([]);
@@ -43,7 +49,7 @@ const MenuManagement = () => {
       setAvailableSubcategories(subcategories[formData.category] || []);
       // Reset subcategory if it's not in the new category
       if (!subcategories[formData.category]?.includes(formData.subcategory)) {
-        setFormData(prev => ({ ...prev, subcategory: '' }));
+        setFormData((prev) => ({ ...prev, subcategory: '' }));
       }
     } else {
       setAvailableSubcategories([]);
@@ -53,14 +59,16 @@ const MenuManagement = () => {
   // Update filtered subcategories when category changes
   useEffect(() => {
     if (formData.category) {
-      const filtered = subcategories.filter(sub => sub.subcategoriesId === formData.category);
+      const filtered = subcategories.filter(
+        (sub) => sub.subcategoriesId === formData.category
+      );
       setFilteredSubcategories(filtered);
       setShowSubcategory(true);
       // Reset subcategory and sub-subcategory when category changes
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         subcategory: '',
-        subSubcategory: ''
+        subSubcategory: '',
       }));
       setShowSubSubcategory(false);
     } else {
@@ -73,13 +81,15 @@ const MenuManagement = () => {
   // Update filtered sub-subcategories when subcategory changes
   useEffect(() => {
     if (formData.subcategory) {
-      const filtered = subSubcategories.filter(subSub => subSub.subSubcategoriesId === formData.subcategory);
+      const filtered = subSubcategories.filter(
+        (subSub) => subSub.subSubcategoriesId === formData.subcategory
+      );
       setFilteredSubSubcategories(filtered);
       setShowSubSubcategory(true);
       // Reset sub-subcategory when subcategory changes
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        subSubcategory: ''
+        subSubcategory: '',
       }));
     } else {
       setFilteredSubSubcategories([]);
@@ -90,25 +100,28 @@ const MenuManagement = () => {
   const fetchAllData = async () => {
     try {
       setLoading(true);
-      const [menuRes, categoriesRes, subcategoriesRes, subSubcategoriesRes] = await Promise.all([
-        axios.get('http://localhost:4000/api/menu', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:4000/api/category', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:4000/api/category/subcategory', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:4000/api/category/subsubcategory', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-      ]);
+      const [menuRes, categoriesRes, subcategoriesRes, subSubcategoriesRes] =
+        await Promise.all([
+          axios.get('http://localhost:4000/api/menu', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get('http://localhost:4000/api/category', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get('http://localhost:4000/api/category/subcategory', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get('http://localhost:4000/api/category/subsubcategory', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
       setMenuItems(menuRes.data);
       setCategories(categoriesRes.data);
       setSubcategories(subcategoriesRes.data);
-      setSubSubcategories(Array.isArray(subSubcategoriesRes.data) ? subSubcategoriesRes.data : []);
+      setSubSubcategories(
+        Array.isArray(subSubcategoriesRes.data) ? subSubcategoriesRes.data : []
+      );
     } catch (error) {
       console.error('Error fetching data:', error);
       setSubSubcategories([]);
@@ -119,18 +132,18 @@ const MenuManagement = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        image: file
+        image: file,
       }));
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -148,7 +161,7 @@ const MenuManagement = () => {
       category: '',
       subcategory: '',
       subSubcategory: '',
-      image: null
+      image: null,
     });
     setImagePreview(null);
     setSelectedItem(null);
@@ -170,12 +183,16 @@ const MenuManagement = () => {
         formDataToSend.append('image', formData.image);
       }
 
-      const response = await axios.post('http://localhost:4000/api/menu', formDataToSend, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
+      const response = await axios.post(
+        'http://localhost:4000/api/menu',
+        formDataToSend,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       toast.success('Menu item added successfully');
       resetForm();
@@ -197,7 +214,7 @@ const MenuManagement = () => {
       category: item.category,
       subcategory: item.subcategory,
       subSubcategory: item.subSubcategory,
-      image: null
+      image: null,
     });
     setImagePreview(item.image ? `http://localhost:4000${item.image}` : null);
     setIsModalOpen(true);
@@ -208,7 +225,7 @@ const MenuManagement = () => {
       try {
         setLoading(true);
         await axios.delete(`http://localhost:4000/api/menu/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         fetchAllData();
 
@@ -216,7 +233,9 @@ const MenuManagement = () => {
         await fetchFoodList();
       } catch (error) {
         console.error('Error deleting menu item:', error);
-        toast.error(error.response?.data?.message || 'Failed to delete menu item');
+        toast.error(
+          error.response?.data?.message || 'Failed to delete menu item'
+        );
       } finally {
         setLoading(false);
       }
@@ -241,10 +260,16 @@ const MenuManagement = () => {
   }, {});
 
   // Filter menu items based on search term and selected category
-  const filteredMenuItems = menuItems.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || item.category === selectedCategory;
+  const filteredMenuItems = menuItems.filter((item) => {
+    const itemName = item?.name || '';
+    const itemDescription = item?.description || '';
+    const itemCategory = item?.category || '';
+
+    const matchesSearch =
+      itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      itemDescription.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      !selectedCategory || itemCategory === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -272,7 +297,9 @@ const MenuManagement = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl p-4 max-w-sm w-full">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-semibold text-gray-800">Add Menu Item</h3>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Add Menu Item
+              </h3>
               <button
                 onClick={() => {
                   setIsModalOpen(false);
@@ -287,7 +314,9 @@ const MenuManagement = () => {
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Name
+                  </label>
                   <input
                     type="text"
                     name="name"
@@ -299,7 +328,9 @@ const MenuManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Price</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Price
+                  </label>
                   <input
                     type="number"
                     name="price"
@@ -312,7 +343,9 @@ const MenuManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Description</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Description
+                </label>
                 <textarea
                   name="description"
                   value={formData.description}
@@ -324,7 +357,9 @@ const MenuManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Category</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Category
+                </label>
                 <select
                   name="category"
                   value={formData.category}
@@ -333,7 +368,7 @@ const MenuManagement = () => {
                   required
                 >
                   <option value="">Select Category</option>
-                  {categories.map(category => (
+                  {categories.map((category) => (
                     <option key={category._id} value={category._id}>
                       {category.categoryName}
                     </option>
@@ -343,7 +378,9 @@ const MenuManagement = () => {
 
               {showSubcategory && (
                 <div className="transition-all duration-300 ease-in-out">
-                  <label className="block text-sm font-medium text-gray-700">Subcategory</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Subcategory
+                  </label>
                   <select
                     name="subcategory"
                     value={formData.subcategory}
@@ -352,7 +389,7 @@ const MenuManagement = () => {
                     required
                   >
                     <option value="">Select Subcategory</option>
-                    {filteredSubcategories.map(subcategory => (
+                    {filteredSubcategories.map((subcategory) => (
                       <option key={subcategory._id} value={subcategory._id}>
                         {subcategory.subcategoryName}
                       </option>
@@ -363,7 +400,9 @@ const MenuManagement = () => {
 
               {showSubSubcategory && (
                 <div className="transition-all duration-300 ease-in-out">
-                  <label className="block text-sm font-medium text-gray-700">Sub-subcategory</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Sub-subcategory
+                  </label>
                   <select
                     name="subSubcategory"
                     value={formData.subSubcategory}
@@ -372,8 +411,11 @@ const MenuManagement = () => {
                     required
                   >
                     <option value="">Select Sub-subcategory</option>
-                    {filteredSubSubcategories.map(subSubcategory => (
-                      <option key={subSubcategory._id} value={subSubcategory._id}>
+                    {filteredSubSubcategories.map((subSubcategory) => (
+                      <option
+                        key={subSubcategory._id}
+                        value={subSubcategory._id}
+                      >
                         {subSubcategory.subSubcategoryName}
                       </option>
                     ))}
@@ -382,7 +424,9 @@ const MenuManagement = () => {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Image</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Image
+                </label>
                 <div className="flex items-center gap-3">
                   <input
                     type="file"
@@ -429,13 +473,27 @@ const MenuManagement = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subcategory</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sub-subcategory</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Image
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Price
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Category
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Subcategory
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Sub-subcategory
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -451,8 +509,10 @@ const MenuManagement = () => {
                         e.target.onerror = null;
                         e.target.style.display = 'none';
                         const placeholderDiv = document.createElement('div');
-                        placeholderDiv.className = 'h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center shadow-sm';
-                        placeholderDiv.innerHTML = '<span class="text-gray-500 text-xs">No Image</span>';
+                        placeholderDiv.className =
+                          'h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center shadow-sm';
+                        placeholderDiv.innerHTML =
+                          '<span class="text-gray-500 text-xs">No Image</span>';
                         e.target.parentNode.appendChild(placeholderDiv);
                       }}
                     />
@@ -463,8 +523,12 @@ const MenuManagement = () => {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                  <div className="text-sm text-gray-500 line-clamp-2">{item.description}</div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {item.name}
+                  </div>
+                  <div className="text-sm text-gray-500 line-clamp-2">
+                    {item.description}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   ${item.price}
@@ -501,4 +565,4 @@ const MenuManagement = () => {
   );
 };
 
-export default MenuManagement; 
+export default MenuManagement;

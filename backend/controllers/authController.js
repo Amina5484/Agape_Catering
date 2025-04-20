@@ -66,7 +66,9 @@ const registerUser = async (req, res, role) => {
     const { name, email, phone, password } = req.body;
 
     if (!name || !email || !phone || (role === ROLES.CUSTOMER && !password)) {
-      return res.status(400).json({ message: 'Please fill all required fields' });
+      return res
+        .status(400)
+        .json({ message: 'Please fill all required fields' });
     }
 
     if (!isValidPhoneNumber(phone)) {
@@ -80,7 +82,9 @@ const registerUser = async (req, res, role) => {
 
     let existingPhone = await User.findOne({ phone });
     if (existingPhone) {
-      return res.status(400).json({ message: 'Phone number is already registered' });
+      return res
+        .status(400)
+        .json({ message: 'Phone number is already registered' });
     }
 
     // Generate password for non-customer
@@ -88,18 +92,29 @@ const registerUser = async (req, res, role) => {
     if (role !== ROLES.CUSTOMER) {
       userPassword = generateRandomPassword();
 
-      await sendEmail({
-        to: email,
-        subject: 'Your Account Credentials',
-        html: welcomeEmailHTML(name, email, userPassword, role)
-      });
-      
+      try {
+        await sendEmail({
+          to: email,
+          subject: 'Your Account Credentials',
+          html: welcomeEmailHTML(name, email, userPassword, role),
+        });
+      } catch (emailError) {
+        console.error('Failed to send email:', emailError);
+        // Continue with registration even if email fails
+        // The password will be returned in the response
+      }
     }
 
     const user = new User({ name, email, phone, password: userPassword, role });
     await user.save();
 
-    res.status(201).json({ message: `${role} registered successfully. ${role !== ROLES.CUSTOMER ? 'Password sent to email.' : ''}` });
+    // If email failed to send, include the password in the response
+    const response = {
+      message: `${role} registered successfully.`,
+      ...(role !== ROLES.CUSTOMER && { password: userPassword }),
+    };
+
+    res.status(201).json(response);
   } catch (error) {
     console.error('Error during registration:', error);
     if (error.name === 'ValidationError') {
@@ -141,10 +156,10 @@ export const loginUser = async (req, res) => {
       'User found:',
       user
         ? {
-          id: user._id,
-          email: user.email,
-          role: user.role,
-        }
+            id: user._id,
+            email: user.email,
+            role: user.role,
+          }
         : 'No user found'
     );
 
