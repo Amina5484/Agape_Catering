@@ -11,6 +11,25 @@ const Cart = () => {
   const [cartData, setCartData] = useState(null);
   const navigate = useNavigate();
 
+  const fetchCartData = async () => {
+    try {
+      // const response = await axios.get(`${url}/api/cart/`, {
+      const response = await axios.get(`http://localhost:4000/api/cart/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(`${url}/api/cart/`);
+      setCartData(response.data);
+      console.log("Cart data fetched successfully:", response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error fetching cart data:', error);
+      toast.error('Failed to load cart details');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   useEffect(() => {
     if (!isLoggedIn) {
       toast.error('Please login to view your cart');
@@ -18,25 +37,7 @@ const Cart = () => {
       return;
     }
 
-    const fetchCartData = async () => {
-      try {
-        // const response = await axios.get(`${url}/api/cart/`, {
-        const response = await axios.get(`http://localhost:4000/api/cart/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        console.log(`${url}/api/cart/`);
-        setCartData(response.data);
-        console.log("Cart data fetched successfully:", response.data);
-        console.log(response.data);
-      } catch (error) {
-        console.error('Error fetching cart data:', error);
-        toast.error('Failed to load cart details');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+
 
     fetchCartData();
   }, [url, token, isLoggedIn, navigate]);
@@ -60,6 +61,7 @@ const Cart = () => {
       );
 
       setCartData(response.data);
+      fetchCartData();
       toast.success('Cart updated successfully');
     } catch (error) {
       console.error('Error updating cart:', error);
@@ -98,6 +100,7 @@ const Cart = () => {
       );
 
       setCartData(response.data);
+      fetchCartData();
       toast.success('Item removed from cart successfully');
     } catch (error) {
       console.error('Error removing item from cart:', error);
@@ -157,7 +160,7 @@ const Cart = () => {
                   <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
                     <div className="w-full sm:w-32 h-32 flex-shrink-0">
                       <img
-                        src={`http://localhost:4000/uploads/${item.menuItem.image}`}
+                        src={`http://localhost:4000${item.menuItem.image}`}
                         alt={item.menuItem.name}
                         className="w-full h-full object-cover rounded-lg"
                         onError={(e) => {

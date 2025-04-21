@@ -50,10 +50,10 @@ const MenuDisplay = ({ category }) => {
 
     const handleAddToCart = () => {
         if (selectedItem) {
-            addToCart({
-                ...selectedItem,
+            addToCart(
+                selectedItem._id,
                 quantity
-            });
+            );
             toast.success(`${selectedItem.name} added to cart!`);
             setSelectedItem(null);
         }

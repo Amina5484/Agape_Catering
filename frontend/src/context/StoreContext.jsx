@@ -168,7 +168,7 @@ const StoreContextProvider = (props) => {
   }, [isLoggedIn, token, userId]);
 
   // Add item to cart
-  const addToCart = async (menuId, quantity = 1) => {
+  const addToCart = async (menuItemId, quantity = 1) => {
     if (!isLoggedIn) {
       toast.error('Please login to add items to cart');
       navigate('/login');
@@ -177,8 +177,8 @@ const StoreContextProvider = (props) => {
 
     try {
       const response = await axios.post(
-        `${url}/api/cart/`,
-        { menuId, quantity },
+        `${url}/api/cart/add`,
+        { menuItemId, quantity },
         {
           headers: {
             Authorization: `Bearer ${token}`,
