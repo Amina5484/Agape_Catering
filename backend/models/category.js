@@ -9,32 +9,23 @@ import mongoose from "mongoose";
 
 // export default mongoose.model("Category", category);
 
-
-
-const subSubcategorySchema = new mongoose.Schema({
-  subSubcategoryName: { type: String, required: true, unique: true },
-  image: { type: String, required: true },
-  description: { type: String },
-});
-
-const subcategorySchema = new mongoose.Schema({
-  subcategoryName: { type: String, required: true, unique: true },
-  image: { type: String, required: true },
-  description: { type: String, required: true },
-  // subSubcategories: [{ type: mongoose.Schema.Types.ObjectId, ref: "SubSubcategory" }]
-  subSubcategoriesId: { type: String, required: true },
-});
-
 const categorySchema = new mongoose.Schema({
-  categoryName: { type: String, required: true, unique: true },
-  description: { type: String },
+  categoryName: {
+    type: String,
+    required: true,
+    trim: true
+  },
   image: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now },
-  // subcategories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Subcategory" }]
-  subcategoriesId:{ type: String, required: true },
-  subSubcategoriesId:{ type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
 });
 
-export const SubSubcategory = mongoose.model("SubSubcategory", subSubcategorySchema);
-export const Subcategory = mongoose.model("Subcategory", subcategorySchema);
+// Add case-insensitive index for categoryName
+categorySchema.index({ categoryName: 1 }, {
+  unique: true,
+  collation: {
+    locale: 'en',
+    strength: 2
+  }
+});
+
 export default mongoose.model("Category", categorySchema);

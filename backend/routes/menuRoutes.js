@@ -1,7 +1,15 @@
 import express from 'express';
-import {addMenuItem, deleteMenuItem, getAllMenuItems, getMenuItemById, updateMenuItem} from '../controllers/menuController.js'
-const menuRouter = express.Router();
+import {
+    addMenuItem,
+    updateMenuItem,
+    deleteMenuItem,
+    getAllMenuItems,
+    getMenuItemById
+} from '../controllers/menuController.js';
 import { upload } from '../middleware/multer.js';
+
+const router = express.Router();
+
 /**
  * @swagger
  * components:
@@ -56,25 +64,38 @@ import { upload } from '../middleware/multer.js';
  *       content:
  *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/MenuItem'
+ *             type: object
+ *             required:
+ *               - name
+ *               - price
+ *               - description
+ *               - category
+ *               - subcategory
+ *               - image
+ *             properties:
+ *               name:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *               description:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               subcategory:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       201:
  *         description: Menu item added successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 menuItem:
- *                   $ref: '#/components/schemas/MenuItem'
  *       400:
- *         description: Bad request
+ *         description: Invalid input
  *       500:
  *         description: Server error
  */
-menuRouter.post('/',  upload.single('image'),addMenuItem);
+router.post('/', upload.single('image'), addMenuItem);
+
 /**
  * @swagger
  * /api/menu/{id}:
@@ -85,33 +106,38 @@ menuRouter.post('/',  upload.single('image'),addMenuItem);
  *       - in: path
  *         name: id
  *         required: true
- *         description: The ID of the menu item to update
  *         schema:
  *           type: string
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/MenuItemUpdate'
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *               description:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               subcategory:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
- *         description: Menu item updated
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 updatedMenuItem:
- *                   $ref: '#/components/schemas/MenuItem'
+ *         description: Menu item updated successfully
  *       404:
  *         description: Menu item not found
  *       500:
  *         description: Server error
  */
-menuRouter.put('/', updateMenuItem);
+router.put('/:id', upload.single('image'), updateMenuItem);
+
 /**
  * @swagger
  * /api/menu/{id}:
@@ -122,25 +148,18 @@ menuRouter.put('/', updateMenuItem);
  *       - in: path
  *         name: id
  *         required: true
- *         description: The ID of the menu item to delete
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Menu item deleted
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *         description: Menu item deleted successfully
  *       404:
  *         description: Menu item not found
  *       500:
  *         description: Server error
  */
-menuRouter.delete('/', deleteMenuItem);
+router.delete('/:id', deleteMenuItem);
+
 /**
  * @swagger
  * /api/menu:
@@ -149,17 +168,11 @@ menuRouter.delete('/', deleteMenuItem);
  *     tags: [Menu]
  *     responses:
  *       200:
- *         description: List of menu items
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/MenuItem'
+ *         description: List of all menu items
  *       500:
  *         description: Server error
  */
-menuRouter.get('/', getAllMenuItems);
+router.get('/', getAllMenuItems);
 
 /**
  * @swagger
@@ -171,20 +184,16 @@ menuRouter.get('/', getAllMenuItems);
  *       - in: path
  *         name: id
  *         required: true
- *         description: The ID of the menu item to retrieve
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Menu item found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/MenuItem'
+ *         description: Menu item details
  *       404:
  *         description: Menu item not found
  *       500:
  *         description: Server error
  */
-menuRouter.get('/:id', getMenuItemById);
-export default menuRouter; 
+router.get('/:id', getMenuItemById);
+
+export default router; 

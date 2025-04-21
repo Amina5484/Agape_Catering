@@ -29,9 +29,36 @@ const StoreContextProvider = (props) => {
   const [userRole, setUserRole] = useState(localStorage.getItem('userRole'));
   const [userId, setUserId] = useState(localStorage.getItem('userId'));
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedMode = localStorage.getItem('darkMode');
+    return savedMode === 'true';
+  });
   const navigate = useNavigate();
 
   const url = 'http://localhost:4000';
+
+  // Initialize dark mode
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  // Toggle dark mode
+  const toggleDarkMode = useCallback(() => {
+    setDarkMode((prevMode) => {
+      const newMode = !prevMode;
+      localStorage.setItem('darkMode', newMode);
+      if (newMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      return newMode;
+    });
+  }, []);
 
   // Check login state on mount and when token changes
   useEffect(() => {
@@ -288,25 +315,26 @@ const StoreContextProvider = (props) => {
       setCartItems,
       food_list,
       setFoodList,
-      addToCart,
-      removeFromCart,
-      updateCartItem,
-      totalCartPrice,
-      url,
       token,
       setToken,
-      isLoggedIn,
-      setIsLoggedIn,
       userRole,
       setUserRole,
       userId,
       setUserId,
+      isLoggedIn,
+      setIsLoggedIn,
+      darkMode,
+      toggleDarkMode,
       login,
       logout,
-      fetchFoodList,
-      fetchCart,
       resetLoginState,
+      fetchCart,
+      addToCart,
+      removeFromCart,
+      updateCartItem,
       placeOrder,
+      totalCartPrice,
+      fetchFoodList,
     }),
     [cartItems, food_list, token, isLoggedIn, userRole, userId, totalCartPrice]
   );

@@ -170,8 +170,22 @@ export const addStockItem = async (req, res) => {
 export const updateStockItem = async (req, res) => {
     try {
         const { id } = req.params;
-        const updatedStock = await Stock.findByIdAndUpdate(id, req.body, { new: true });
-        res.status(200).json({ message: "Stock updated", updatedStock });
+        const { quantity, initialQuantity } = req.body;
+
+        // Calculate if stock is low (20% or less of initial quantity)
+        const isLowStock = quantity <= (initialQuantity || quantity) * 0.2;
+
+        const updatedStock = await Stock.findByIdAndUpdate(
+            id,
+            { ...req.body, isLowStock },
+            { new: true }
+        );
+
+        res.status(200).json({
+            message: "Stock updated",
+            updatedStock,
+            isLowStock
+        });
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });
     }

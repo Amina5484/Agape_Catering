@@ -3,12 +3,12 @@ import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import './index.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { DarkModeProvider } from './context/DarkModeContext';
 
 // Customer Imports
 import Navbar from './components/Navbar/Navbar';
 import Home from './pages/Home/Home';
 import Cart from './pages/Cart/Cart';
-import FoodDisplay from './components/FoodDisplay/FoodDisplay';
 import Footer from './components/Footer/Footer';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
@@ -19,11 +19,11 @@ import StoreContextProvider, { useStore } from './context/StoreContext';
 import CustomerProfile from './customer/CustomerProfile';
 import CustomerOrders from './pages/Orders/Orders';
 
+
 // Chef Imports
 import ChefDashboard from './chef/ChefDashboard';
 import OrderManagement from './components/chef/OrderManagement';
 import InventoryManagement from './components/chef/InventoryManagement';
-//import ChefStockManagement from './chef/ChefStockManagement';
 
 // Manager Imports
 import ManagerSidebar from './manager/managerSidebar/managerSidebar';
@@ -47,7 +47,6 @@ import SystemSidebar from './SystemAdmin/SystemSidebar';
 import SystemNavbar from './SystemAdmin/SystemNavbar';
 import ViewUser from './SystemAdmin/ViewUser';
 import EditStaff from './SystemAdmin/EditStaff';
-//import ListStaff from './SystemAdmin/ListStaff';
 import AdminHome from './SystemAdmin/AdminHome';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
@@ -136,8 +135,7 @@ const AppContent = () => {
               path="user-management"
               element={<UserManagement url={url} />}
             />
-            {/* <Route path="staff-list" element={<ListStaff url={url} />} /> */}
-            <Route path="view-user" element={<ViewUser url={url} />} />
+            <Route path="view-user" element={<ViewUser />} />
           </Route>
 
           {/* Chef Routes */}
@@ -182,13 +180,13 @@ const AppContent = () => {
           <Route path="/cart" element={<Cart />} />
           <Route
             path="/menu"
-            element={<FoodDisplay setShowLogin={setShowLogin} category="All" />}
+            element={<Explore category="All" />}
           />
           <Route
             path="/categories"
             element={
               <div className="pt-16">
-                <Explore category="All" setCatagory={() => {}} />
+                <Explore category="All" setCategory={() => { }} />
               </div>
             }
           />
@@ -233,7 +231,9 @@ const AppContent = () => {
 const App = () => {
   return (
     <StoreContextProvider>
-      <AppContent />
+      <DarkModeProvider>
+        <AppContent />
+      </DarkModeProvider>
     </StoreContextProvider>
   );
 };

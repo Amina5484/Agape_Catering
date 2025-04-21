@@ -24,35 +24,21 @@ const StockManagement = () => {
   }, []);
 
   const fetchStock = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await axios.get("http://localhost:4000/api/catering/stock", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await axios.get('http://localhost:4000/api/catering/stock', {
+        headers: { Authorization: `Bearer ${token}` }
       });
-
-      if (response.data && response.data.success) {
-        // Set initialQuantity for each item if not already set
-        const itemsWithInitialQuantity = response.data.data.map(item => ({
+      if (response.data.success) {
+        // Calculate low stock status for each item
+        const stockWithStatus = response.data.stock.map(item => ({
           ...item,
-          initialQuantity: item.initialQuantity || item.quantity
+          isLowStock: item.quantity <= (item.initialQuantity || item.quantity) * 0.2
         }));
-        setStockItems(itemsWithInitialQuantity || []);
-      } else if (Array.isArray(response.data)) {
-        // Set initialQuantity for each item if not already set
-        const itemsWithInitialQuantity = response.data.map(item => ({
-          ...item,
-          initialQuantity: item.initialQuantity || item.quantity
-        }));
-        setStockItems(itemsWithInitialQuantity);
-      } else {
-        setStockItems([]);
+        setStockItems(stockWithStatus);
       }
     } catch (error) {
-      console.error("Error fetching stock:", error);
-      toast.error(error.response?.data?.message || "Failed to fetch stock items");
-      setStockItems([]);
+      toast.error('Failed to fetch stock items');
     } finally {
       setLoading(false);
     }
@@ -191,6 +177,31 @@ const StockManagement = () => {
         // Refresh the stock list in case of error
         fetchStock();
       }
+    }
+  };
+
+  const handleUpdate = async (id, updatedData) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:4000/api/catering/stock/update/${id}`,
+        updatedData,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      if (response.data.success) {
+        toast.success('Stock item updated successfully');
+        // Update the stock item in the local state with the new status
+        setStockItems(prevItems =>
+          prevItems.map(item =>
+            item._id === id
+              ? { ...item, ...response.data.updatedStock, isLowStock: response.data.isLowStock }
+              : item
+          )
+        );
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update stock item');
     }
   };
 
@@ -391,8 +402,8 @@ const StockManagement = () => {
                         </td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.isLowStock
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-green-100 text-green-800'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-green-100 text-green-800'
                             }`}>
                             {item.isLowStock ? 'Low' : 'Normal'}
                           </span>

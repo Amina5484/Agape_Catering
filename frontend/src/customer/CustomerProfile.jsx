@@ -23,7 +23,7 @@ const CustomerProfile = () => {
     const fetchUserProfile = async () => {
       try {
         const response = await axiosInstance.get('/user/profile');
-        const { name, email, phone, gender, photo } = response.data.user;
+        const { name, email, phone, gender } = response.data.user;
         const [firstName, lastName] = name.split(' ');
         setUser((prev) => ({
           ...prev,
@@ -32,7 +32,7 @@ const CustomerProfile = () => {
           email,
           phone,
           gender,
-          photo,
+         
         }));
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -77,7 +77,6 @@ const CustomerProfile = () => {
     formData.append('firstName', user.firstName);
     formData.append('lastName', user.lastName);
     formData.append('email', user.email);
-    formData.append('phone', user.phone);
     formData.append('gender', user.gender);
 
     // Add password fields if changing password
@@ -89,9 +88,7 @@ const CustomerProfile = () => {
     }
 
     // Add photo if selected
-    if (user.photo && user.photo instanceof File) {
-      formData.append('photo', user.photo);
-    }
+ 
 
     try {
       const response = await axiosInstance.put('/user/profile', formData, {
@@ -109,8 +106,7 @@ const CustomerProfile = () => {
           newPassword: '',
           confirmPassword: '',
         }));
-      } else {
-        toast.error(response.data.message || 'Failed to update profile');
+      
       }
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -200,39 +196,17 @@ const CustomerProfile = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Gender
                 </label>
-                <select
+                <input
                   name="gender"
                   value={user.gender}
                   onChange={handleChange}
                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500"
                   required
-                >
-                  <option value="">Select Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
+                />
+                 
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Profile Picture
-                </label>
-                <input
-                  type="file"
-                  name="photo"
-                  onChange={handleChange}
-                  className="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 dark:file:bg-teal-900 dark:file:text-teal-300"
-                  accept="image/*"
-                />
-                {user.photo && typeof user.photo === 'string' && (
-                  <img
-                    src={`http://localhost:4000${user.photo}`}
-                    alt="Profile"
-                    className="mt-2 w-20 h-20 rounded-full object-cover"
-                  />
-                )}
-              </div>
+          
             </div>
 
             <div className="mt-8">

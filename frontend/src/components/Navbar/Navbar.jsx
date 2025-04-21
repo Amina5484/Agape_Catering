@@ -10,6 +10,8 @@ import {
   FaCog,
   FaMoon,
   FaSun,
+  FaHistory,
+  FaClipboardList,
 } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { StoreContext } from '../../context/StoreContext';
@@ -79,7 +81,7 @@ const Navbar = ({ setShowLogin }) => {
   }, [isLoggedIn, userRole, isCustomerLoggedIn]);
 
   return (
-    <div className="p-2 flex items-center bg-white dark:bg-gray-900 dark:text-white shadow-md fixed top-0 left-0 w-full z-10 transition-colors">
+    <div className="p-2 flex items-center bg-white dark:bg-gray-900 dark:text-white shadow-md fixed top-0 left-0 w-full z-10 transition-colors duration-300">
       <div className="flex-1 flex justify-start">
         <Link to="/">
           <img
@@ -132,29 +134,76 @@ const Navbar = ({ setShowLogin }) => {
           <Link to="/feedback" className="cursor-pointer hover:text-gray-400">
             Feedback
           </Link>
-          {!isCustomerLoggedIn ? (
+
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300"
+            title={darkMode ? 'Light Mode' : 'Dark Mode'}
+          >
+            {darkMode ? (
+              <FaSun className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+            ) : (
+              <FaMoon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
+            )}
+          </button>
+
+          {/* User Profile Dropdown */}
+          {isCustomerLoggedIn ? (
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <FaUser className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-50">
+                  <Link
+                    to="/customer/orders"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <FaClipboardList className="mr-2" />
+                    Order Status
+                  </Link>
+                  <Link
+                    to="/customer/order-history"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <FaHistory className="mr-2" />
+                    Order History
+                  </Link>
+                  <Link
+                    to="/customer/profile"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <FaCog className="mr-2" />
+                    Manage Profile
+                  </Link>
+                  <button
+                    onClick={logout}
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <FaSignOutAlt className="mr-2" />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
             <button
               className="bg-blue-500 rounded text-white px-3 py-1 text-xs sm:text-sm hover:bg-blue-600 transition"
               onClick={handleLoginClick}
             >
               Login/Sign Up
             </button>
-          ) : (
-            <button
-              onClick={() => {
-                logout();
-                setIsOpen(false);
-              }}
-              className="text-red-600 dark:text-red-400 text-xs sm:text-sm hover:text-red-700 transition"
-            >
-              Logout
-            </button>
           )}
         </ul>
       </div>
 
       {isOpen && (
-        <div className="absolute top-12 sm:top-14 left-0 w-full bg-white dark:bg-gray-800 shadow-lg p-3 sm:p-4 sm:hidden">
+        <div className="absolute top-12 sm:top-14 left-0 w-full bg-white dark:bg-gray-800 shadow-lg p-3 sm:p-4 sm:hidden transition-colors duration-300">
           <ul className="flex flex-col space-y-3 sm:space-y-4 text-center text-black dark:text-white">
             <li className="cursor-pointer hover:text-gray-400">
               <Link to="/">Home</Link>
@@ -168,6 +217,24 @@ const Navbar = ({ setShowLogin }) => {
             <li className="cursor-pointer hover:text-gray-400">
               <Link to="/feedback">Feedback</Link>
             </li>
+            <li className="cursor-pointer hover:text-gray-400">
+              <button
+                onClick={toggleDarkMode}
+                className="flex items-center justify-center w-full py-2"
+              >
+                {darkMode ? (
+                  <>
+                    <FaSun className="mr-2 text-yellow-500" />
+                    <span>Light Mode</span>
+                  </>
+                ) : (
+                  <>
+                    <FaMoon className="mr-2 text-gray-600 dark:text-gray-300" />
+                    <span>Dark Mode</span>
+                  </>
+                )}
+              </button>
+            </li>
             {!isCustomerLoggedIn ? (
               <button
                 className="bg-blue-500 rounded text-white px-4 py-1 text-sm hover:bg-blue-600 transition"
@@ -176,15 +243,23 @@ const Navbar = ({ setShowLogin }) => {
                 Login/Sign Up
               </button>
             ) : (
-              <li
-                onClick={() => {
-                  logout();
-                  setIsOpen(false);
-                }}
-                className="cursor-pointer hover:text-gray-400 text-red-600 dark:text-red-400"
-              >
-                Logout
-              </li>
+              <>
+                <li className="cursor-pointer hover:text-gray-400">
+                  <Link to="/customer/orders">Order Status</Link>
+                </li>
+                <li className="cursor-pointer hover:text-gray-400">
+                  <Link to="/customer/order-history">Order History</Link>
+                </li>
+                <li className="cursor-pointer hover:text-gray-400">
+                  <Link to="/customer/profile">Manage Profile</Link>
+                </li>
+                <li
+                  onClick={logout}
+                  className="cursor-pointer hover:text-gray-400 text-red-600 dark:text-red-400"
+                >
+                  Logout
+                </li>
+              </>
             )}
           </ul>
         </div>
