@@ -1,4 +1,11 @@
-import { createContext, useEffect, useState, useContext, useMemo, useCallback } from 'react';
+import {
+  createContext,
+  useEffect,
+  useState,
+  useContext,
+  useMemo,
+  useCallback,
+} from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import axiosInstance from '../SystemAdmin/axiosInstance';
@@ -45,10 +52,14 @@ const StoreContextProvider = (props) => {
   // Login function
   const login = async (email, password) => {
     try {
+      console.log('Attempting login with:', { email, password: '***' });
+
       const response = await axiosInstance.post('/auth/login', {
         email,
         password,
       });
+
+      console.log('Login response:', response.data);
 
       if (response.data.success) {
         const { token, user } = response.data;
@@ -65,7 +76,23 @@ const StoreContextProvider = (props) => {
       }
       return { success: false, message: response.data.message };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed. Please check your credentials.';
+      console.error('Login error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+
+      if (error.code === 'ERR_NETWORK') {
+        return {
+          success: false,
+          message:
+            'Cannot connect to the server. Please check if the backend is running.',
+        };
+      }
+
+      const errorMessage =
+        error.response?.data?.message ||
+        'Login failed. Please check your credentials.';
       return { success: false, message: errorMessage };
     }
   };
@@ -167,7 +194,9 @@ const StoreContextProvider = (props) => {
       }
     } catch (error) {
       console.error('Error removing from cart:', error);
-      toast.error(error.response?.data?.message || 'Failed to remove from cart');
+      toast.error(
+        error.response?.data?.message || 'Failed to remove from cart'
+      );
     }
   };
 
@@ -218,7 +247,7 @@ const StoreContextProvider = (props) => {
     if (!Array.isArray(cartItems)) return 0;
 
     return cartItems.reduce((total, item) => {
-      const foodItem = food_list.find(food => food._id === item.itemId);
+      const foodItem = food_list.find((food) => food._id === item.itemId);
       if (foodItem) {
         return total + (item.price || foodItem.price) * item.quantity;
       }
@@ -253,39 +282,34 @@ const StoreContextProvider = (props) => {
   }, [isLoggedIn, userRole]);
 
   // Context value
-  const contextValue = useMemo(() => ({
-    cartItems,
-    setCartItems,
-    food_list,
-    setFoodList,
-    addToCart,
-    removeFromCart,
-    updateCartItem,
-    totalCartPrice,
-    url,
-    token,
-    setToken,
-    isLoggedIn,
-    setIsLoggedIn,
-    userRole,
-    setUserRole,
-    userId,
-    setUserId,
-    login,
-    logout,
-    fetchFoodList,
-    fetchCart,
-    resetLoginState,
-    placeOrder,
-  }), [
-    cartItems,
-    food_list,
-    token,
-    isLoggedIn,
-    userRole,
-    userId,
-    totalCartPrice
-  ]);
+  const contextValue = useMemo(
+    () => ({
+      cartItems,
+      setCartItems,
+      food_list,
+      setFoodList,
+      addToCart,
+      removeFromCart,
+      updateCartItem,
+      totalCartPrice,
+      url,
+      token,
+      setToken,
+      isLoggedIn,
+      setIsLoggedIn,
+      userRole,
+      setUserRole,
+      userId,
+      setUserId,
+      login,
+      logout,
+      fetchFoodList,
+      fetchCart,
+      resetLoginState,
+      placeOrder,
+    }),
+    [cartItems, food_list, token, isLoggedIn, userRole, userId, totalCartPrice]
+  );
 
   return (
     <StoreContext.Provider value={contextValue}>

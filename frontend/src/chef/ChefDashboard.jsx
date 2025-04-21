@@ -10,7 +10,7 @@ import {
   FaUser,
   FaHome,
   FaUtensils,
-  FaChartLine
+  FaChartLine,
 } from 'react-icons/fa';
 
 const ChefDashboard = () => {
@@ -27,7 +27,7 @@ const ChefDashboard = () => {
     gender: '',
     currentPassword: '',
     newPassword: '',
-    photo: null
+    photo: null,
   });
 
   useEffect(() => {
@@ -48,7 +48,7 @@ const ChefDashboard = () => {
         gender: userData.gender || '',
         currentPassword: '',
         newPassword: '',
-        photo: null
+        photo: null,
       });
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -137,7 +137,9 @@ const ChefDashboard = () => {
           <div className="p-6">
             <div className="flex items-center justify-center mb-8">
               <FaUtensils className="text-3xl text-orange-500 mr-2" />
-              <h2 className="text-2xl font-bold text-gray-800">Chef Dashboard</h2>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Chef Dashboard
+              </h2>
             </div>
 
             {/* User Profile Section */}
@@ -147,7 +149,9 @@ const ChefDashboard = () => {
                   <FaUser className="text-orange-500 text-xl" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {user?.name}
+                  </p>
                   <p className="text-xs text-gray-500">Chef</p>
                 </div>
               </div>
@@ -158,10 +162,11 @@ const ChefDashboard = () => {
               <Link
                 to="/chef"
                 onClick={() => setActiveMenu('dashboard')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'dashboard'
+                className={`flex items-center p-3 rounded-lg transition-colors ${
+                  activeMenu === 'dashboard'
                     ? 'bg-orange-100 text-orange-600'
                     : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                }`}
               >
                 <FaHome className="mr-3" />
                 <span>Dashboard</span>
@@ -170,10 +175,11 @@ const ChefDashboard = () => {
               <Link
                 to="/chef/orders"
                 onClick={() => setActiveMenu('orders')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'orders'
+                className={`flex items-center p-3 rounded-lg transition-colors ${
+                  activeMenu === 'orders'
                     ? 'bg-orange-100 text-orange-600'
                     : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                }`}
               >
                 <FaClipboardList className="mr-3" />
                 <span>Orders</span>
@@ -182,10 +188,11 @@ const ChefDashboard = () => {
               <Link
                 to="/chef/stock"
                 onClick={() => setActiveMenu('stock')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'inventory'
+                className={`flex items-center p-3 rounded-lg transition-colors ${
+                  activeMenu === 'stock'
                     ? 'bg-orange-100 text-orange-600'
                     : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                }`}
               >
                 <FaBoxes className="mr-3" />
                 <span>Inventory</span>
@@ -194,10 +201,11 @@ const ChefDashboard = () => {
               <Link
                 to="/chef/schedule"
                 onClick={() => setActiveMenu('schedule')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'schedule'
+                className={`flex items-center p-3 rounded-lg transition-colors ${
+                  activeMenu === 'schedule'
                     ? 'bg-orange-100 text-orange-600'
                     : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                }`}
               >
                 <FaCalendarAlt className="mr-3" />
                 <span>Schedule</span>
@@ -206,10 +214,11 @@ const ChefDashboard = () => {
               <Link
                 to="/chef/profile"
                 onClick={() => setActiveMenu('profile ')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'profile'
+                className={`flex items-center p-3 rounded-lg transition-colors ${
+                  activeMenu === 'profile'
                     ? 'bg-orange-100 text-orange-600'
                     : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                }`}
               >
                 <FaChartLine className="mr-3" />
                 <span>profile</span>
@@ -240,4 +249,4 @@ const ChefDashboard = () => {
   );
 };
 
-export default ChefDashboard; 
+export default ChefDashboard;

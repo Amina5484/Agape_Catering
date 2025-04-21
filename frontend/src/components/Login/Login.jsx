@@ -2,11 +2,10 @@ import React, { useState, useContext } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { StoreContext } from '../../context/StoreContext';
-import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const Login = ({ setShowLogin }) => {
-  const { url, setToken, setUserId, setUserRole, setIsLoggedIn } =
-    useContext(StoreContext);
+  const { login } = useContext(StoreContext);
   const navigate = useNavigate();
   const [currentState, setCurrentState] = useState('Login');
   const [data, setData] = useState({
@@ -34,19 +33,19 @@ const Login = ({ setShowLogin }) => {
   // Validate input data
   const validateData = () => {
     if (!data.email.trim()) {
-      alert('Please enter your email.');
+      toast.error('Please enter your email.');
       return false;
     }
     if (!data.password.trim()) {
-      alert('Please enter your password.');
+      toast.error('Please enter your password.');
       return false;
     }
     if (currentState === 'Sign Up' && !data.name.trim()) {
-      alert('Please enter your name.');
+      toast.error('Please enter your name.');
       return false;
     }
     if (!agreeToTerms) {
-      alert('You must agree to the terms of use and privacy policy.');
+      toast.error('You must agree to the terms of use and privacy policy.');
       return false;
     }
     return true;
@@ -58,69 +57,18 @@ const Login = ({ setShowLogin }) => {
 
     if (!validateData()) return; // Stop if validation fails
 
-    let newUrl = url;
-    if (currentState === 'Login') {
-      newUrl += '/api/auth/login';
-    } else {
-      newUrl += '/api/auth/register';
-    }
-
     try {
-      console.log('Sending data to backend:', {
-        ...data,
-        password: '***', // Don't log the actual password
-      });
+      const result = await login(data.email, data.password);
 
-      const response = await axios.post(newUrl, data);
-      console.log('Backend Response:', response.data);
-
-      if (response.data.success) {
-        const { token, user } = response.data;
-        setToken(token);
-        setUserRole(user.role);
-        setUserId(user._id);
-        setIsLoggedIn(true);
-        localStorage.setItem('token', token);
-        localStorage.setItem('userRole', user.role);
-        localStorage.setItem('userId', user._id);
+      if (result.success) {
         setShowLogin(false);
-
-        // Redirect based on role
-        switch (user.role) {
-          case 'Customer':
-            navigate('/customer', { replace: true });
-            break;
-          case 'System Admin':
-            navigate('/admin', { replace: true });
-            break;
-          case 'Executive Chef':
-            navigate('/chef', { replace: true });
-            break;
-          case 'Catering Manager':
-            navigate('/manager', { replace: true });
-            break;
-          default:
-            navigate('/');
-        }
+        // The navigation will be handled by the context after successful login
       } else {
-        console.error('No token received in response:', response.data);
-        alert(response.data.message || 'Login failed. Please try again.');
+        toast.error(result.message || 'Login failed');
       }
     } catch (error) {
-      console.error('Error during request:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message,
-      });
-
-      if (error.response?.status === 400) {
-        alert('Invalid email or password. Please try again.');
-      } else {
-        alert(
-          error.response?.data?.message ||
-            'An unexpected error occurred. Please try again.'
-        );
-      }
+      toast.error('An error occurred during login');
+      console.error('Login error:', error);
     }
   };
 

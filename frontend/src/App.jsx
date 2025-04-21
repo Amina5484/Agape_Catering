@@ -22,8 +22,8 @@ import CustomerOrders from './pages/Orders/Orders';
 // Chef Imports
 import ChefDashboard from './chef/ChefDashboard';
 import OrderManagement from './components/chef/OrderManagement';
+import InventoryManagement from './components/chef/InventoryManagement';
 //import ChefStockManagement from './chef/ChefStockManagement';
-
 
 // Manager Imports
 import ManagerSidebar from './manager/managerSidebar/managerSidebar';
@@ -50,9 +50,6 @@ import EditStaff from './SystemAdmin/EditStaff';
 //import ListStaff from './SystemAdmin/ListStaff';
 import AdminHome from './SystemAdmin/AdminHome';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-
-
-
 
 // Remove unused placeholder components
 const Unauthorized = () => <div>Unauthorized Access</div>;
@@ -141,7 +138,6 @@ const AppContent = () => {
             />
             {/* <Route path="staff-list" element={<ListStaff url={url} />} /> */}
             <Route path="view-user" element={<ViewUser url={url} />} />
-
           </Route>
 
           {/* Chef Routes */}
@@ -155,7 +151,7 @@ const AppContent = () => {
           >
             <Route index element={<OrderManagement />} />
             <Route path="orders" element={<OrderManagement />} />
-            {/* <Route path="stock" element={<ChefStockManagement />} /> */}
+            <Route path="stock" element={<InventoryManagement />} />
             <Route path="profile" element={<CustomerProfile />} />
           </Route>
 
@@ -192,7 +188,7 @@ const AppContent = () => {
             path="/categories"
             element={
               <div className="pt-16">
-                <Explore category="All" setCatagory={() => { }} />
+                <Explore category="All" setCatagory={() => {}} />
               </div>
             }
           />
