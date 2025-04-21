@@ -23,7 +23,14 @@ const CartItemSchema = new mongoose.Schema({
   totalPrice: {
     type: Number,
     required: true
+  },
+  deliveryFee: {
+    type: Number,
+    default: function () {
+      return this.totalPrice * 0.05; // 5% of the total price
+    }
   }
+  
 });
 
 const CartSchema = new mongoose.Schema({
@@ -51,7 +58,7 @@ const CartSchema = new mongoose.Schema({
 
 // Auto-update subtotal before save
 CartSchema.pre('save', function (next) {
-  this.subtotal = this.items.reduce((sum, item) => sum + item.totalPrice, 0);
+  this.subtotal = this.items.reduce((sum, item) => sum + item.totalPrice + item.deliveryFee, 0);
   this.updatedAt = Date.now();
   next();
 });
