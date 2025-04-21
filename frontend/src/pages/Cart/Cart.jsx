@@ -8,7 +8,7 @@ import { FaTrash, FaMinus, FaPlus, FaShoppingBag } from 'react-icons/fa';
 const Cart = () => {
   const { removeFromCart, url, token, userId, isLoggedIn } = useContext(StoreContext);
   const [isLoading, setIsLoading] = useState(true);
-  const [cartData, setCartData] = useState({});
+  const [cartData, setCartData] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,17 +20,16 @@ const Cart = () => {
 
     const fetchCartData = async () => {
       try {
-        const response = await axios.get(`${url}/api/cart/${userId}`, {
+        // const response = await axios.get(`${url}/api/cart/`, {
+        const response = await axios.get(`http://localhost:4000/api/cart/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        if (response.data.success) {
-          setCartData(response.data.cartData || {});
-        } else {
-          toast.error(response.data.message || 'Failed to load cart data');
-        }
+        console.log(`${url}/api/cart/`);
+        setCartData(response.data);
+        console.log("Cart data fetched successfully:", response.data);
+        console.log(response.data);
       } catch (error) {
         console.error('Error fetching cart data:', error);
         toast.error('Failed to load cart details');
@@ -40,18 +39,19 @@ const Cart = () => {
     };
 
     fetchCartData();
-  }, [url, userId, token, isLoggedIn, navigate]);
+  }, [url, token, isLoggedIn, navigate]);
 
-  const handleQuantityChange = async (menuId, newQuantity) => {
+  const handleQuantityChange = async (itemId, newQuantity) => {
+
     if (!isLoggedIn) {
       toast.error('Please login to modify cart');
       return;
     }
 
     try {
-      const response = await axios.post(
-        `${url}/api/cart/${userId}`,
-        { menuId, quantity: newQuantity },
+      const response = await axios.put(
+        `http://localhost:4000/api/cart/update/${itemId}`,
+        { quantity: newQuantity },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -59,22 +59,12 @@ const Cart = () => {
         }
       );
 
-      if (response.data.success) {
-        toast.success('Cart updated successfully');
-        setCartData(response.data.cartData || {});
-      } else {
-        toast.error(response.data.message || 'Failed to update cart');
-      }
+      setCartData(response.data);
+      toast.success('Cart updated successfully');
     } catch (error) {
       console.error('Error updating cart:', error);
-      toast.error(error.response?.data?.message || 'Failed to update cart');
+      toast.error('Failed to update cart');
     }
-  };
-
-  const calculateTotal = () => {
-    return Object.values(cartData).reduce((total, item) => {
-      return total + (item.price || 0) * item.quantity;
-    }, 0);
   };
 
   const handleCheckout = () => {
@@ -84,18 +74,38 @@ const Cart = () => {
       return;
     }
 
-    if (Object.keys(cartData).length === 0) {
+    if (!cartData || !cartData.items || cartData.items.length === 0) {
       toast.error('Your cart is empty');
       return;
     }
 
-    const cartItems = Object.entries(cartData).map(([menuId, item]) => ({
-      menuId,
-      ...item,
-      total: (item.price || 0) * item.quantity,
-    }));
+    navigate('/placeorder', { state: { cartItems: cartData.items } });
+  };
+  const handleRemoveFromCart = async (itemId) => {
+    if (!isLoggedIn) {
+      toast.error('Please login to modify cart');
+      return;
+    }
 
-    navigate('/placeorder', { state: { cartItems } });
+    try {
+      const response = await axios.delete(
+        `http://localhost:4000/api/cart/delete/${itemId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setCartData(response.data);
+      toast.success('Item removed from cart successfully');
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+      toast.error('Failed to remove item from cart');
+    }
+  };
+  const calculateSubtotal = () => {
+    return cartData?.subtotal || 0;
   };
 
   if (isLoading) {
@@ -120,7 +130,7 @@ const Cart = () => {
           </button>
         </div>
 
-        {Object.keys(cartData).length === 0 ? (
+        {!cartData?.items?.length ? (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
             <div className="max-w-md mx-auto">
               <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
@@ -139,37 +149,32 @@ const Cart = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
-              {Object.entries(cartData).map(([menuId, item]) => (
+              {cartData.items.map((item) => (
                 <div
-                  key={menuId}
+                  key={item._id}
                   className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
                 >
                   <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
                     <div className="w-full sm:w-32 h-32 flex-shrink-0">
-                      {item.image ? (
-                        <img
-                          src={`${url}/uploads/${item.image.replace(/^\/uploads\//, '')}`}
-                          alt={item.name}
-                          className="w-full h-full object-cover rounded-lg"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
-                          <span className="text-gray-400">No Image</span>
-                        </div>
-                      )}
+                      <img
+                        src={`http://localhost:4000/uploads/${item.menuItem.image}`}
+                        alt={item.menuItem.name}
+                        className="w-full h-full object-cover rounded-lg"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src =
+                            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
+                        }}
+                      />
                     </div>
                     <div className="flex-grow">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
-                          <p className="text-gray-600 text-sm mt-1">{item.description}</p>
+                          <h3 className="text-lg font-semibold text-gray-900">{item.menuItem.name}</h3>
+                          <p className="text-gray-600 text-sm mt-1">{item.menuItem.description}</p>
                         </div>
                         <button
-                          onClick={() => removeFromCart(menuId)}
+                          onClick={() => handleRemoveFromCart(item._id)}
                           className="text-red-500 hover:text-red-600 transition-colors"
                         >
                           <FaTrash />
@@ -178,14 +183,14 @@ const Cart = () => {
                       <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
                         <div className="flex items-center space-x-4">
                           <button
-                            onClick={() => handleQuantityChange(menuId, Math.max(1, item.quantity - 1))}
+                            onClick={() => handleQuantityChange(item._id, Math.max(1, item.quantity - 1))}
                             className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
                           >
                             <FaMinus className="text-gray-600" />
                           </button>
                           <span className="text-lg font-medium w-8 text-center">{item.quantity}</span>
                           <button
-                            onClick={() => handleQuantityChange(menuId, item.quantity + 1)}
+                            onClick={() => handleQuantityChange(item._id, item.quantity + 1)}
                             className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
                           >
                             <FaPlus className="text-gray-600" />
@@ -193,11 +198,16 @@ const Cart = () => {
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-semibold text-indigo-600">
-                            {(item.price * item.quantity).toLocaleString()} Birr
+                            {item.totalPrice.toLocaleString()} Birr
                           </p>
-                          <p className="text-sm text-gray-500">{(item.price || 0).toLocaleString()} Birr each</p>
+                          <p className="text-sm text-gray-500">{item.price.toLocaleString()} Birr each</p>
                         </div>
                       </div>
+                      {item.specialInstructions && (
+                        <p className="text-sm text-gray-500 mt-2">
+                          <strong>Note:</strong> {item.specialInstructions}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -210,7 +220,9 @@ const Cart = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="text-gray-900 font-medium">{calculateTotal().toLocaleString()} Birr</span>
+                    <span className="text-gray-900 font-medium">
+                      {calculateSubtotal().toLocaleString()} Birr
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Delivery Fee</span>
@@ -220,7 +232,7 @@ const Cart = () => {
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-semibold text-gray-900">Total</span>
                       <span className="text-xl font-bold text-indigo-600">
-                        {calculateTotal().toLocaleString()} Birr
+                        {calculateSubtotal().toLocaleString()} Birr
                       </span>
                     </div>
                   </div>

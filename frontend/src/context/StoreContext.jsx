@@ -148,7 +148,7 @@ const StoreContextProvider = (props) => {
     if (!isLoggedIn) return;
 
     try {
-      const response = await axios.get(`${url}/api/cart/${userId}`, {
+      const response = await axios.get(`${url}/api/cart/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -177,7 +177,7 @@ const StoreContextProvider = (props) => {
 
     try {
       const response = await axios.post(
-        `${url}/api/cart/${userId}`,
+        `${url}/api/cart/`,
         { menuId, quantity },
         {
           headers: {
@@ -233,7 +233,7 @@ const StoreContextProvider = (props) => {
 
     try {
       const response = await axios.put(
-        `${url}/api/cart/${userId}/${foodId}`,
+        `${url}/api/cart/${foodId}`,
         { quantity: parseInt(quantity) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
