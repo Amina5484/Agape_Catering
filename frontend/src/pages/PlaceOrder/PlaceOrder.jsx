@@ -135,54 +135,10 @@ const PlaceOrder = () => {
     }));
   };
 
-  const handlePayment = async (amount) => {
-    try {
-      const paymentData = {
-        amount,
-        currency: 'ETB',
-        email: formData.email,
-        first_name: formData.fullName.split(' ')[0],
-        last_name: formData.fullName.split(' ')[1] || '',
-        phone: formData.phone,
-        tx_ref: 'tx-' + Date.now(),
-        callback_url: 'http://localhost:3000/success',
-      };
-
-      const response = await axios.post('http://localhost:4000/api/payment/pay', paymentData);
-
-      if (response.data.success) {
-        // Save order details to database
-        const orderDetails = {
-          customerInfo: formData,
-          location: deliveryLocation,
-          orderedDate,
-          deliveryDate,
-          orderType,
-          items: cartData.cartItems,
-          totalAmount: cartData.total,
-          upfrontPayment,
-          remainingPayment,
-          paymentStatus: 'pending',
-          orderStatus: 'new',
-        };
-
-        await axios.post('http://localhost:4000/api/orders/create', orderDetails, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-
-        // Redirect to Chapa payment page
-        window.location.href = response.data.data.checkout_url;
-      }
-    } catch (error) {
-      console.error('Payment error:', error);
-      toast.error('Payment failed. Please try again.');
-    }
-  };
-
+  // Handle form submission and checkout
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!deliveryLocation.lat || !deliveryLocation.lng) {
       toast.error('Please select a delivery location.');
       return;
@@ -196,8 +152,47 @@ const PlaceOrder = () => {
       return;
     }
 
-    // Proceed with payment
-    await handlePayment(upfrontPayment);
+    try {
+      // Format the order data to match the backend model structure
+      const orderData = {
+        // No need to specify userId as it will be extracted from the token
+        TypeOfOrder: orderType === 'Urgent' ? 'urgent' : 'scheduled',
+        DeliveryDate: new Date(deliveryDate).toISOString(),
+        Address: {
+          addressText: locationInput,
+          streetAddress: formData.address,
+          coordinates: deliveryLocation,
+          fullName: formData.fullName,
+          phone: formData.phone,
+          email: formData.email
+        }
+        // The controller will get cart items from the database
+      };
+
+      // Call checkout API
+      const response = await axios.post('http://localhost:4000/api/order/checkout', orderData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.data.success || response.data.payment_url) {
+        toast.success('Order placed successfully!');
+        // If payment URL is returned, redirect to the payment page
+        if (response.data.payment_url) {
+          window.location.href = response.data.payment_url;
+        } else {
+          // Otherwise redirect to success page
+          navigate('/payment-success', { state: { orderDetails: response.data.order } });
+        }
+      } else {
+        toast.error(response.data.message || 'Failed to place order. Please try again.');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error(error.response?.data?.message || 'Checkout failed. Please try again.');
+    }
   };
 
   return (
@@ -205,55 +200,66 @@ const PlaceOrder = () => {
       <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md">
         <p className="text-xl font-bold mb-4">Delivery Information</p>
 
-        <input
-          type="text"
-          name="fullName"
-          value={formData.fullName}
-          onChange={handleInputChange}
-          placeholder="Full Name"
-          required
-          className="border p-2 rounded-md w-full text-green-600"
-        />
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleInputChange}
-          placeholder="Email"
-          required
-          className="border p-2 rounded-md w-full text-green-600"
-        />
-        <input
-          type="text"
-          name="phone"
-          value={formData.phone}
-          onChange={handleInputChange}
-          placeholder="Phone number"
-          required
-          className="border p-2 rounded-md w-full text-green-600"
-        />
-        <input
-          type="text"
-          name="address"
-          value={formData.address}
-          onChange={handleInputChange}
-          placeholder="Street Address"
-          required
-          className="border p-2 rounded-md w-full text-green-600"
-        />
-
-        {/* Ordered Date */}
-        <div>
+        {/* Customer Information */}
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700">
-            Ordered Date
+            Full Name
           </label>
           <input
             type="text"
-            value={orderedDate}
-            readOnly
-            className="border p-2 rounded-md w-full bg-gray-100 text-green-600"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleInputChange}
+            placeholder="Full Name"
+            required
+            className="border p-2 rounded-md w-full text-green-600"
           />
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Email
+          </label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            placeholder="Email"
+            required
+            className="border p-2 rounded-md w-full text-green-600"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Phone Number
+          </label>
+          <input
+            type="text"
+            name="phone"
+            value={formData.phone}
+            onChange={handleInputChange}
+            placeholder="Phone number"
+            required
+            className="border p-2 rounded-md w-full text-green-600"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Street Address
+          </label>
+          <input
+            type="text"
+            name="address"
+            value={formData.address}
+            onChange={handleInputChange}
+            placeholder="Street Address"
+            required
+            className="border p-2 rounded-md w-full text-green-600"
+          />
+        </div> */}
 
         {/* Order Type */}
         <div>
@@ -273,21 +279,19 @@ const PlaceOrder = () => {
         </div>
 
         {/* Delivery Date */}
-        {orderType && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Delivery Date
-            </label>
-            <input
-              type="date"
-              value={deliveryDate}
-              onChange={(e) => setDeliveryDate(e.target.value)}
-              min={minDeliveryDate}
-              required
-              className="border p-2 rounded-md w-full text-green-600"
-            />
-          </div>
-        )}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Delivery Date
+          </label>
+          <input
+            type="date"
+            value={deliveryDate}
+            onChange={(e) => setDeliveryDate(e.target.value)}
+            min={minDeliveryDate}
+            required
+            className="border p-2 rounded-md w-full text-green-600"
+          />
+        </div>
 
         {/* Location Selection */}
         <div>
@@ -389,7 +393,7 @@ const PlaceOrder = () => {
           type="submit"
           className="bg-green-500 text-white py-3 px-6 w-full rounded-lg mt-4 hover:bg-green-600 font-bold"
         >
-          Proceed to Payment ({upfrontPayment.toLocaleString()} Birr)
+          Place Order ({upfrontPayment.toLocaleString()} Birr)
         </button>
       </form>
 

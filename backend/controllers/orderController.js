@@ -47,8 +47,8 @@ export const createOrder = async (req, res) => {
       last_name: '',
       phone: user.phone || '0911121314',
       tx_ref: `order_${userId}_${Date.now()}`,
-      callback_url: 'http://localhost:3000/payment-success',
-      return_url: 'http://localhost:3000/payment-success',
+      callback_url: 'http://localhost:4000/payment-success',
+      return_url: 'http://localhost:4000/payment-success',
     };
 
     const chapaResponse = await axios.post(

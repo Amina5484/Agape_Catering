@@ -17,6 +17,7 @@ import ForgotPassword from './components/ForgotPassword/ForgotPassword';
 import Explore from './components/Explore/Explore';
 import FeedbackForm from './pages/Feedback/Feedback';
 import PlaceOrder from './pages/PlaceOrder/PlaceOrder';
+import PaymentSuccess from './pages/PaymentSuccess/PaymentSuccess';
 import StoreContextProvider, { useStore } from './context/StoreContext';
 import CustomerProfile from './customer/CustomerProfile';
 import CustomerOrders from './pages/Orders/Orders';
@@ -224,6 +225,8 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
+
+          <Route path="/payment-success" element={<PaymentSuccess />} />
 
           {/* Default route */}
           <Route path="*" element={<Navigate to="/login" replace />} />
