@@ -6,7 +6,7 @@ import { upload } from "../middleware/multer.js";
 import { protect, authorizeRoles } from '../config/authMiddleware.js';
 
 import authMiddleware from "../middleware/auth.js"
-import { placeOrder } from "../controllers/orderController.js"
+// import { placeOrder } from "../controllers/orderController.js"
 
 const customer_router = express.Router();
 // customer_router.use(protect, authorizeRoles("Customer"));
@@ -72,7 +72,7 @@ customer_router.get('/menu', getMenu);
  *       401:
  *         description: Unauthorized
  */
-customer_router.post("/order/placeorder",placeOrder);
+// customer_router.post("/order/placeorder",placeOrder);
 
 
 
