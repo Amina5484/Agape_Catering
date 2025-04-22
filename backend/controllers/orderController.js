@@ -1,6 +1,82 @@
 import orderModel from '../models/orderModel.js';
 import userModel from '../models/userModel.js';
+import Cart from '../models/cartModel.js';
 import { processChapaPayment } from '../utils/chapaPayment.js';
+import order from '../models/orderModel.js';
+
+export const createOrder = async (req, res) => {
+  try {
+    const userId = req.user._id; 
+    const Address = req.body.Address || "Test Address"; // Default address if not provided
+    console.log(userId);
+
+    // Get active cart for user
+    const cart = await Cart.findOne({ userId, status: 'active' }).populate('items.menuItem');
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ message: 'Your cart is empty.' });
+    }
+
+    // Prepare order details
+    const total = cart.subtotal;
+    const amountToPayNow = +(total * 0.4).toFixed(2); // 40%
+    console.log(cart)
+
+    cart.items.forEach((item) => {
+      console.log({
+      itemId: item.menuItem._id,
+      quantity: item.quantity,
+      price: item.price,
+      totalPrice: item.totalPrice,
+      specialInstructions: item.specialInstructions,
+      deliveryFee: item.deliveryFee,
+      });
+    });
+
+    const orderItems = cart.items.map((item) => ({
+      item: item.menuItem._id,
+      quantity: item.quantity,
+      price: item.price,
+      totalPrice: item.totalPrice,
+      specialInstructions: item.specialInstructions,
+      deliveryFee: item.deliveryFee
+    }));
+
+    const newOrder = new order({
+      userId,
+      Address,
+      menuItems: orderItems,
+      totalAmount: total,
+      paidAmount: 0,
+      paymentStatus: 'pending',
+      orderStatus: 'pending'
+    });
+
+    await newOrder.save();
+
+    // Mark cart as ordered
+    cart.status = 'ordered';
+    await cart.save();
+
+    // Notify manager (placeholder)
+    notifyManager(newOrder);
+
+    res.status(201).json({
+      message: 'Order placed successfully. Please pay 40% to confirm.',
+      orderId: newOrder._id,
+      amountToPay: amountToPayNow
+    });
+
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({ message: 'Something went wrong.' });
+  }
+};
+
+// Basic notify manager
+const notifyManager = (order) => {
+  console.log(`🚨 Manager Notified: New Order from user ${order.customerId} with ID ${order._id}`);
+};
+
 
 // 🛒 Place order with 50% initial payment
 const placeOrder = async (req, res) => {
@@ -256,6 +332,25 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+// Checkout (placeholder)
+const checkout = async (req, res) => {
+  try {
+    const cart = await Cart.findOne({ userId: req.user._id });
+    if (!cart || cart.items.length === 0)
+      return res.status(400).json({ message: 'Cart is empty' });
+
+    cart.status = 'ordered';
+    await cart.save();
+
+    // TODO: create order, handle payment, etc.
+
+    res.status(200).json({ message: 'Order placed successfully!' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error during checkout', error: err });
+  }
+};
+
+
 export {
   placeOrder,
   processFinalPayment,
@@ -263,4 +358,7 @@ export {
   getOrderDetails,
   getAllOrders,
   updateOrderStatus,
+
+  // Checkout
+  checkout
 };
