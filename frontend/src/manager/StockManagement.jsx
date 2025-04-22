@@ -30,6 +30,7 @@ const StockManagement = () => {
         console.log("Stock items fetched successfully:");
         // Calculate low stock status for each item
         const stockWithStatus = response.data.map(item => ({
+
           ...(item || {}),
           isLowStock: item.quantity <= (item.initialQuantity || item.quantity) * 0.2
         }));

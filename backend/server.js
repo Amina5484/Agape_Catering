@@ -87,7 +87,7 @@ app.use('/api/customer', customer_router);
 app.use('/api/user', userRouter);
 app.use('/api/food', foodRouter);
 app.use('/api/cart', cartRouter);
-app.use('/api/orders', orderRoutes);
+app.use('/api/order', orderRoutes);
 app.use('/api/feedback', feedbackRouter);
 // app.use('/api/menu', menuRoutes);
 app.use('/api/chef', chef_router);

@@ -6,3 +6,166 @@
   width: 100%;
   border-radius: 8px;
 } */
+
+@layer base {
+  :root {
+    /* New elegant color palette */
+    --color-royal-blue: 52, 152, 219;
+    /* #3498db - Primary color */
+    --color-emerald-green: 46, 204, 113;
+    /* #2ecc71 - Accent color */
+    --color-crimson-pop: 231, 76, 60;
+    /* #e74c3c - Alert/Action color */
+    --color-cloud-gray: 245, 245, 245;
+    /* #f5f5f5 - Background color */
+    --color-charcoal-ink: 51, 51, 51;
+    /* #333333 - Text color */
+    --color-misty-steel: 189, 195, 199;
+    /* #bdc3c7 - Border color */
+    --color-forest-pulse: 39, 174, 96;
+    /* #27ae60 - Hover state */
+    --color-deep-ocean: 41, 128, 185;
+    /* #2980b9 - Navigation link */
+
+    /* Light mode variables */
+    --color-background: var(--color-cloud-gray);
+    --color-text: var(--color-charcoal-ink);
+    --color-accent: var(--color-royal-blue);
+    --color-accent-light: var(--color-deep-ocean);
+    --color-accent-dark: var(--color-deep-ocean);
+    --color-border: var(--color-misty-steel);
+    --color-card: 255, 255, 255;
+    /* white */
+    --color-card-hover: 249, 250, 251;
+    /* gray-50 */
+    --color-success: var(--color-emerald-green);
+    --color-warning: var(--color-crimson-pop);
+    --color-hover: var(--color-forest-pulse);
+  }
+
+  .dark {
+    /* Dark mode variables */
+    --color-background: 26, 32, 44;
+    /* dark gray-900 */
+    --color-text: 237, 242, 247;
+    /* gray-100 */
+    --color-accent: var(--color-royal-blue);
+    --color-accent-light: var(--color-deep-ocean);
+    --color-accent-dark: var(--color-deep-ocean);
+    --color-border: 74, 85, 104;
+    /* gray-600 */
+    --color-card: 45, 55, 72;
+    /* gray-800 */
+    --color-card-hover: 74, 85, 104;
+    /* gray-600 */
+    --color-success: var(--color-emerald-green);
+    --color-warning: var(--color-crimson-pop);
+    --color-hover: var(--color-forest-pulse);
+  }
+
+  body {
+    @apply bg-white dark:bg-gray-900 text-gray-800 dark:text-white;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Smooth transitions for all elements */
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+
+  /* Animation keyframes */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInFromRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInFromLeft {
+    from {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* Cards hover effect */
+  .hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Sidebar animation */
+  .sidebar-appear {
+    animation: slideInFromLeft 0.3s ease-out forwards;
+  }
+
+  /* Sidebar animation from right side */
+  .sidebar-appear-right {
+    animation: slideInFromRight 0.3s ease-out forwards;
+  }
+
+  /* Custom utility classes for the new color palette */
+  .text-royal {
+    color: rgb(var(--color-royal-blue));
+  }
+
+  .bg-royal {
+    background-color: rgb(var(--color-royal-blue));
+  }
+
+  .border-royal {
+    border-color: rgb(var(--color-royal-blue));
+  }
+
+  .text-emerald {
+    color: rgb(var(--color-emerald-green));
+  }
+
+  .bg-emerald {
+    background-color: rgb(var(--color-emerald-green));
+  }
+
+  .text-crimson {
+    color: rgb(var(--color-crimson-pop));
+  }
+
+  .bg-crimson {
+    background-color: rgb(var(--color-crimson-pop));
+  }
+
+  .bg-gradient-royal {
+    background-image: linear-gradient(to right, rgb(var(--color-royal-blue)), rgb(var(--color-deep-ocean)));
+  }
+
+  .hover\:bg-forest:hover {
+    background-color: rgb(var(--color-forest-pulse));
+  }
+}

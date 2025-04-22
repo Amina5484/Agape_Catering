@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useStore } from '../../context/StoreContext';
+import { useDarkMode } from '../../context/DarkModeContext';
 import PasswordInput from '../common/PasswordInput';
+import { FiLogIn, FiUser } from 'react-icons/fi';
 
 const Login = ({ setShowLogin }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, isLoggedIn, userRole } = useStore();
+  const { isDarkMode } = useDarkMode();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -15,142 +18,134 @@ const Login = ({ setShowLogin }) => {
 
   useEffect(() => {
     if (isLoggedIn && userRole) {
-      // Close login modal if it exists
-      if (setShowLogin) {
-        setShowLogin(false);
-      }
-
-      // Redirect based on role
-      switch (userRole) {
-        case 'Customer':
-          navigate('/customer', { replace: true });
-          break;
-        case 'System Admin':
-          navigate('/admin', { replace: true });
-          break;
-        case 'Executive Chef':
-          navigate('/chef', { replace: true });
-          break;
-        case 'Catering Manager':
-          navigate('/manager', { replace: true });
-          break;
-        default:
-          navigate('/');
-      }
+      if (setShowLogin) setShowLogin(false);
+      const routes = {
+        'Customer': '/customer',
+        'System Admin': '/admin',
+        'Executive Chef': '/chef',
+        'Catering Manager': '/manager',
+      };
+      navigate(routes[userRole] || '/', { replace: true });
     }
   }, [isLoggedIn, userRole, navigate, setShowLogin]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Submitting login form with:', formData);
-
     try {
       const result = await login(formData.email, formData.password);
-      console.log('Login result:', result);
-
       if (result.success && result.user) {
-        // Close login modal if it exists
-        if (setShowLogin) {
-          setShowLogin(false);
-        }
-
-        // Redirect based on role
-        switch (result.user.role) {
-          case 'Customer':
-            navigate('/customer', { replace: true });
-            break;
-          case 'System Admin':
-            navigate('/admin', { replace: true });
-            break;
-          case 'Executive Chef':
-            navigate('/chef', { replace: true });
-            break;
-          case 'Catering Manager':
-            navigate('/manager', { replace: true });
-            break;
-          default:
-            navigate('/');
-        }
+        if (setShowLogin) setShowLogin(false);
+        const routes = {
+          'Customer': '/customer',
+          'System Admin': '/admin',
+          'Executive Chef': '/chef',
+          'Catering Manager': '/manager',
+        };
+        navigate(routes[result.user.role] || '/', { replace: true });
       } else {
         toast.error(result.message || 'Login failed');
       }
     } catch (error) {
       console.error('Login error in component:', error);
-      const errorMessage =
-        error.response?.data?.message || 'Invalid email or password';
-      toast.error(errorMessage);
+      toast.error(error.response?.data?.message || 'Invalid email or password');
     }
   };
 
-  // Don't render the form if already logged in
-  if (isLoggedIn) {
-    return null;
-  }
+  if (isLoggedIn) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <PasswordInput
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              />
-            </div>
+    <div className={`flex items-center justify-center ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
+      <div className="w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 space-y-3">
+        <div className="flex justify-center mb-1">
+          <div className={`p-2 rounded-full ${isDarkMode ? 'bg-indigo-900' : 'bg-indigo-100'}`}>
+            <FiUser className={`h-5 w-5 ${isDarkMode ? 'text-indigo-300' : 'text-indigo-600'}`} />
           </div>
+        </div>
+        <h2 className={`text-center text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          Sign in to your account
+        </h2>
 
+        <form onSubmit={handleSubmit} className="space-y-3">
           <div>
+            <label htmlFor="email" className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              Email address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              className={`block w-full px-3 py-1.5 border rounded-md sm:text-sm focus:outline-none focus:ring-2 focus:z-10 transition-colors duration-200 ${isDarkMode
+                ? 'bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-indigo-500 focus:border-indigo-500'
+                : 'bg-white border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500'
+                }`}
+              placeholder="Email address"
+              value={formData.email}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              Password
+            </label>
+            <PasswordInput
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Password"
+              required
+              className={`block w-full px-3 py-1.5 border rounded-md sm:text-sm focus:outline-none focus:ring-2 focus:z-10 transition-colors duration-200 ${isDarkMode
+                ? 'bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-indigo-500 focus:border-indigo-500'
+                : 'bg-white border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500'
+                }`}
+            />
+          </div>
+          <div className="mt-1">
+            <span
+              onClick={() => {
+                setShowLogin && setShowLogin(false);
+                navigate('/forgot-password');
+              }}
+              className={`text-xs font-medium cursor-pointer hover:underline ${isDarkMode ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-500'
+                }`}
+            >
+              Forgot your password?
+            </span>
+          </div>
+          <div className="mt-2">
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className={`group relative w-full flex justify-center py-1.5 px-4 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 ${isDarkMode
+                ? 'bg-indigo-700 hover:bg-indigo-800 focus:ring-indigo-500 focus:ring-offset-gray-900'
+                : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 focus:ring-offset-white'
+                }`}
             >
+              <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                <FiLogIn className="h-4 w-4 text-indigo-300 group-hover:text-indigo-200" />
+              </span>
               Sign in
             </button>
           </div>
         </form>
 
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Don&apos;t have an account?{' '}
-            <a
-              href="/register"
-              className="font-medium text-teal-600 hover:text-teal-500"
+        <div className="text-center mt-2">
+          <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            Don't have an account?{' '}
+            <span
+              onClick={() => {
+                setShowLogin && setShowLogin(false);
+                navigate('/register');
+              }}
+              className={`font-medium cursor-pointer hover:underline ${isDarkMode ? 'text-teal-400 hover:text-teal-300' : 'text-teal-600 hover:text-teal-500'
+                }`}
             >
               Register here
-            </a>
+            </span>
           </p>
         </div>
       </div>
@@ -159,3 +154,4 @@ const Login = ({ setShowLogin }) => {
 };
 
 export default Login;
+

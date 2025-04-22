@@ -13,6 +13,7 @@ cartRouter.put('/update/:itemId', updateCartItem)
 cartRouter.delete('/delete/:itemId', removeCartItem)
 cartRouter.delete('/clear', clearCart)
 cartRouter.post('/clear', checkout)
+// cartRouter.post('/checkout', checkout)
 
 // /**
 //  * @swagger

@@ -156,10 +156,10 @@ export const loginUser = async (req, res) => {
       'User found:',
       user
         ? {
-            id: user._id,
-            email: user.email,
-            role: user.role,
-          }
+          id: user._id,
+          email: user.email,
+          role: user.role,
+        }
         : 'No user found'
     );
 

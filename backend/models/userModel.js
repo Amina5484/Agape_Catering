@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
-
-
+import order from './orderModel.js';
 
 const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -15,10 +14,17 @@ const UserSchema = new mongoose.Schema({
     enum: ['Customer', 'Catering Manager', 'Executive Chef', 'System Admin'],
     default: 'Customer',
   },
-
+  previousOrders: [
+    {
+      orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'order' },
+      orderDate: { type: Date },
+      totalAmount: { type: Number },
+    },
+  ],
   createdAt: { type: Date, default: Date.now },
 });
 
+// Hash the password before saving the user
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);
@@ -26,6 +32,7 @@ UserSchema.pre('save', async function (next) {
   next();
 });
 
+// Method to compare entered password with hashed password
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   try {
     console.log('Comparing passwords for user:', this.email);

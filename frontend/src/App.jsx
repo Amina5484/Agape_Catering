@@ -4,6 +4,7 @@ import './index.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { DarkModeProvider } from './context/DarkModeContext';
+import { SidebarProvider } from './context/SidebarContext';
 
 // Customer Imports
 import Navbar from './components/Navbar/Navbar';
@@ -12,9 +13,11 @@ import Cart from './pages/Cart/Cart';
 import Footer from './components/Footer/Footer';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
+import ForgotPassword from './components/ForgotPassword/ForgotPassword';
 import Explore from './components/Explore/Explore';
 import FeedbackForm from './pages/Feedback/Feedback';
 import PlaceOrder from './pages/PlaceOrder/PlaceOrder';
+import PaymentSuccess from './pages/PaymentSuccess/PaymentSuccess';
 import StoreContextProvider, { useStore } from './context/StoreContext';
 import CustomerProfile from './customer/CustomerProfile';
 import CustomerOrders from './pages/Orders/Orders';
@@ -52,13 +55,19 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import MenuDisplay from './components/MenuDisplay/MenuDisplay';
 
 // Remove unused placeholder components
-const Unauthorized = () => <div>Unauthorized Access</div>;
+const Unauthorized = () => <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900 text-gray-800 dark:text-white transition-colors duration-300">
+  <div className="text-center p-8 max-w-md bg-gray-50 dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+    <h1 className="text-2xl font-bold text-orange-500 mb-4">Unauthorized Access</h1>
+    <p className="mb-6">You don't have permission to access this page.</p>
+    <a href="/" className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300">Return to Home</a>
+  </div>
+</div>;
 
 const AppContent = () => {
   const url = 'http://localhost:4000';
   const [showLogin, setShowLogin] = useState(false);
   const location = useLocation();
-  const { isLoggedIn, userRole } = useStore();
+  const { isLoggedIn, userRole, darkMode } = useStore();
   const isManagerRoute = location.pathname.startsWith('/manager');
   const isSystemRoute =
     location.pathname.startsWith('/system') ||
@@ -74,10 +83,19 @@ const AppContent = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white transition-colors duration-300">
-        <ToastContainer />
+      <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'}`}>
+        <ToastContainer
+          position="top-right"
+          theme={darkMode ? 'dark' : 'light'}
+          toastStyle={{
+            backgroundColor: darkMode ? '#1f2937' : 'white',
+            color: darkMode ? 'white' : 'black',
+          }}
+        />
         {isManagerRoute ? (
-          <ManagerNavbar />
+          <SidebarProvider>
+            <ManagerNavbar />
+          </SidebarProvider>
         ) : isSystemRoute ? (
           <SystemNavbar />
         ) : isChefRoute ? null : (
@@ -88,6 +106,7 @@ const AppContent = () => {
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
           {/* Protected routes */}
@@ -159,7 +178,9 @@ const AppContent = () => {
             path="/manager"
             element={
               <ProtectedRoute allowedRoles={['Catering Manager']}>
-                <ManagerSidebar />
+                <SidebarProvider>
+                  <ManagerSidebar />
+                </SidebarProvider>
               </ProtectedRoute>
             }
           >
@@ -186,7 +207,7 @@ const AppContent = () => {
           <Route
             path="/categories"
             element={
-              <div className="pt-16">
+              <div className="pt-16 dark:bg-gray-900 transition-colors duration-300">
                 <Explore category="All" setCategory={() => { }} />
               </div>
             }
@@ -205,6 +226,8 @@ const AppContent = () => {
             }
           />
 
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+
           {/* Default route */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
@@ -218,7 +241,7 @@ const AppContent = () => {
           onClick={() => setShowLogin(false)}
         >
           <div
-            className="bg-white p-8 rounded-lg shadow-md max-w-md w-full relative transform scale-100 opacity-100 transition-all duration-300 ease-in-out"
+            className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md max-w-sm w-full relative transform scale-100 opacity-100 transition-all duration-300 ease-in-out"
             onClick={(e) => e.stopPropagation()}
           >
             <Login setShowLogin={setShowLogin} />

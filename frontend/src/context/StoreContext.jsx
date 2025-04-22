@@ -158,12 +158,11 @@ const StoreContextProvider = (props) => {
         setCartItems(response.data.cartData || []);
       } else {
         setCartItems([]);
-        toast.error(response.data.message || 'Failed to fetch cart');
+  
       }
     } catch (error) {
       console.error('Error fetching cart:', error);
       setCartItems([]);
-      toast.error(error.response?.data?.message || 'Failed to fetch cart');
     }
   }, [isLoggedIn, token, userId]);
 
