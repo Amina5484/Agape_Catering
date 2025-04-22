@@ -5,12 +5,14 @@ import { toast } from 'react-toastify';
 import { useStore } from '../../context/StoreContext';
 import PasswordInput from '../../components/common/PasswordInput';
 import { FaUserPlus, FaArrowLeft, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { isValidName, isStrongPassword, isValidEthiopianPhoneNumber } from '../../utils/validation';
 
 const CreateAccount = () => {
   const navigate = useNavigate();
   const { token } = useStore();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({});
   const [user, setUser] = useState({
     firstName: '',
     lastName: '',
@@ -22,31 +24,59 @@ const CreateAccount = () => {
     photo: null,
   });
 
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'firstName':
+      case 'lastName':
+        return isValidName(value) ? null : 'Name must contain at least 3 alphabetical characters (no numbers or special characters)';
+      case 'password':
+        return isStrongPassword(value) ? null : 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character';
+      case 'phone':
+        return isValidEthiopianPhoneNumber(value) ? null : 'Phone number must be in format +2519XXXXXXXX or +2517XXXXXXXX (12 digits total)';
+      default:
+        return null;
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'photo' && files) {
       setUser((prev) => ({ ...prev, photo: files[0] }));
     } else {
       setUser((prev) => ({ ...prev, [name]: value }));
+
+      // Validate field on change
+      const error = validateField(name, value);
+      setErrors(prev => ({
+        ...prev,
+        [name]: error
+      }));
     }
   };
 
-  const validatePhone = (phone) => {
-    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-    return phoneRegex.test(phone);
+  const validateForm = () => {
+    const newErrors = {
+      firstName: validateField('firstName', user.firstName),
+      lastName: validateField('lastName', user.lastName),
+      password: validateField('password', user.password),
+      phone: validateField('phone', user.phone)
+    };
+
+    setErrors(newErrors);
+    return !Object.values(newErrors).some(error => error !== null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      toast.error('Please fix the errors in the form');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      if (!validatePhone(user.phone)) {
-        toast.error('Please enter a valid phone number');
-        setLoading(false);
-        return;
-      }
-
       const userData = {
         name: `${user.firstName} ${user.lastName}`,
         email: user.email,
@@ -131,9 +161,12 @@ const CreateAccount = () => {
                     value={user.firstName}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    placeholder="Enter first name"
+                    className={`mt-1 block w-full rounded-lg border-${errors.firstName ? 'red-300' : 'gray-300'} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
+                    placeholder="Enter first name (minimum 3 letters, alphabets only)"
                   />
+                  {errors.firstName && (
+                    <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                  )}
                 </div>
 
                 {/* Last Name */}
@@ -147,9 +180,12 @@ const CreateAccount = () => {
                     value={user.lastName}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    placeholder="Enter last name"
+                    className={`mt-1 block w-full rounded-lg border-${errors.lastName ? 'red-300' : 'gray-300'} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
+                    placeholder="Enter last name (minimum 3 letters, alphabets only)"
                   />
+                  {errors.lastName && (
+                    <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                  )}
                 </div>
 
                 {/* Email */}
@@ -180,12 +216,16 @@ const CreateAccount = () => {
                       value={user.phone}
                       onChange={handleChange}
                       required
-                      placeholder="+1234567890"
-                      className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      placeholder="Format: +2519XXXXXXXX or +2517XXXXXXXX"
+                      className={`mt-1 block w-full rounded-lg border-${errors.phone ? 'red-300' : 'gray-300'} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
                     />
-                    <p className="mt-1 text-xs text-gray-500">
-                      Format: +1234567890
-                    </p>
+                    {errors.phone ? (
+                      <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                    ) : (
+                      <p className="mt-1 text-xs text-gray-500">
+                        Phone number must be in Ethiopian format: +2519XXXXXXXX or +2517XXXXXXXX (12 digits total)
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -227,7 +267,7 @@ const CreateAccount = () => {
                 </div>
 
                 {/* Password */}
-                {/* <div className="md:col-span-2 space-y-2">
+                <div className="md:col-span-2 space-y-2">
                   <label className="block text-sm font-medium text-gray-700">
                     Password
                   </label>
@@ -235,70 +275,34 @@ const CreateAccount = () => {
                     <PasswordInput
                       name="password"
                       value={user.password}
-                onChange={handleChange}
+                      onChange={handleChange}
                       required
-                      className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      placeholder="Enter strong password (min 8 chars with uppercase, lowercase, number, special char)"
+                      className={`mt-1 block w-full rounded-lg border-${errors.password ? 'red-300' : 'gray-300'} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
                     />
-                    <button
-                      type="button"
-                      onClick={togglePasswordVisibility}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? (
-                        <FaEyeSlash className="h-5 w-5" />
-                      ) : (
-                        <FaEye className="h-5 w-5" />
-                      )}
-                    </button>
-                  </div> */}
-                {/* </div>
-          </div> */}
-
-                {/* Submit Button */}
-                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4">
-                  <button
-                    type="button"
-                    onClick={() => navigate(-1)}
-                    className="w-full sm:w-auto px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className={`w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors ${
-                      loading ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                  >
-                    {loading ? (
-                      <span className="flex items-center justify-center">
-                        <svg
-                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Creating Account...
-                      </span>
-                    ) : (
-                      'Create Account'
+                    {errors.password && (
+                      <p className="mt-1 text-sm text-red-600">{errors.password}</p>
                     )}
-                  </button>
+                  </div>
                 </div>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="mr-4 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${loading ? 'opacity-70 cursor-not-allowed' : ''
+                    }`}
+                >
+                  {loading ? 'Creating...' : 'Create Account'}
+                </button>
               </div>
             </form>
           </div>
