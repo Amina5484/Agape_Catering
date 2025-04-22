@@ -3,6 +3,12 @@ import mongoose from "mongoose"
 
 const orderSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
+    typeOfOrder: {
+      type: String,
+      enum: ['urgent', 'scheduled'],
+      default: 'scheduled'
+    },
+    deliveryDate: { type: Date },
     Address:{type:Object,required:true},
     menuItems: [
       {

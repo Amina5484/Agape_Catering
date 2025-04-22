@@ -2,10 +2,10 @@ import express from 'express';
 import { protect, authorizeRoles } from '../config/authMiddleware.js';
 import ROLES from '../config/roles.js';
 import {
-  getUserOrders,
-  getOrderDetails,
-  getAllOrders,
-  updateOrderStatus,
+  // getUserOrders,
+  // getOrderDetails,
+  // getAllOrders,
+  // updateOrderStatus,
   createOrder
 } from '../controllers/orderController.js';
 
