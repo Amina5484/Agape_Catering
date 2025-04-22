@@ -124,7 +124,8 @@ export const createOrder = async (req, res) => {
 
 // Basic notify manager
 const notifyManager = (order) => {
-  console.log(`🚨 Manager Notified: New Order from user ${order.customerId} with ID ${order._id}`);
+
+  console.log(`🚨 Manager Notified: New Order from user ${order.userId} with ID ${order._id}`);
 };
 
 

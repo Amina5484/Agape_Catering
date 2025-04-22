@@ -5,7 +5,7 @@ import {
     addMenuItem, updateMenuItem, deleteMenuItem, getMenu,
     addStockItem, updateStockItem, deleteStockItem, getStock,
     acceptOrder, assignSchedule, updateOrderStatus,
-    viewCustomerLocation, viewFeedback, generateReport, getSchedule
+    viewCustomerLocation, viewFeedback, generateReport, getSchedule, listNewOrders
 } from '../controllers/cateringManagerController.js';
 import { upload } from "../middleware/multer.js";
 
@@ -64,6 +64,11 @@ catering_router.use(protect, authorizeRoles(ROLES.CATERING_MANAGER));
  *         description: Server error
  */
 catering_router.post("/menu", upload.single("image"), addMenuItem);
+
+
+
+
+catering_router.post("/listorders",  listNewOrders);
 
 
 /**
