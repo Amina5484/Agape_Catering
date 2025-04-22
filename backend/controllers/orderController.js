@@ -13,7 +13,9 @@ export const createOrder = async (req, res) => {
   try {
     const userId = req.user._id;
     const { Address, DeliveryDate, TypeOfOrder } = req.body;
-
+    if (!Address || !DeliveryDate || !TypeOfOrder) {
+      return res.status(400).json({ message: 'Address, DeliveryDate, and TypeOfOrder are required.' });
+    }
     if (
       TypeOfOrder === 'scheduled' &&
       new Date(DeliveryDate) <= new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
