@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../context/DarkModeContext';
 import { useStore } from '../../context/StoreContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 
 const Explore = ({ category, setCategory }) => {
@@ -24,23 +24,13 @@ const Explore = ({ category, setCategory }) => {
       setLoading(true);
       const [categoriesRes, menuRes] = await Promise.all([
         axios.get('http://localhost:4000/api/category'),
-        axios.get('http://localhost:4000/api/menu')
+        axios.get('http://localhost:4000/api/menu'),
       ]);
 
-      if (categoriesRes.data && Array.isArray(categoriesRes.data)) {
-        setCategories(categoriesRes.data);
-      } else {
-        console.warn('Invalid categories data structure:', categoriesRes.data);
-        setCategories([]);
-      }
-
-      if (menuRes.data && Array.isArray(menuRes.data)) {
-        setMenuItems(menuRes.data);
-      } else {
-        console.warn('Invalid menu items data structure:', menuRes.data);
-        setMenuItems([]);
-      }
-
+      setCategories(
+        Array.isArray(categoriesRes.data) ? categoriesRes.data : []
+      );
+      setMenuItems(Array.isArray(menuRes.data) ? menuRes.data : []);
       setError(null);
     } catch (err) {
       setError('Failed to fetch data. Please try again later.');
@@ -52,10 +42,13 @@ const Explore = ({ category, setCategory }) => {
   };
 
   const getMenuItemsForCategory = (categoryId) => {
-    if (!menuItems || !Array.isArray(menuItems)) return [];
-    return menuItems.filter(item =>
-      item.category &&
-      (typeof item.category === 'object' ? item.category._id === categoryId : item.category === categoryId)
+    if (!Array.isArray(menuItems)) return [];
+    return menuItems.filter(
+      (item) =>
+        item.category &&
+        (typeof item.category === 'object'
+          ? item.category._id === categoryId
+          : item.category === categoryId)
     );
   };
 
@@ -70,7 +63,13 @@ const Explore = ({ category, setCategory }) => {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className={`text-xl font-semibold ${isDarkMode ? 'text-red-400' : 'text-red-500'}`}>{error}</p>
+        <p
+          className={`text-xl font-semibold ${
+            isDarkMode ? 'text-red-400' : 'text-red-500'
+          }`}
+        >
+          {error}
+        </p>
         <button
           onClick={fetchAllData}
           className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
@@ -81,52 +80,44 @@ const Explore = ({ category, setCategory }) => {
     );
   }
 
-  if (categories.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold mb-4">No Categories Available</h2>
-        <p className="text-gray-500 mb-6">Our menu categories are currently being updated. Please check back later.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="py-8">
       <div className="container mx-auto px-4">
-        <h1 className={`text-3xl font-bold text-center mb-8 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+        <h1
+          className={`text-3xl font-bold text-center mb-10 ${
+            isDarkMode ? 'text-white' : 'text-gray-900'
+          }`}
+        >
           Menu Categories
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 justify-items-center">
           {categories.map((cat) => (
             <motion.div
               key={cat._id}
-              className={`p-6 rounded-lg shadow-lg cursor-pointer transition-all duration-300 ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'
-                }`}
+              className="flex flex-col items-center justify-center p-4 cursor-pointer transition-all duration-300"
               onClick={() => setCategory(cat._id)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <div className="flex items-center space-x-4">
-                {cat.image && (
-                  <img
-                    src={`http://localhost:4000${cat.image}`}
-                    alt={cat.categoryName}
-                    className="w-16 h-16 object-cover rounded-lg"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
-                    }}
-                  />
-                )}
-                <div>
-                  <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {cat.categoryName}
-                  </h2>
-                  <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
-                    {getMenuItemsForCategory(cat._id).length} items
-                  </p>
-                </div>
+              <div
+                className={`w-32 h-32 rounded-full shadow-md bg-white flex flex-col items-center justify-center`}
+              >
+                <img
+                  src={`http://localhost:4000${cat.image}`}
+                  alt={cat.categoryName}
+                  className="w-20 h-20 object-cover rounded-full mb-1"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'data:image/svg+xml;base64,...'; // fallback image
+                  }}
+                />
+                <h2 className="text-sm font-bold text-red-500 text-center">
+                  {cat.categoryName}
+                </h2>
+                <p className="text-xs text-gray-500 text-center">
+                  {getMenuItemsForCategory(cat._id).length} items
+                </p>
               </div>
             </motion.div>
           ))}

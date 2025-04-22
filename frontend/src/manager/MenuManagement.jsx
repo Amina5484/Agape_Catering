@@ -16,7 +16,7 @@ const MenuManagement = () => {
     price: '',
     description: '',
     category: '',
-    image: null
+    image: null,
   });
   const [previewImage, setPreviewImage] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -33,20 +33,25 @@ const MenuManagement = () => {
       setLoading(true);
       const [menuRes, categoriesRes] = await Promise.all([
         axios.get('http://localhost:4000/api/menu', {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }),
         axios.get('http://localhost:4000/api/category', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+          headers: { Authorization: `Bearer ${token}` },
+        }),
       ]);
 
-      setMenuItems(menuRes.data);
-      setCategories(categoriesRes.data);
+      setMenuItems(Array.isArray(menuRes.data) ? menuRes.data : []);
+      setCategories(
+        Array.isArray(categoriesRes.data) ? categoriesRes.data : []
+      );
       setError(null);
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Failed to fetch data');
       toast.error('Failed to fetch data');
+      // Initialize empty arrays in case of error
+      setMenuItems([]);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -66,9 +71,9 @@ const MenuManagement = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -85,19 +90,23 @@ const MenuManagement = () => {
       }
 
       if (isEditing) {
-        await axios.put(`http://localhost:4000/api/menu/${editingId}`, formDataToSend, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
+        await axios.put(
+          `http://localhost:4000/api/menu/${editingId}`,
+          formDataToSend,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
+            },
           }
-        });
+        );
         toast.success('Menu item updated successfully');
       } else {
         await axios.post('http://localhost:4000/api/menu', formDataToSend, {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
+            'Content-Type': 'multipart/form-data',
+          },
         });
         toast.success('Menu item added successfully');
       }
@@ -115,7 +124,7 @@ const MenuManagement = () => {
       price: item.price,
       description: item.description,
       category: item.category?._id || '',
-      image: null
+      image: null,
     });
     setPreviewImage(item.image ? `http://localhost:4000${item.image}` : null);
     setIsEditing(true);
@@ -126,7 +135,7 @@ const MenuManagement = () => {
     if (window.confirm('Are you sure you want to delete this menu item?')) {
       try {
         await axios.delete(`http://localhost:4000/api/menu/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         toast.success('Menu item deleted successfully');
         fetchAllData();
@@ -142,17 +151,22 @@ const MenuManagement = () => {
       price: '',
       description: '',
       category: '',
-      image: null
+      image: null,
     });
     setPreviewImage(null);
     setIsEditing(false);
     setEditingId(null);
   };
 
-  const filteredMenuItems = menuItems.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredMenuItems = menuItems.filter((item) => {
+    if (!item || !item.name || !item.description) return false;
+
+    const matchesSearch =
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || (item.category && item.category._id === selectedCategory);
+    const matchesCategory =
+      !selectedCategory ||
+      (item.category && item.category._id === selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
@@ -168,8 +182,12 @@ const MenuManagement = () => {
     <div className="p-4 md:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 md:mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Menu Management</h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Create and manage your menu items</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
+            Menu Management
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Create and manage your menu items
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -316,20 +334,37 @@ const MenuManagement = () => {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Image</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Price</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Image
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Price
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                     {filteredMenuItems.map((item) => (
-                      <tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <tr
+                        key={item._id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
                         <td className="px-4 py-4 whitespace-nowrap">
                           <img
-                            src={`http://localhost:4000${item.image}`}
-                            alt={item.name}
+                            src={
+                              item.image
+                                ? `http://localhost:4000${item.image}`
+                                : 'https://via.placeholder.com/48'
+                            }
+                            alt={item.name || 'Menu item'}
                             className="h-12 w-12 object-cover rounded-md"
                             onError={(e) => {
                               e.target.onerror = null;
@@ -352,7 +387,10 @@ const MenuManagement = () => {
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900 dark:text-white">
-                            ${item.price.toFixed(2)}
+                            $
+                            {item.price !== undefined && item.price !== null
+                              ? Number(item.price).toFixed(2)
+                              : '0.00'}
                           </div>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
