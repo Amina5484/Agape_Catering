@@ -18,11 +18,6 @@ const StockManagement = () => {
     unit: "",
     initialQuantity: ""
   });
-
-  useEffect(() => {
-    fetchStock();
-  }, []);
-
   const fetchStock = async () => {
     setLoading(true);
     try {
@@ -43,6 +38,12 @@ const StockManagement = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchStock();
+  }, []);
+
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;

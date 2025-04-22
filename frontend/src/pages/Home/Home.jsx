@@ -24,22 +24,23 @@ const Home = () => {
             </div>
           </div>
         </div> */}
+        
+         <div className="mb-8">
+          <h2 className="text-3xl font-bold text-center mb-4">Categories</h2>
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <Explore category={category} setCategory={setCategory} />
+          </div>
+        </div>
 
         {/* Menu Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-center mb-4">Our Menu</h2>
+          <h2 className="text-3xl font-bold text-center mb-4"> Menu</h2>
           <div className="bg-white rounded-lg shadow-lg p-6">
             <MenuDisplay category={category} />
           </div>
         </div>
 
-        {/* Categories Section */}
-        {/* <div className="mb-8">
-          <h2 className="text-3xl font-bold text-center mb-4">Categories</h2>
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <Explore category={category} setCategory={setCategory} />
-          </div>
-        </div> */}
+      
       </div>
     </div>
   );

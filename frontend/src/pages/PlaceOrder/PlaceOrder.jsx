@@ -61,23 +61,26 @@ const LocationSelector = ({ setLocation, setLocationInput, setShowMap }) => {
 };
 
 const PlaceOrder = () => {
-  const { totalCartPrice, cartItems } = useContext(StoreContext);
+  const { token } = useContext(StoreContext);
   const navigate = useNavigate();
-  const locationState = useLocation();
-  const { cartData } = locationState.state || {};
+  const location = useLocation();
+  const { cartData } = location.state || {};
 
   // If no cart data, redirect back to cart
   useEffect(() => {
-    if (!cartData) {
-      toast.error('No cart data found');
+    if (!cartData || !cartData.cartItems || cartData.cartItems.length === 0) {
+      toast.error('No items in cart. Please add items before checkout.');
       navigate('/cart');
+      return;
     }
+    console.log("Received cart data:", cartData);
   }, [cartData, navigate]);
 
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phone: '',
+    address: '',
   });
 
   const [deliveryLocation, setDeliveryLocation] = useState({ lat: null, lng: null });
@@ -104,15 +107,19 @@ const PlaceOrder = () => {
       twoWeeksLater.setDate(today.getDate() + 14);
       setMinDeliveryDate(twoWeeksLater.toISOString().split('T')[0]);
 
-      // Calculate payments for scheduled orders
-      setUpfrontPayment(cartData?.total * 0.4 || 0); // 40% upfront
-      setRemainingPayment(cartData?.total * 0.6 || 0); // 60% remaining
+      // Calculate payments for scheduled orders (40% upfront)
+      if (cartData && cartData.total) {
+        setUpfrontPayment(Math.round(cartData.total * 0.4));
+        setRemainingPayment(Math.round(cartData.total * 0.6));
+      }
     } else if (orderType === 'Urgent') {
       setMinDeliveryDate(today.toISOString().split('T')[0]);
 
-      // Calculate payments for urgent orders
-      setUpfrontPayment(cartData?.total || 0); // 100% upfront
-      setRemainingPayment(0); // No remaining payment
+      // Calculate payments for urgent orders (100% upfront)
+      if (cartData && cartData.total) {
+        setUpfrontPayment(cartData.total);
+        setRemainingPayment(0);
+      }
     } else {
       setMinDeliveryDate('');
       setUpfrontPayment(0);
@@ -151,8 +158,8 @@ const PlaceOrder = () => {
           orderedDate,
           deliveryDate,
           orderType,
-          items: cartItems,
-          totalAmount: totalCartPrice,
+          items: cartData.cartItems,
+          totalAmount: cartData.total,
           upfrontPayment,
           remainingPayment,
           paymentStatus: 'pending',
@@ -225,6 +232,15 @@ const PlaceOrder = () => {
           required
           className="border p-2 rounded-md w-full text-green-600"
         />
+        <input
+          type="text"
+          name="address"
+          value={formData.address}
+          onChange={handleInputChange}
+          placeholder="Street Address"
+          required
+          className="border p-2 rounded-md w-full text-green-600"
+        />
 
         {/* Ordered Date */}
         <div>
@@ -250,101 +266,184 @@ const PlaceOrder = () => {
             required
             className="border p-2 rounded-md w-full text-green-600"
           >
-            <option value="">Select Type of Order</option>
-            <option value="Urgent">Urgent</option>
-            <option value="Scheduled">Scheduled</option>
+            <option value="">Select Order Type</option>
+            <option value="Urgent">Urgent (24 hours)</option>
+            <option value="Scheduled">Scheduled (2 weeks in advance)</option>
           </select>
         </div>
 
         {/* Delivery Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Delivery Date
-          </label>
-          <input
-            type="date"
-            value={deliveryDate}
-            onChange={(e) => setDeliveryDate(e.target.value)}
-            min={minDeliveryDate}
-            required
-            className="border p-2 rounded-md w-full text-green-600"
-          />
-        </div>
-
-        {/* Location Input */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Select Delivery Location
-          </label>
-          <input
-            type="text"
-            value={locationInput}
-            onClick={() => setShowMap(true)}
-            readOnly
-            placeholder="Click to select location"
-            className="border p-2 rounded-md w-full cursor-pointer text-green-500"
-          />
-        </div>
-
-        {/* Map for Selecting Location */}
-        {showMap && (
-          <div className="h-72 w-full mt-4">
-            <MapContainer
-              center={AddisAbaba}
-              zoom={14} // Increased zoom level for better details
-              style={{ height: '100%', width: '100%' }}
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution="&copy; OpenStreetMap contributors"
-              />
-              <LocationSelector
-                setLocation={setDeliveryLocation}
-                setLocationInput={setLocationInput}
-                setShowMap={setShowMap}
-              />
-              {deliveryLocation.lat && (
-                <Marker position={[deliveryLocation.lat, deliveryLocation.lng]}>
-                  <Popup>Delivery Location</Popup>
-                </Marker>
-              )}
-            </MapContainer>
+        {orderType && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Delivery Date
+            </label>
+            <input
+              type="date"
+              value={deliveryDate}
+              onChange={(e) => setDeliveryDate(e.target.value)}
+              min={minDeliveryDate}
+              required
+              className="border p-2 rounded-md w-full text-green-600"
+            />
           </div>
         )}
 
-        {/* Payment Section */}
-        <div className="space-y-2">
-          <p className="text-lg text-red-400 font-serif font-bold">Payment Details</p>
-          <hr />
-          <div className="flex justify-between">
-            <span className="font-semibold text-purple-600">Total Cart Price:</span>
-            <span className="font-medium text-green-600">{cartData?.total.toFixed(2)} ETB</span>
+        {/* Location Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Delivery Location
+          </label>
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              value={locationInput}
+              readOnly
+              placeholder="Select location on map"
+              className="border p-2 rounded-md flex-grow text-green-600"
+            />
+            <button
+              type="button"
+              onClick={() => setShowMap(true)}
+              className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+            >
+              Select Location
+            </button>
           </div>
+        </div>
 
-          {/* Upfront Payment */}
-          <div className="flex justify-between">
-            <span className="font-semibold text-purple-600">
-              Upfront Payment ({orderType === 'Scheduled' ? '40%' : '100%'}):
-            </span>
-            <span className="font-medium text-green-600">{upfrontPayment.toFixed(2)} ETB</span>
-          </div>
+        {/* Order Summary Section */}
+        <div className="mt-8 border-t pt-6">
+          <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
+          <div className="space-y-4">
+            {cartData && cartData.cartItems && (
+              <div className="max-h-60 overflow-y-auto">
+                {cartData.cartItems.map((item) => (
+                  <div key={item._id} className="flex justify-between items-center py-2 border-b">
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 rounded overflow-hidden mr-3">
+                        {item.menuItem && item.menuItem.image && (
+                          <img
+                            src={`http://localhost:4000${item.menuItem.image}`}
+                            alt={item.menuItem.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
+                            }}
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium">{item.menuItem ? item.menuItem.name : 'Item'}</p>
+                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">{item.totalPrice ? item.totalPrice.toLocaleString() : '0'} Birr</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
-          {/* Remaining Payment (for Scheduled Orders) */}
-          {orderType === 'Scheduled' && (
-            <div className="flex justify-between">
-              <span className="font-semibold text-purple-600">Remaining Payment (60%):</span>
-              <span className="font-medium text-green-600">{remainingPayment.toFixed(2)} ETB</span>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="flex justify-between mb-2">
+                <span>Subtotal:</span>
+                <span>{cartData?.subtotal?.toLocaleString() || '0'} Birr</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span>Delivery Fee:</span>
+                <span>{cartData?.deliveryFee?.toLocaleString() || '0'} Birr</span>
+              </div>
+              <div className="flex justify-between font-bold text-lg border-t pt-2">
+                <span>Total:</span>
+                <span>{cartData?.total?.toLocaleString() || '0'} Birr</span>
+              </div>
             </div>
-          )}
+
+            {orderType && (
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <h4 className="font-medium mb-2">Payment Information</h4>
+                <div className="flex justify-between mb-1">
+                  <span>Upfront Payment ({orderType === 'Scheduled' ? '40%' : '100%'}):</span>
+                  <span className="font-semibold">{upfrontPayment.toLocaleString()} Birr</span>
+                </div>
+                {orderType === 'Scheduled' && (
+                  <div className="flex justify-between">
+                    <span>Remaining Payment (60%):</span>
+                    <span className="font-semibold">{remainingPayment.toLocaleString()} Birr</span>
+                  </div>
+                )}
+                <p className="text-sm text-gray-600 mt-2">
+                  {orderType === 'Scheduled'
+                    ? 'For scheduled orders, 40% payment is required upfront and the remaining 60% is due on delivery.'
+                    : 'For urgent orders, full payment is required upfront.'}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         <button
           type="submit"
-          className="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 transition duration-300"
+          className="bg-green-500 text-white py-3 px-6 w-full rounded-lg mt-4 hover:bg-green-600 font-bold"
         >
-          Proceed to Payment
+          Proceed to Payment ({upfrontPayment.toLocaleString()} Birr)
         </button>
       </form>
+
+      {/* Map Modal */}
+      {showMap && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[80vh] flex flex-col">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Select Delivery Location</h3>
+              <button
+                onClick={() => setShowMap(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-grow p-4">
+              <MapContainer
+                center={AddisAbaba}
+                zoom={13}
+                style={{ height: '100%', width: '100%', borderRadius: '0.5rem' }}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {deliveryLocation.lat && deliveryLocation.lng && (
+                  <Marker position={[deliveryLocation.lat, deliveryLocation.lng]}>
+                    <Popup>Your delivery location</Popup>
+                  </Marker>
+                )}
+                <LocationSelector
+                  setLocation={setDeliveryLocation}
+                  setLocationInput={setLocationInput}
+                  setShowMap={setShowMap}
+                />
+              </MapContainer>
+            </div>
+            <div className="p-4 border-t">
+              <p className="text-sm text-gray-600 mb-4">
+                Click on the map to select your delivery location. Once selected, the map will close automatically.
+              </p>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowMap(false)}
+                  className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+                >
+                  Close Map
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

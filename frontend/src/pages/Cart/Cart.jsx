@@ -19,13 +19,22 @@ const Cart = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(`${url}/api/cart/`);
-      setCartData(response.data);
+      //
+      // console.log(`${url}/api/cart/`);
+
+      // Ensure response data has the expected structure
+      if (response.data && response.data.items) {
+        setCartData(response.data);
+      } else {
+        setCartData({ items: [], subtotal: 0 });
+        console.warn("Cart data missing expected structure:", response.data);
+      }
+
       console.log("Cart data fetched successfully:", response.data);
-      console.log(response.data);
     } catch (error) {
-      console.error('Error fetching cart data:', error);
-      toast.error('Failed to load cart details');
+
+      //toast.error('Failed to load cart details');
+      setCartData({ items: [], subtotal: 0 }); // Set a default empty structure
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +90,25 @@ const Cart = () => {
       return;
     }
 
-    navigate('/placeorder', { state: { cartItems: cartData.items } });
+    // Calculate the total price
+    const total = calculateSubtotal();
+
+    // Include total price and formatted cart data for the PlaceOrder component
+    const checkoutData = {
+      cartItems: cartData.items,
+      subtotal: cartData.subtotal,
+      total: total,
+      deliveryFee: cartData && cartData.items && cartData.items.length > 0
+        ? cartData.items
+          .filter(item => item.deliveryFee != null)
+          .reduce((sum, item) => sum + item.deliveryFee, 0)
+        : 0
+    };
+
+    // Navigate to the PlaceOrder page with the cart data
+    navigate('/place-order', {
+      state: { cartData: checkoutData }
+    });
   };
   const handleRemoveFromCart = async (itemId) => {
     if (!isLoggedIn) {
@@ -108,7 +135,10 @@ const Cart = () => {
     }
   };
   const calculateSubtotal = () => {
-    return cartData?.subtotal || 0;
+    if (!cartData || !cartData.subtotal) {
+      return 0;
+    }
+    return cartData.subtotal;
   };
 
   if (isLoading) {
@@ -160,8 +190,8 @@ const Cart = () => {
                   <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
                     <div className="w-full sm:w-32 h-32 flex-shrink-0">
                       <img
-                        src={`http://localhost:4000${item.menuItem.image}`}
-                        alt={item.menuItem.name}
+                        src={item.menuItem ? `http://localhost:4000${item.menuItem.image}` : ''}
+                        alt={item.menuItem ? item.menuItem.name : 'Menu Item'}
                         className="w-full h-full object-cover rounded-lg"
                         onError={(e) => {
                           e.target.onerror = null;
@@ -173,8 +203,8 @@ const Cart = () => {
                     <div className="flex-grow">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{item.menuItem.name}</h3>
-                          <p className="text-gray-600 text-sm mt-1">{item.menuItem.description}</p>
+                          <h3 className="text-lg font-semibold text-gray-900">{item.menuItem ? item.menuItem.name : 'Unknown Item'}</h3>
+                          <p className="text-gray-600 text-sm mt-1">{item.menuItem ? item.menuItem.description : ''}</p>
                         </div>
                         <button
                           onClick={() => handleRemoveFromCart(item._id)}
@@ -201,9 +231,9 @@ const Cart = () => {
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-semibold text-indigo-600">
-                            {item.totalPrice.toLocaleString()} Birr
+                            {item.totalPrice ? item.totalPrice.toLocaleString() : '0'} Birr
                           </p>
-                          <p className="text-sm text-gray-500">{item.price.toLocaleString()} Birr each</p>
+                          <p className="text-sm text-gray-500">{item.price ? item.price.toLocaleString() : '0'} Birr each</p>
                         </div>
                       </div>
                       {item.specialInstructions && (
@@ -230,7 +260,14 @@ const Cart = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Delivery Fee</span>
 
-                    <span className="text-gray-900 font-medium">{cartData.items.map((item) => (item.deliveryFee ? item.deliveryFee : 0))}</span>
+                    <span className="text-gray-900 font-medium">
+                      {cartData && cartData.items && cartData.items.length > 0
+                        ? cartData.items
+                          .filter(item => item.deliveryFee != null)
+                          .reduce((sum, item) => sum + item.deliveryFee, 0)
+                          .toLocaleString()
+                        : 0} Birr
+                    </span>
                   </div>
                   <div className="border-t border-gray-200 pt-4">
                     <div className="flex justify-between items-center">

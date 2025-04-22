@@ -49,6 +49,7 @@ import ViewUser from './SystemAdmin/ViewUser';
 import EditStaff from './SystemAdmin/EditStaff';
 import AdminHome from './SystemAdmin/AdminHome';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import MenuDisplay from './components/MenuDisplay/MenuDisplay';
 
 // Remove unused placeholder components
 const Unauthorized = () => <div>Unauthorized Access</div>;
@@ -180,7 +181,7 @@ const AppContent = () => {
           <Route path="/cart" element={<Cart />} />
           <Route
             path="/menu"
-            element={<Explore category="All" />}
+            element={<MenuDisplay category="All" />}
           />
           <Route
             path="/categories"

@@ -24,7 +24,6 @@ const MenuDisplay = ({ category }) => {
             const response = await axios.get('http://localhost:4000/api/menu');
             const items = response.data;
 
-            // Filter items by category if a specific category is selected
             const filteredItems = category === 'All'
                 ? items
                 : items.filter(item => item.category && item.category._id === category);
@@ -50,10 +49,7 @@ const MenuDisplay = ({ category }) => {
 
     const handleAddToCart = () => {
         if (selectedItem) {
-            addToCart(
-                selectedItem._id,
-                quantity
-            );
+            addToCart(selectedItem._id, quantity);
             toast.success(`${selectedItem.name} added to cart!`);
             setSelectedItem(null);
         }
@@ -93,8 +89,6 @@ const MenuDisplay = ({ category }) => {
     return (
         <div className="py-8">
             <div className="container mx-auto px-4">
-                <h1 className="text-3xl font-bold text-center mb-8">Our Menu</h1>
-
                 {Object.entries(groupedItems).map(([categoryName, items]) => (
                     <motion.div
                         key={categoryName}
@@ -108,8 +102,8 @@ const MenuDisplay = ({ category }) => {
                             {items.map((item) => (
                                 <motion.div
                                     key={item._id}
-                                    className={`p-6 rounded-lg shadow-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'
-                                        }`}
+                                    className={`p-6 rounded-lg shadow-lg h-full ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}
+
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                 >
@@ -133,6 +127,7 @@ const MenuDisplay = ({ category }) => {
                                         </div>
                                     </div>
                                 </motion.div>
+
                             ))}
                         </div>
                     </motion.div>
@@ -151,8 +146,7 @@ const MenuDisplay = ({ category }) => {
                                 initial={{ scale: 0.9 }}
                                 animate={{ scale: 1 }}
                                 exit={{ scale: 0.9 }}
-                                className={`p-8 rounded-lg max-w-md w-full ${isDarkMode ? 'bg-gray-800' : 'bg-white'
-                                    }`}
+                                className={`p-8 rounded-lg w-full max-w-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <div className="flex flex-col items-center">
@@ -160,8 +154,9 @@ const MenuDisplay = ({ category }) => {
                                         <img
                                             src={`http://localhost:4000${selectedItem.image}`}
                                             alt={selectedItem.name}
-                                            className="w-full h-48 object-cover rounded-lg mb-4"
+                                            className="w-full h-80 object-cover rounded-lg mb-6"
                                         />
+
                                     )}
                                     <h3 className="text-2xl font-semibold mb-2">{selectedItem.name}</h3>
                                     <p className="text-gray-500 mb-4">{selectedItem.description}</p>
@@ -199,9 +194,10 @@ const MenuDisplay = ({ category }) => {
                         </motion.div>
                     )}
                 </AnimatePresence>
+
             </div>
         </div>
     );
 };
 
-export default MenuDisplay; 
+export default MenuDisplay;
