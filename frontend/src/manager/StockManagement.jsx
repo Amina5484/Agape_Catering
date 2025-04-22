@@ -19,18 +19,23 @@ const StockManagement = () => {
     initialQuantity: ""
   });
   const fetchStock = async () => {
+    console.log("Fetching stock items...");
     setLoading(true);
     try {
       const response = await axios.get('http://localhost:4000/api/catering/stock', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (response.data.success) {
+      console.log("Response data:", response.data);
+      if (response.data) {
+        console.log("Stock items fetched successfully:");
         // Calculate low stock status for each item
-        const stockWithStatus = response.data.stock.map(item => ({
-          ...item,
+        const stockWithStatus = response.data.map(item => ({
+          ...(item || {}),
           isLowStock: item.quantity <= (item.initialQuantity || item.quantity) * 0.2
         }));
         setStockItems(stockWithStatus);
+        console.log("Stock items fetched successfully after mapping :", stockWithStatus);
+
       }
     } catch (error) {
       toast.error('Failed to fetch stock items');
@@ -438,7 +443,8 @@ const StockManagement = () => {
                         </div>
                       </td>
                     </tr>
-                  )}
+                  )
+                  }
                 </tbody>
               </table>
             </div>
