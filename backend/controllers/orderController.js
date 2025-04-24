@@ -2,6 +2,9 @@ import userModel from '../models/userModel.js';
 import Cart from '../models/cartModel.js';
 import order from '../models/orderModel.js';
 import axios from 'axios';
+import { sendEmail } from '../utils/sendEmail.js';
+import orderReceiptEmailHTML from '../email_templates/orderEmail.js'; // for email template
+
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -57,11 +60,11 @@ export const createOrder = async (req, res) => {
       callback_url: 'http://localhost:3000/payment-success',
       return_url: 'http://localhost:3000/payment-success',
       customization: {
-        title: 'Agape Catering Payment',
+        title: 'Agape Catering',
         description: 'Payment for your catering order',
       },
       meta: {
-        orderId: newOrder._id.toString(),
+        // orderId: newOrder._id.toString(),
         userId: userId.toString(),
       },
     };
@@ -117,10 +120,6 @@ export const createOrder = async (req, res) => {
     user.previousOrders.push(previousOrder);
     await user.save();
 
-    // 4. Clear cart and mark as ordered
-    cart.items = [];
-    cart.status = 'ordered';
-    await cart.save();
 
     // 5. Notify manager
     notifyManager(newOrder);
@@ -132,6 +131,26 @@ export const createOrder = async (req, res) => {
       amountToPay: amountToPayNow,
       payment_url: checkout_url,
     });
+
+    
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: 'Order Recept',
+        html: orderReceiptEmailHTML(user.first_name, newOrder._id, "April 24, 2025", orderItems, total, amountToPayNow, total - amountToPayNow),
+      });
+    } catch (emailError) {
+      console.error('Failed to send email:', emailError);
+      // Continue with registration even if email fails
+      // The password will be returned in the response
+    }
+
+        // 4. Clear cart and mark as ordered
+        cart.items = [];
+        cart.status = 'ordered';
+        await cart.save();
+    
+
   } catch (error) {
     console.error(
       'Error creating order:',

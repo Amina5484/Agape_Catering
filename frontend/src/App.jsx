@@ -29,7 +29,7 @@ import InventoryManagement from './components/chef/InventoryManagement';
 import ChefProfile from './chef/ChefProfile';
 
 // Manager Imports
-import ManagerSidebar from './manager/managerSidebar/managerSidebar';
+import ManagerSidebar from './manager/managerSidebar/ManagerSidebar';
 import ManagerNavbar from './manager/managerNavbar/Navbar';
 import Add from './pages/Add/Add';
 import List from './pages/List/List';
@@ -93,9 +93,8 @@ const AppContent = () => {
   return (
     <>
       <div
-        className={`min-h-screen transition-colors duration-300 ${
-          darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'
-        }`}
+        className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'
+          }`}
       >
         <ToastContainer
           position="top-right"
@@ -218,7 +217,7 @@ const AppContent = () => {
             path="/categories"
             element={
               <div className="pt-16 dark:bg-gray-900 transition-colors duration-300">
-                <Explore category="All" setCategory={() => {}} />
+                <Explore category="All" setCategory={() => { }} />
               </div>
             }
           />
