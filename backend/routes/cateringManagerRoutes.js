@@ -301,4 +301,33 @@ catering_router.get('/orders', async (req, res) => {
   }
 });
 
+catering_router.put('/order/update-status/:orderId', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    // Validate the status
+    const validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'delivered'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid order status' });
+    }
+
+    // Find and update the order
+    const updatedOrder = await order.findByIdAndUpdate(
+      orderId,
+      { orderStatus: status },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.status(200).json({ message: 'Order status updated successfully', order: updatedOrder });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
 export default catering_router;
