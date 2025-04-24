@@ -1,6 +1,6 @@
 import Menu from '../models/menu.js';
 import Stock from '../models/stock.js';
-import Order from '../models/order.js';
+import order from '../models/orderModel.js';
 import Schedule from '../models/schedule.js';
 import Feedback from '../models/feedback.js';
 
@@ -59,8 +59,8 @@ export const getStock = async (req, res) => {
 export const acceptOrder = async (req, res) => {
     try {
         const { orderId } = req.params;
-        const order = await Order.findByIdAndUpdate(orderId, { status: "Accepted" }, { new: true });
-        res.status(200).json({ message: "Order accepted", order });
+        const order = await order.findByIdAndUpdate(orderId, { status: "Accepted" }, { new: true });
+        res.status(200).json({ message: "order accepted", order });
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });
     }
@@ -70,8 +70,8 @@ export const updateOrderStatus = async (req, res) => {
     try {
         const { orderId } = req.params;
         const { status } = req.body;
-        const order = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
-        res.status(200).json({ message: "Order status updated", order });
+        const order = await order.findByIdAndUpdate(orderId, { status }, { new: true });
+        res.status(200).json({ message: "order status updated", order });
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });
     }
@@ -101,7 +101,7 @@ export const getSchedule = async (req, res) => {
 export const viewCustomerLocation = async (req, res) => {
     try {
         const { customerId } = req.params;
-        const customer = await Order.findOne({ customerId }).populate("customer", "location");
+        const customer = await order.findOne({ customerId }).populate("customer", "location");
         res.status(200).json(customer?.customer?.location || {});
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });
@@ -121,7 +121,7 @@ export const viewFeedback = async (req, res) => {
 // GENERATE REPORT
 export const generateReport = async (req, res) => {
     try {
-        const orders = await Order.find();
+        const orders = await order.find();
         const stock = await Stock.find();
         res.status(200).json({ orders, stock });
     } catch (error) {
