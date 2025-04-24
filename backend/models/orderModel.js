@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 
 
 const orderSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'userModel', required: true },
     typeOfOrder: {
       type: String,
       enum: ['urgent', 'scheduled'],
@@ -12,7 +12,7 @@ const orderSchema = new mongoose.Schema({
     Address:{type:Object,required:true},
     menuItems: [
       {
-        item: { type: mongoose.Schema.Types.ObjectId, ref: 'MenuItem' },
+        item: { type: mongoose.Schema.Types.ObjectId, ref: 'Menu' },
         quantity: { type: Number, required: true }
       }
     ],

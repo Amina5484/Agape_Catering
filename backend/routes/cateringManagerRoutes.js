@@ -20,7 +20,7 @@ import {
   listNewOrders,
 } from '../controllers/cateringManagerController.js';
 import { upload } from '../middleware/multer.js';
-import Order from '../models/orderModel.js';
+import order from '../models/orderModel.js';
 
 const catering_router = express.Router();
 
@@ -259,24 +259,25 @@ catering_router.get('/report', generateReport);
 // Get all orders
 catering_router.get('/orders', async (req, res) => {
   try {
+    console.log('=============================================================================');
     console.log('Fetching orders...');
-    console.log('Request headers:', req.headers);
-    console.log('User:', req.user);
+    // console.log('Request headers:', req.headers);
+    // console.log('User:', req.user);
 
-    if (!req.user) {
-      console.log('No user found in request');
-      return res.status(401).json({ message: 'Not authorized' });
-    }
+    // if (!req.user) {
+    //   console.log('No user found in request');
+    //   return res.status(401).json({ message: 'Not authorized' });
+    // }
 
     // Check if user has the correct role
-    if (!['Catering Manager', 'Executive Chef'].includes(req.user.role)) {
-      console.log('User role not authorized:', req.user.role);
-      return res
-        .status(403)
-        .json({ message: 'You do not have permission to view orders' });
-    }
+    // if (!['Catering Manager', 'Executive Chef'].includes(req.user.role)) {
+    //   console.log('User role not authorized:', req.user.role);
+    //   return res
+    //     .status(403)
+    //     .json({ message: 'You do not have permission to view orders' });
+    // }
 
-    const orders = await Order.find()
+    const orders = await order.find()
       .sort({ orderedDate: -1 })
       .populate({
         path: 'userId',
