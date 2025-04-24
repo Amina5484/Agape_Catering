@@ -22,11 +22,11 @@ import StoreContextProvider, { useStore } from './context/StoreContext';
 import CustomerProfile from './customer/CustomerProfile';
 import CustomerOrders from './pages/Orders/Orders';
 
-
 // Chef Imports
 import ChefDashboard from './chef/ChefDashboard';
 import OrderManagement from './components/chef/OrderManagement';
 import InventoryManagement from './components/chef/InventoryManagement';
+import ChefProfile from './chef/ChefProfile';
 
 // Manager Imports
 import ManagerSidebar from './manager/managerSidebar/managerSidebar';
@@ -55,13 +55,22 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import MenuDisplay from './components/MenuDisplay/MenuDisplay';
 
 // Remove unused placeholder components
-const Unauthorized = () => <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900 text-gray-800 dark:text-white transition-colors duration-300">
-  <div className="text-center p-8 max-w-md bg-gray-50 dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-    <h1 className="text-2xl font-bold text-orange-500 mb-4">Unauthorized Access</h1>
-    <p className="mb-6">You don't have permission to access this page.</p>
-    <a href="/" className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300">Return to Home</a>
+const Unauthorized = () => (
+  <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900 text-gray-800 dark:text-white transition-colors duration-300">
+    <div className="text-center p-8 max-w-md bg-gray-50 dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+      <h1 className="text-2xl font-bold text-orange-500 mb-4">
+        Unauthorized Access
+      </h1>
+      <p className="mb-6">You don't have permission to access this page.</p>
+      <a
+        href="/"
+        className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300"
+      >
+        Return to Home
+      </a>
+    </div>
   </div>
-</div>;
+);
 
 const AppContent = () => {
   const url = 'http://localhost:4000';
@@ -83,7 +92,11 @@ const AppContent = () => {
 
   return (
     <>
-      <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'}`}>
+      <div
+        className={`min-h-screen transition-colors duration-300 ${
+          darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'
+        }`}
+      >
         <ToastContainer
           position="top-right"
           theme={darkMode ? 'dark' : 'light'}
@@ -170,7 +183,7 @@ const AppContent = () => {
             <Route index element={<OrderManagement />} />
             <Route path="orders" element={<OrderManagement />} />
             <Route path="stock" element={<InventoryManagement />} />
-            <Route path="profile" element={<CustomerProfile />} />
+            <Route path="profile" element={<ChefProfile />} />
           </Route>
 
           {/* Manager Routes */}
@@ -187,7 +200,7 @@ const AppContent = () => {
             <Route index element={<ManagerHome />} />
             <Route path="add-food" element={<Add url={url} />} />
             <Route path="food-list" element={<List url={url} />} />
-            <Route path="orders" element={<Orders />} />
+            <Route path="orders" element={<OrderManagement />} />
             <Route path="profile" element={<CustomerProfile />} />
             <Route path="stock" element={<StockManagement />} />
             <Route path="generate-report" element={<GenerateReport />} />
@@ -200,15 +213,12 @@ const AppContent = () => {
           {/* Customer Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/cart" element={<Cart />} />
-          <Route
-            path="/menu"
-            element={<MenuDisplay category="All" />}
-          />
+          <Route path="/menu" element={<MenuDisplay category="All" />} />
           <Route
             path="/categories"
             element={
               <div className="pt-16 dark:bg-gray-900 transition-colors duration-300">
-                <Explore category="All" setCategory={() => { }} />
+                <Explore category="All" setCategory={() => {}} />
               </div>
             }
           />

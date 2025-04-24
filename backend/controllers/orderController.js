@@ -14,7 +14,11 @@ export const createOrder = async (req, res) => {
     const userId = req.user._id;
     const { Address, DeliveryDate, TypeOfOrder } = req.body;
     if (!Address || !DeliveryDate || !TypeOfOrder) {
-      return res.status(400).json({ message: 'Address, DeliveryDate, and TypeOfOrder are required.' });
+      return res
+        .status(400)
+        .json({
+          message: 'Address, DeliveryDate, and TypeOfOrder are required.',
+        });
     }
     if (
       TypeOfOrder === 'scheduled' &&
@@ -22,7 +26,10 @@ export const createOrder = async (req, res) => {
     ) {
       return res
         .status(400)
-        .json({ message: 'Scheduled delivery date must be at least 14 days in the future.' });
+        .json({
+          message:
+            'Scheduled delivery date must be at least 14 days in the future.',
+        });
     }
 
     const cart = await Cart.findOne({ userId }).populate('items.menuItem');
@@ -47,8 +54,16 @@ export const createOrder = async (req, res) => {
       last_name: '',
       phone: user.phone || '0911121314',
       tx_ref: `order_${userId}_${Date.now()}`,
-      callback_url: 'http://localhost:4000/payment-success',
-      return_url: 'http://localhost:4000/payment-success',
+      callback_url: 'http://localhost:3000/payment-success',
+      return_url: 'http://localhost:3000/payment-success',
+      customization: {
+        title: 'Agape Catering Payment',
+        description: 'Payment for your catering order',
+      },
+      meta: {
+        orderId: newOrder._id.toString(),
+        userId: userId.toString(),
+      },
     };
 
     const chapaResponse = await axios.post(
@@ -91,7 +106,7 @@ export const createOrder = async (req, res) => {
 
     await newOrder.save();
 
-    // 3. Update user’s previous orders
+    // 3. Update user's previous orders
     const previousOrder = {
       items: orderItems,
       orderDate: new Date(),
@@ -118,18 +133,22 @@ export const createOrder = async (req, res) => {
       payment_url: checkout_url,
     });
   } catch (error) {
-    console.error('Error creating order:', error.response?.data || error.message);
-    res.status(500).json({ message: 'Something went wrong.', error: error.message });
+    console.error(
+      'Error creating order:',
+      error.response?.data || error.message
+    );
+    res
+      .status(500)
+      .json({ message: 'Something went wrong.', error: error.message });
   }
 };
 
-
 // Basic notify manager
 const notifyManager = (order) => {
-
-  console.log(`🚨 Manager Notified: New Order from user ${order.userId} with ID ${order._id}`);
+  console.log(
+    `🚨 Manager Notified: New Order from user ${order.userId} with ID ${order._id}`
+  );
 };
-
 
 // // 🛒 Place order with 50% initial payment
 // const placeOrder = async (req, res) => {
@@ -145,7 +164,6 @@ const notifyManager = (order) => {
 //     if (!user) {
 //       return res.status(404).json({ message: 'user not found' });
 //     }
-
 
 //     const halfAmount = totalAmount / 1.8;
 
@@ -403,15 +421,12 @@ const notifyManager = (order) => {
 //   }
 // };
 
-
-export {
-  // placeOrder,
-  // processFinalPayment,
-  // getUserOrders,
-  // getOrderDetails,
-  // getAllOrders,
-  // updateOrderStatus,
-
-  // Checkout
-  // createOrder,
-};
+export // placeOrder,
+// processFinalPayment,
+// getUserOrders,
+// getOrderDetails,
+// getAllOrders,
+// updateOrderStatus,
+// Checkout
+// createOrder,
+ {};

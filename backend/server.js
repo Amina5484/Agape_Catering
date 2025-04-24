@@ -21,7 +21,6 @@ import orderRoutes from './routes/orderRoute.js';
 import menuRoutes from './routes/menuRoutes.js';
 import chef_router from './routes/chefRoutes.js';
 
-
 dotenv.config();
 
 const app = express();
@@ -89,7 +88,6 @@ app.use('/api/food', foodRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRoutes);
 app.use('/api/feedback', feedbackRouter);
-// app.use('/api/menu', menuRoutes);
 app.use('/api/chef', chef_router);
 
 // ✅ Database Connection

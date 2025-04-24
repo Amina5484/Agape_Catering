@@ -168,7 +168,7 @@ const ChefDashboard = () => {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <FaHome className="mr-3" />
+                <FaHome className="mr-3 text-orange-500" />
                 <span>Dashboard</span>
               </Link>
 
@@ -181,7 +181,7 @@ const ChefDashboard = () => {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <FaClipboardList className="mr-3" />
+                <FaClipboardList className="mr-3 text-orange-500" />
                 <span>Orders</span>
               </Link>
 
@@ -194,7 +194,7 @@ const ChefDashboard = () => {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <FaBoxes className="mr-3" />
+                <FaBoxes className="mr-3 text-orange-500" />
                 <span>Inventory</span>
               </Link>
 
@@ -207,21 +207,21 @@ const ChefDashboard = () => {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <FaCalendarAlt className="mr-3" />
+                <FaCalendarAlt className="mr-3 text-orange-500" />
                 <span>Schedule</span>
               </Link>
 
               <Link
                 to="/chef/profile"
-                onClick={() => setActiveMenu('profile ')}
+                onClick={() => setActiveMenu('profile')}
                 className={`flex items-center p-3 rounded-lg transition-colors ${
                   activeMenu === 'profile'
                     ? 'bg-orange-100 text-orange-600'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <FaChartLine className="mr-3" />
-                <span>profile</span>
+                <FaChartLine className="mr-3 text-orange-500" />
+                <span>Profile</span>
               </Link>
             </nav>
 
@@ -231,7 +231,7 @@ const ChefDashboard = () => {
                 onClick={handleLogout}
                 className="w-full flex items-center justify-center p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               >
-                <FaSignOutAlt className="mr-3" />
+                <FaSignOutAlt className="mr-3 text-orange-500" />
                 <span>Logout</span>
               </button>
             </div>

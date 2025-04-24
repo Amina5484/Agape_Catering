@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../SystemAdmin/axiosInstance';
 import { toast } from 'react-toastify';
 import { useStore } from '../context/StoreContext';
 import { FaUser, FaEnvelope, FaPhone, FaLock, FaSpinner } from 'react-icons/fa';
@@ -12,7 +12,7 @@ const ChefProfile = () => {
     phone: '',
     currentPassword: '',
     newPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState({});
@@ -24,20 +24,22 @@ const ChefProfile = () => {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await axios.get('/api/chef/profile', {
-        headers: {
-          Authorization: `Bearer ${user.token}`
-        }
-      });
+      console.log('Fetching profile data...');
+      const response = await axiosInstance.get('/api/chef/profile');
+      console.log('Profile data received:', response.data);
       const { name, email, phone } = response.data;
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         name,
         email,
-        phone
+        phone,
       }));
     } catch (error) {
-      toast.error('Failed to fetch profile data');
+      console.error('Error fetching profile:', error);
+      console.error('Error response:', error.response);
+      toast.error(
+        error.response?.data?.message || 'Failed to fetch profile data'
+      );
     } finally {
       setLoading(false);
     }
@@ -45,15 +47,15 @@ const ChefProfile = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Clear error when user types
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: '',
       }));
     }
   };
@@ -63,12 +65,19 @@ const ChefProfile = () => {
     if (!formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
-    
+
     // Password validation only if any password field is filled
-    if (formData.currentPassword || formData.newPassword || formData.confirmPassword) {
-      if (!formData.currentPassword) newErrors.currentPassword = 'Current password is required';
-      if (!formData.newPassword) newErrors.newPassword = 'New password is required';
-      if (formData.newPassword.length < 6) newErrors.newPassword = 'Password must be at least 6 characters';
+    if (
+      formData.currentPassword ||
+      formData.newPassword ||
+      formData.confirmPassword
+    ) {
+      if (!formData.currentPassword)
+        newErrors.currentPassword = 'Current password is required';
+      if (!formData.newPassword)
+        newErrors.newPassword = 'New password is required';
+      if (formData.newPassword.length < 6)
+        newErrors.newPassword = 'Password must be at least 6 characters';
       if (formData.newPassword !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match';
       }
@@ -93,22 +102,34 @@ const ChefProfile = () => {
         formDataToSend.append('newPassword', formData.newPassword);
       }
 
-      await axios.put('/api/chef/profile', formDataToSend, {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-          'Content-Type': 'multipart/form-data'
-        }
+      console.log('Updating profile with data:', {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
       });
 
+      const response = await axiosInstance.put(
+        '/api/chef/profile',
+        formDataToSend,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      console.log('Profile update response:', response.data);
       toast.success('Profile updated successfully');
       // Clear password fields after successful update
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         currentPassword: '',
         newPassword: '',
-        confirmPassword: ''
+        confirmPassword: '',
       }));
     } catch (error) {
+      console.error('Error updating profile:', error);
+      console.error('Error response:', error.response);
       toast.error(error.response?.data?.message || 'Failed to update profile');
     } finally {
       setIsSubmitting(false);
@@ -117,31 +138,38 @@ const ChefProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="px-6 py-8">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-slate-800">Chef Profile</h2>
-              <p className="mt-2 text-slate-600">Manage your account settings and preferences</p>
+    <div className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-slate-50 to-slate-100 py-4 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md mx-auto">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="px-4 py-4">
+            <div className="text-center mb-4">
+              <h2 className="text-2xl font-bold text-slate-800">
+                Chef Profile
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Manage your account settings
+              </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* Name */}
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-slate-700">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-slate-700"
+                >
                   Name
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaUser className="h-5 w-5 text-slate-400" />
+                    <FaUser className="h-4 w-4 text-slate-400" />
                   </div>
                   <input
                     type="text"
@@ -149,22 +177,27 @@ const ChefProfile = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`block w-full pl-8 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.name ? 'border-red-500' : 'border-slate-300'
                     }`}
                   />
                 </div>
-                {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+                {errors.name && (
+                  <p className="mt-1 text-xs text-red-600">{errors.name}</p>
+                )}
               </div>
 
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-slate-700"
+                >
                   Email
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaEnvelope className="h-5 w-5 text-slate-400" />
+                    <FaEnvelope className="h-4 w-4 text-slate-400" />
                   </div>
                   <input
                     type="email"
@@ -172,22 +205,27 @@ const ChefProfile = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`block w-full pl-8 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.email ? 'border-red-500' : 'border-slate-300'
                     }`}
                   />
                 </div>
-                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                {errors.email && (
+                  <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+                )}
               </div>
 
               {/* Phone */}
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-slate-700">
+                <label
+                  htmlFor="phone"
+                  className="block text-sm font-medium text-slate-700"
+                >
                   Phone
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaPhone className="h-5 w-5 text-slate-400" />
+                    <FaPhone className="h-4 w-4 text-slate-400" />
                   </div>
                   <input
                     type="tel"
@@ -195,26 +233,33 @@ const ChefProfile = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`block w-full pl-8 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.phone ? 'border-red-500' : 'border-slate-300'
                     }`}
                   />
                 </div>
-                {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+                {errors.phone && (
+                  <p className="mt-1 text-xs text-red-600">{errors.phone}</p>
+                )}
               </div>
 
               {/* Password Change Section */}
-              <div className="border-t border-slate-200 pt-6">
-                <h3 className="text-lg font-medium text-slate-800 mb-4">Change Password</h3>
-                
+              <div className="border-t border-slate-200 pt-4">
+                <h3 className="text-sm font-medium text-slate-800 mb-3">
+                  Change Password
+                </h3>
+
                 {/* Current Password */}
-                <div className="mb-4">
-                  <label htmlFor="currentPassword" className="block text-sm font-medium text-slate-700">
+                <div className="mb-3">
+                  <label
+                    htmlFor="currentPassword"
+                    className="block text-sm font-medium text-slate-700"
+                  >
                     Current Password
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaLock className="h-5 w-5 text-slate-400" />
+                      <FaLock className="h-4 w-4 text-slate-400" />
                     </div>
                     <input
                       type="password"
@@ -222,24 +267,31 @@ const ChefProfile = () => {
                       name="currentPassword"
                       value={formData.currentPassword}
                       onChange={handleChange}
-                      className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.currentPassword ? 'border-red-500' : 'border-slate-300'
+                      className={`block w-full pl-8 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        errors.currentPassword
+                          ? 'border-red-500'
+                          : 'border-slate-300'
                       }`}
                     />
                   </div>
                   {errors.currentPassword && (
-                    <p className="mt-1 text-sm text-red-600">{errors.currentPassword}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.currentPassword}
+                    </p>
                   )}
                 </div>
 
                 {/* New Password */}
-                <div className="mb-4">
-                  <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700">
+                <div className="mb-3">
+                  <label
+                    htmlFor="newPassword"
+                    className="block text-sm font-medium text-slate-700"
+                  >
                     New Password
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaLock className="h-5 w-5 text-slate-400" />
+                      <FaLock className="h-4 w-4 text-slate-400" />
                     </div>
                     <input
                       type="password"
@@ -247,24 +299,31 @@ const ChefProfile = () => {
                       name="newPassword"
                       value={formData.newPassword}
                       onChange={handleChange}
-                      className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.newPassword ? 'border-red-500' : 'border-slate-300'
+                      className={`block w-full pl-8 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        errors.newPassword
+                          ? 'border-red-500'
+                          : 'border-slate-300'
                       }`}
                     />
                   </div>
                   {errors.newPassword && (
-                    <p className="mt-1 text-sm text-red-600">{errors.newPassword}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.newPassword}
+                    </p>
                   )}
                 </div>
 
                 {/* Confirm Password */}
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-slate-700"
+                  >
                     Confirm New Password
                   </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaLock className="h-5 w-5 text-slate-400" />
+                      <FaLock className="h-4 w-4 text-slate-400" />
                     </div>
                     <input
                       type="password"
@@ -272,27 +331,31 @@ const ChefProfile = () => {
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.confirmPassword ? 'border-red-500' : 'border-slate-300'
+                      className={`block w-full pl-8 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        errors.confirmPassword
+                          ? 'border-red-500'
+                          : 'border-slate-300'
                       }`}
                     />
                   </div>
                   {errors.confirmPassword && (
-                    <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.confirmPassword}
+                    </p>
                   )}
                 </div>
               </div>
 
               {/* Submit Button */}
-              <div className="pt-6">
+              <div className="pt-4">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   {isSubmitting ? (
                     <>
-                      <FaSpinner className="animate-spin -ml-1 mr-2 h-5 w-5" />
+                      <FaSpinner className="animate-spin -ml-1 mr-2 h-4 w-4" />
                       Updating...
                     </>
                   ) : (
@@ -308,4 +371,4 @@ const ChefProfile = () => {
   );
 };
 
-export default ChefProfile; 
+export default ChefProfile;

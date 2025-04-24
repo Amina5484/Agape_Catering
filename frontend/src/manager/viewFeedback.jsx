@@ -104,12 +104,7 @@ const ViewFeedback = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
-          <div>
-            <h2 className="text-3xl font-bold text-slate-800">Customer Feedback</h2>
-            <p className="text-slate-600 mt-1">Manage and review customer feedback</p>
-          </div>
-          
+        <div className="mt-20 px-4">
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
             <div className="relative w-full md:w-64">
               <input
@@ -157,9 +152,13 @@ const ViewFeedback = () => {
                 {showNotifications && (
                   <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-slate-200 z-10">
                     <div className="p-4">
-                      <h3 className="text-lg font-semibold text-slate-800 mb-3">Notifications</h3>
+                      <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                        Notifications
+                      </h3>
                       {notifications.length === 0 ? (
-                        <p className="text-slate-500 text-center py-4">No new notifications</p>
+                        <p className="text-slate-500 text-center py-4">
+                          No new notifications
+                        </p>
                       ) : (
                         <div className="space-y-2 max-h-60 overflow-y-auto">
                           {notifications.map((notification) => (
@@ -171,9 +170,13 @@ const ViewFeedback = () => {
                                 setShowNotifications(false);
                               }}
                             >
-                              <p className="text-sm text-slate-800">{notification.message}</p>
+                              <p className="text-sm text-slate-800">
+                                {notification.message}
+                              </p>
                               <p className="text-xs text-slate-500 mt-1">
-                                {new Date(notification.createdAt).toLocaleString()}
+                                {new Date(
+                                  notification.createdAt
+                                ).toLocaleString()}
                               </p>
                             </div>
                           ))}
@@ -203,7 +206,10 @@ const ViewFeedback = () => {
             </div>
           ) : (
             filteredFeedbacks.map((feedback) => (
-              <div key={feedback._id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+              <div
+                key={feedback._id}
+                className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+              >
                 <div className="p-6">
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
                     <div className="flex items-center space-x-3 mb-4 md:mb-0">
@@ -211,7 +217,9 @@ const ViewFeedback = () => {
                         <FaUser className="text-indigo-600 text-xl" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-slate-800">{feedback.name}</h3>
+                        <h3 className="text-lg font-semibold text-slate-800">
+                          {feedback.name}
+                        </h3>
                         <div className="flex items-center space-x-2 text-slate-500 text-sm">
                           <FaEnvelope className="text-slate-400" />
                           <span>{feedback.email}</span>
@@ -227,19 +235,24 @@ const ViewFeedback = () => {
                     <div className="flex items-center space-x-2 text-slate-500">
                       <FaCalendarAlt className="text-slate-400" />
                       <span className="text-sm">
-                        {new Date(feedback.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        {new Date(feedback.createdAt).toLocaleDateString(
+                          'en-US',
+                          {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          }
+                        )}
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="bg-slate-50 rounded-lg p-4">
-                    <p className="text-slate-800 leading-relaxed">{feedback.feedback}</p>
+                    <p className="text-slate-800 leading-relaxed">
+                      {feedback.feedback}
+                    </p>
                   </div>
                 </div>
               </div>

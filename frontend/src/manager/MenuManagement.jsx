@@ -40,18 +40,13 @@ const MenuManagement = () => {
         }),
       ]);
 
-      setMenuItems(Array.isArray(menuRes.data) ? menuRes.data : []);
-      setCategories(
-        Array.isArray(categoriesRes.data) ? categoriesRes.data : []
-      );
+      setMenuItems(menuRes.data);
+      setCategories(categoriesRes.data);
       setError(null);
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Failed to fetch data');
       toast.error('Failed to fetch data');
-      // Initialize empty arrays in case of error
-      setMenuItems([]);
-      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -159,8 +154,6 @@ const MenuManagement = () => {
   };
 
   const filteredMenuItems = menuItems.filter((item) => {
-    if (!item || !item.name || !item.description) return false;
-
     const matchesSearch =
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -181,14 +174,13 @@ const MenuManagement = () => {
   return (
     <div className="p-4 md:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-6 md:mb-8">
+        {/* <div className="mb-6 md:mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
             Menu Management
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          {/* <p className="text-gray-600 dark:text-gray-400 mt-1">
             Create and manage your menu items
-          </p>
-        </div>
+          </p> */}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <motion.div
@@ -292,7 +284,7 @@ const MenuManagement = () => {
 
                 <button
                   type="submit"
-                  className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-200"
+                  className="w-full px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-200"
                 >
                   {isEditing ? 'Update Menu Item' : 'Add Menu Item'}
                 </button>
@@ -332,21 +324,21 @@ const MenuManagement = () => {
 
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
+                  <thead className="bg-orange-400 dark:bg-gray-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
                         Image
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
                         Name
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
                         Category
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
                         Price
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -359,12 +351,8 @@ const MenuManagement = () => {
                       >
                         <td className="px-4 py-4 whitespace-nowrap">
                           <img
-                            src={
-                              item.image
-                                ? `http://localhost:4000${item.image}`
-                                : 'https://via.placeholder.com/48'
-                            }
-                            alt={item.name || 'Menu item'}
+                            src={`http://localhost:4000${item.image}`}
+                            alt={item.name}
                             className="h-12 w-12 object-cover rounded-md"
                             onError={(e) => {
                               e.target.onerror = null;
@@ -387,10 +375,7 @@ const MenuManagement = () => {
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900 dark:text-white">
-                            $
-                            {item.price !== undefined && item.price !== null
-                              ? Number(item.price).toFixed(2)
-                              : '0.00'}
+                            ${item.price.toFixed(2)}
                           </div>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">

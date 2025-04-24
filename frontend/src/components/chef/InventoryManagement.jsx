@@ -138,7 +138,7 @@ const InventoryManagement = () => {
         <div className="bg-white rounded-xl shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-blue-600">
+              <thead className="bg-orange-400">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                     Name
@@ -222,7 +222,7 @@ const InventoryManagement = () => {
                       ) : (
                         <button
                           onClick={() => setUpdatingItem(item._id)}
-                          className="text-indigo-600 hover:text-indigo-900"
+                          className="text-orange-600 hover:text-indigo-900"
                         >
                           Update
                         </button>

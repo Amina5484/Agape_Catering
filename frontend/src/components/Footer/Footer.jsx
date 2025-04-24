@@ -9,7 +9,7 @@ const Footer = () => {
     >
       <div className="flex  flex-col md:flex-row justify-between px-6 py-3 mx-auto max-w-6xl ">
         <div className="flex flex-col gap-4 w-full md:w-[50%]">
-          <h1 className="font-bold text-xl sm:text-2xl md:text-3xl text-red-400 font-mono md:font-bold sm:font-semibold">
+          <h1 className="font-bold text-xl sm:text-2xl md:text-3xl text-orange-400 font-mono md:font-bold sm:font-semibold">
             Agape Catering
           </h1>
           <p className="text-sm md:text-base">
@@ -23,15 +23,15 @@ const Footer = () => {
 
           <div className="flex gap-4 pl-4 md:pl-16">
             <FaPhone
-              className="w-8 h-8 text-gray-300 hover:text-white transition-transform transform hover:scale-110 cursor-pointer"
+              className="w-8 h-8 text-orange-400 hover:text-white transition-transform transform hover:scale-110 cursor-pointer"
               title="Phone"
             />
             <FaEnvelope
-              className="w-8 h-8 text-gray-300 hover:text-white transition-transform transform hover:scale-110 cursor-pointer"
+              className="w-8 h-8 text-orange-400 hover:text-white transition-transform transform hover:scale-110 cursor-pointer"
               title="Email"
             />
             <FaFacebook
-              className="w-8 h-8 text-gray-300 hover:text-white transition-transform transform hover:scale-110 cursor-pointer"
+              className="w-8 h-8 text-orange-400 hover:text-white transition-transform transform hover:scale-110 cursor-pointer"
               title="Facebook"
             />
             <a
@@ -39,7 +39,7 @@ const Footer = () => {
               target="_blank"
             >
               <FaTiktok
-                className="w-8 h-8 text-gray-300 hover:text-white transition-transform transform hover:scale-110 cursor-pointer"
+                className="w-8 h-8 text-orange-400 hover:text-white transition-transform transform hover:scale-110 cursor-pointer"
                 title="TikTok"
               />
             </a>
@@ -61,20 +61,22 @@ const Footer = () => {
             <h2 className="text-lg font-semibold">Get in Touch</h2>
             <ul className="text-center md:text-right cursor-pointer">
               <li className="flex items-center gap-2 hover:text-gray-400">
-                <FaPhone /> +251911572510 / +251924535333
+                <FaPhone className="text-orange-400" /> +251911572510 /
+                +251924535333
               </li>
               <li className="flex items-center gap-2 hover:text-gray-400">
-                <FaEnvelope /> agapecatering@gmail.com
+                <FaEnvelope className="text-orange-400" />{' '}
+                agapecatering@gmail.com
               </li>
               <li className="flex items-center gap-2 hover:text-gray-400">
-                <FaFacebook /> .......
+                <FaFacebook className="text-orange-400" /> .......
               </li>
               <a
                 href="https://www.tiktok.com/@agapecatering?_t=ZM-8tnaQeDp6DF&_r=1"
                 target="_blank"
               >
                 <li className="flex items-center gap-2 hover:text-gray-400">
-                  <FaTiktok />
+                  <FaTiktok className="text-orange-400" />
                   agapecatering Agapecatering
                 </li>
               </a>

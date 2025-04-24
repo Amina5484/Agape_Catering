@@ -123,12 +123,12 @@ const Navbar = ({ setShowLogin }) => {
           </Link>
           <Link to="/cart">
             <FaShoppingCart
-              className="w-4 h-4 sm:w-5 sm:h-5 cursor-pointer hover:text-gray-400"
+              className="w-4 h-4 sm:w-5 sm:h-5 cursor-pointer text-orange-500 hover:text-gray-400"
               title="Cart"
             />
           </Link>
           <FaSearch
-            className="w-4 h-4 sm:w-5 sm:h-5 cursor-pointer hover:text-gray-400"
+            className="w-4 h-4 sm:w-5 sm:h-5 cursor-pointer text-orange-500 hover:text-gray-400"
             title="Search"
           />
           <Link to="/feedback" className="cursor-pointer hover:text-gray-400">
@@ -144,7 +144,7 @@ const Navbar = ({ setShowLogin }) => {
             {darkMode ? (
               <FaSun className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
             ) : (
-              <FaMoon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
+              <FaMoon className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400 dark:text-gray-300" />
             )}
           </button>
 
@@ -155,7 +155,7 @@ const Navbar = ({ setShowLogin }) => {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
-                <FaUser className="w-4 h-4 sm:w-5 sm:h-5" />
+                <FaUser className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
               </button>
 
               {isProfileOpen && (
@@ -193,7 +193,7 @@ const Navbar = ({ setShowLogin }) => {
             </div>
           ) : (
             <button
-              className="bg-blue-500 rounded text-white px-3 py-1 text-xs sm:text-sm hover:bg-blue-600 transition"
+              className="bg-orange-500 rounded text-white px-3 py-1 text-xs sm:text-sm hover:bg-orange-200 transition"
               onClick={handleLoginClick}
             >
               Login/Sign Up

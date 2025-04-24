@@ -12,7 +12,7 @@ const MenuDisplay = ({ category }) => {
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [quantities, setQuantities] = useState({}); // Track quantity per item
+  const [quantities, setQuantities] = useState({});
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
 
@@ -35,7 +35,6 @@ const MenuDisplay = ({ category }) => {
 
       setMenuItems(filteredItems);
 
-      // Initialize quantities for each item
       const initialQuantities = {};
       filteredItems.forEach((item) => {
         initialQuantities[item._id] = 1;
@@ -64,8 +63,6 @@ const MenuDisplay = ({ category }) => {
     toast.success(`${item.name} added to cart!`);
     setSelectedItem(null);
     setShowDetails(false);
-
-    // Reset quantity for this item back to 1
     setQuantities((prev) => ({
       ...prev,
       [item._id]: 1,
@@ -120,108 +117,105 @@ const MenuDisplay = ({ category }) => {
     <div className="py-8">
       <div className="container mx-auto px-4">
         {Object.entries(groupedItems).length > 0 ? (
-          <div className="flex flex-wrap -mx-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {Object.entries(groupedItems).map(([categoryName, items]) => (
               <motion.div
                 key={categoryName}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="w-full md:w-1/2 lg:w-1/2 px-4 mb-8"
+                className="mb-16"
               >
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-                  <div className="flex items-center mb-4">
-                    <div className="h-0.5 w-10 bg-indigo-600 mr-3"></div>
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-                      {categoryName}
-                    </h2>
-                    <div className="h-0.5 flex-grow bg-gray-200 dark:bg-gray-700 ml-3"></div>
-                  </div>
+                <div className="flex items-center mb-8">
+                  <div className="h-0.5 w-10 bg-indigo-600 mr-3"></div>
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white mt-10">
+                    {categoryName}
+                  </h2>
+                  <div className="h-0.5 flex-grow bg-gray-200 dark:bg-gray-700 ml-3"></div>
+                </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {items.map((item) => (
-                      <motion.div
-                        key={item._id}
-                        whileHover={{ y: -3 }}
-                        className={`rounded-lg overflow-hidden shadow-sm transition-all duration-300 max-w-[180px] mx-auto ${
-                          isDarkMode
-                            ? 'bg-gray-800 border border-gray-700 text-white'
-                            : 'bg-white border border-gray-100 text-gray-800'
-                        }`}
-                      >
-                        <div className="w-full">
-                          <div className="w-full h-28 overflow-hidden">
-                            <img
-                              src={
-                                item.image
-                                  ? `http://localhost:4000${item.image}`
-                                  : 'https://via.placeholder.com/100?text=Item'
-                              }
-                              alt={item.name}
-                              className="w-full h-full object-contain bg-gray-50 dark:bg-gray-900"
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src =
-                                  'https://via.placeholder.com/100?text=Item';
-                              }}
-                            />
-                          </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+                  {items.map((item) => (
+                    <motion.div
+                      key={item._id}
+                      whileHover={{ scale: 1.03 }}
+                      className={`rounded-lg overflow-hidden shadow-md transition-all duration-300 max-w-sm ${
+                        isDarkMode
+                          ? 'bg-gray-800 border border-gray-700 text-white'
+                          : 'bg-white border border-gray-100 text-gray-800'
+                      }`}
+                    >
+                      <div className="relative">
+                        <img
+                          src={
+                            item.image
+                              ? `http://localhost:4000${item.image}`
+                              : 'https://via.placeholder.com/400x250?text=Food+Image'
+                          }
+                          alt={item.name}
+                          className="w-full h-44 object-contain bg-white"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src =
+                              'https://via.placeholder.com/400x250?text=Food+Image';
+                          }}
+                        />
+                        <button
+                          onClick={() => openItemDetails(item)}
+                          className="absolute bottom-3 right-3 bg-white dark:bg-gray-800 p-2 rounded-full shadow-md hover:shadow-lg transition-shadow"
+                        >
+                          <FiInfo
+                            className="text-red-400 dark:text-indigo-400"
+                            size={18}
+                          />
+                        </button>
+                      </div>
 
-                          <div className="p-3">
-                            <div className="flex flex-col mb-2">
-                              <h3 className="text-sm font-bold line-clamp-1">
-                                {item.name}
-                              </h3>
-                              <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
-                                {item.price !== undefined && item.price !== null
-                                  ? Number(item.price).toFixed(2)
-                                  : '0.00'}{' '}
-                                ETB
-                              </span>
-                            </div>
-
-                            <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-2">
-                              {item.description}
-                            </p>
-
-                            <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
-                              <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-                                <button
-                                  onClick={() =>
-                                    handleQuantityChange(item._id, -1)
-                                  }
-                                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                                >
-                                  <FiMinus size={12} className="text-red-500" />
-                                </button>
-                                <span className="px-2 py-0.5 text-xs font-medium">
-                                  {quantities[item._id] || 1}
-                                </span>
-                                <button
-                                  onClick={() =>
-                                    handleQuantityChange(item._id, 1)
-                                  }
-                                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                                >
-                                  <FiPlus
-                                    size={12}
-                                    className="text-green-500"
-                                  />
-                                </button>
-                              </div>
-                              <button
-                                onClick={() => handleAddToCart(item)}
-                                className="flex items-center gap-1 px-2 py-1 bg-red-200 hover:bg-red-300 text-gray-800 font-medium rounded text-xs transition-colors"
-                              >
-                                <FiShoppingCart size={10} />
-                                <span>Add</span>
-                              </button>
-                            </div>
-                          </div>
+                      <div className="p-4">
+                        <div className="flex justify-between items-start mb-3">
+                          <h3 className="text-lg font-semibold line-clamp-1">
+                            {item.name}
+                          </h3>
+                          <span className="text-md font-bold text-red-400 dark:text-indigo-400">
+                            {item.price !== undefined && item.price !== null
+                              ? `${Number(item.price).toFixed(2)} ETB`
+                              : '0.00 ETB'}
+                          </span>
                         </div>
-                      </motion.div>
-                    ))}
-                  </div>
+
+                        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">
+                          {item.description}
+                        </p>
+
+                        <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">
+                          <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+                            <button
+                              onClick={() => handleQuantityChange(item._id, -1)}
+                              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                            >
+                              <FiMinus className="text-red-600" size={16} />
+                            </button>
+                            <span className="px-3 py-1 font-medium">
+                              {quantities[item._id] || 1}
+                            </span>
+                            <button
+                              onClick={() => handleQuantityChange(item._id, 1)}
+                              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                            >
+                              <FiPlus className="text-green-600" size={16} />
+                            </button>
+                          </div>
+                          <button
+                            onClick={() => handleAddToCart(item)}
+                            className="flex items-center gap-1.5 px-4 py-2 bg-orange-300 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
+                          >
+                            <FiShoppingCart size={16} />
+                            <span>Add</span>
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               </motion.div>
             ))}
@@ -239,138 +233,87 @@ const MenuDisplay = ({ category }) => {
             </div>
           </div>
         )}
-
-        <AnimatePresence>
-          {showDetails && selectedItem && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-sm z-50 p-4"
-              onClick={() => setShowDetails(false)}
-            >
-              <motion.div
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 20 }}
-                className={`p-0 rounded-2xl overflow-hidden w-full max-w-3xl shadow-2xl ${
-                  isDarkMode ? 'bg-gray-800' : 'bg-white'
-                }`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex flex-col md:flex-row">
-                  <div className="md:w-1/2">
-                    <div className="relative h-full overflow-hidden group">
-                      <img
-                        src={
-                          selectedItem.image
-                            ? `http://localhost:4000${selectedItem.image}`
-                            : 'https://via.placeholder.com/500x600?text=Food+Image'
-                        }
-                        alt={selectedItem.name}
-                        className="w-full h-64 md:h-full object-contain bg-gray-50 dark:bg-gray-900 p-2"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src =
-                            'https://via.placeholder.com/500x600?text=Food+Image';
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent md:hidden"></div>
-                      <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300 hidden md:block"></div>
-                    </div>
-                  </div>
-
-                  <div className="md:w-1/2 p-8 md:p-6 lg:p-8 flex flex-col">
-                    <div className="mb-auto">
-                      <h2 className="text-2xl font-bold mb-1">
-                        {selectedItem.name}
-                      </h2>
-                      <p className="text-indigo-600 dark:text-indigo-400 text-lg font-semibold mb-4">
-                        {selectedItem.price !== undefined &&
-                        selectedItem.price !== null
-                          ? Number(selectedItem.price).toFixed(2)
-                          : '0.00'}{' '}
-                        ETB
-                      </p>
-
-                      <div className="mb-6">
-                        <h3 className="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium mb-2">
-                          Description
-                        </h3>
-                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                          {selectedItem.description}
-                        </p>
-                      </div>
-
-                      {selectedItem.category && (
-                        <div className="mb-6">
-                          <h3 className="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium mb-2">
-                            Category
-                          </h3>
-                          <div className="inline-block px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium">
-                            {selectedItem.category.categoryName}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-                          <button
-                            onClick={() =>
-                              handleQuantityChange(selectedItem._id, -1)
-                            }
-                            className="p-3 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                          >
-                            <FiMinus size={18} className="text-red-500" />
-                          </button>
-                          <span className="px-6 py-2 font-medium text-lg">
-                            {quantities[selectedItem._id] || 1}
-                          </span>
-                          <button
-                            onClick={() =>
-                              handleQuantityChange(selectedItem._id, 1)
-                            }
-                            className="p-3 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                          >
-                            <FiPlus size={18} className="text-green-500" />
-                          </button>
-                        </div>
-
-                        <div className="text-xl font-bold">
-                          Total:{' '}
-                          {(
-                            (selectedItem.price || 0) *
-                            (quantities[selectedItem._id] || 1)
-                          ).toFixed(2)}{' '}
-                          ETB
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <button
-                          onClick={() => setShowDetails(false)}
-                          className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={() => handleAddToCart(selectedItem)}
-                          className="px-6 py-3 bg-red-200 hover:bg-red-300 text-gray-800 font-medium rounded-lg shadow-md transition-colors flex items-center justify-center gap-2"
-                        >
-                          <FiShoppingCart size={18} />
-                          Add to Cart
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
+
+      {/* Modal for item details */}
+      <AnimatePresence>
+        {showDetails && selectedItem && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center px-4"
+          >
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-md p-4 relative flex flex-col md:flex-row gap-4">
+              <button
+                onClick={() => {
+                  setShowDetails(false);
+                  setSelectedItem(null);
+                }}
+                className="absolute top-2 right-2 text-gray-600 hover:text-red-500 dark:text-gray-300 text-2xl"
+              >
+                ✕
+              </button>
+
+              {/* Image section */}
+              <div className="md:w-1/3 w-full mb-4 md:mb-0">
+                <img
+                  src={
+                    selectedItem.image
+                      ? `http://localhost:4000${selectedItem.image}`
+                      : 'https://via.placeholder.com/400x250?text=Food+Image'
+                  }
+                  alt={selectedItem.name}
+                  className="w-full h-60 object-cover rounded-md"
+                />
+              </div>
+
+              {/* Details section */}
+              <div className="md:w-2/3 w-full flex flex-col justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
+                    {selectedItem.name}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
+                    {selectedItem.description}
+                  </p>
+                  <p className="text-red-300 dark:text-indigo-400 font-semibold text-lg mb-4">
+                    {selectedItem.price?.toFixed(2) || '0.00'} ETB
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between mt-4">
+                  <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => handleQuantityChange(selectedItem._id, -1)}
+                      className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    >
+                      <FiMinus className="text-red-600" />
+                    </button>
+                    <span className="px-3 font-medium">
+                      {quantities[selectedItem._id] || 1}
+                    </span>
+                    <button
+                      onClick={() => handleQuantityChange(selectedItem._id, 1)}
+                      className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    >
+                      <FiPlus className="text-green-600" />
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => handleAddToCart(selectedItem)}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-300 hover:bg-indigo-700 text-white rounded-lg"
+                  >
+                    <FiShoppingCart />
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

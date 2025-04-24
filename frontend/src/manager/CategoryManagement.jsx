@@ -139,135 +139,139 @@ const CategoryManagement = () => {
     }
 
     return (
-        <div className="p-4 md:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
-            <div className="max-w-7xl mx-auto">
-                <div className="mb-6 md:mb-8">
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Category Management</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">Create and manage your menu categories</p>
+      <div className="p-4 md:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="lg:col-span-1"
+            >
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                  {isEditing ? 'Edit Category' : 'Add New Category'}
+                </h3>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Category Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="categoryName"
+                      value={formData.categoryName}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                      required
+                      placeholder="Enter category name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Image {!isEditing && '*'}
+                    </label>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="flex-1 text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900 dark:file:text-indigo-300"
+                        required={!isEditing}
+                      />
+                      {previewImage && (
+                        <img
+                          src={previewImage}
+                          alt="Preview"
+                          className="h-16 w-16 object-cover rounded-md shadow-sm"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-200"
+                  >
+                    {isEditing ? 'Update Category' : 'Add Category'}
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="lg:col-span-2"
+            >
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <div className="mb-6">
+                  <input
+                    type="text"
+                    placeholder="Search categories..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="lg:col-span-1"
-                    >
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                                {isEditing ? 'Edit Category' : 'Add New Category'}
-                            </h3>
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Category Name *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="categoryName"
-                                        value={formData.categoryName}
-                                        onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                                        required
-                                        placeholder="Enter category name"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Image {!isEditing && '*'}
-                                    </label>
-                                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageChange}
-                                            className="flex-1 text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900 dark:file:text-indigo-300"
-                                            required={!isEditing}
-                                        />
-                                        {previewImage && (
-                                            <img
-                                                src={previewImage}
-                                                alt="Preview"
-                                                className="h-16 w-16 object-cover rounded-md shadow-sm"
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-200"
-                                >
-                                    {isEditing ? 'Update Category' : 'Add Category'}
-                                </button>
-                            </form>
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="lg:col-span-2"
-                    >
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                            <div className="mb-6">
-                                <input
-                                    type="text"
-                                    placeholder="Search categories..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                                />
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                    <thead className="bg-orange-400 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
+                          Image
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                      {filteredCategories.map((category) => (
+                        <tr
+                          key={category._id}
+                          className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <img
+                              src={`http://localhost:4000${category.image}`}
+                              alt={category.categoryName}
+                              className="h-12 w-12 object-cover rounded-md"
+                            />
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {category.categoryName}
                             </div>
-
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
-                                    <thead className="bg-gray-50 dark:bg-gray-700">
-                                        <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Image</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
-                                        {filteredCategories.map((category) => (
-                                            <tr key={category._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                <td className="px-4 py-4 whitespace-nowrap">
-                                                    <img
-                                                        src={`http://localhost:4000${category.image}`}
-                                                        alt={category.categoryName}
-                                                        className="h-12 w-12 object-cover rounded-md"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                                        {category.categoryName}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                                                    <button
-                                                        onClick={() => handleEdit(category)}
-                                                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3"
-                                                    >
-                                                        <FaEdit className="inline-block" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(category._id)}
-                                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                                    >
-                                                        <FaTrash className="inline-block" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </motion.div>
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                            <button
+                              onClick={() => handleEdit(category)}
+                              className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3"
+                            >
+                              <FaEdit className="inline-block" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(category._id)}
+                              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                            >
+                              <FaTrash className="inline-block" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-            </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
+      </div>
     );
 };
 

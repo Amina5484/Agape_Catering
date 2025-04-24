@@ -2,17 +2,33 @@ import express from 'express';
 import { protect, authorizeRoles } from '../config/authMiddleware.js';
 import ROLES from '../config/roles.js';
 import {
-    addMenuItem, updateMenuItem, deleteMenuItem, getMenu,
-    addStockItem, updateStockItem, deleteStockItem, getStock,
-    acceptOrder, assignSchedule, updateOrderStatus,
-    viewCustomerLocation, viewFeedback, generateReport, getSchedule, listNewOrders
+  addMenuItem,
+  updateMenuItem,
+  deleteMenuItem,
+  getMenu,
+  addStockItem,
+  updateStockItem,
+  deleteStockItem,
+  getStock,
+  acceptOrder,
+  assignSchedule,
+  updateOrderStatus,
+  viewCustomerLocation,
+  viewFeedback,
+  generateReport,
+  getSchedule,
+  listNewOrders,
 } from '../controllers/cateringManagerController.js';
-import { upload } from "../middleware/multer.js";
+import { upload } from '../middleware/multer.js';
+import Order from '../models/orderModel.js';
 
 const catering_router = express.Router();
 
-// Middleware: Only Catering Managers can access these routes
-catering_router.use(protect, authorizeRoles(ROLES.CATERING_MANAGER));
+// Middleware: Only Catering Managers and Executive Chefs can access these routes
+catering_router.use(
+  protect,
+  authorizeRoles(ROLES.CATERING_MANAGER, ROLES.EXECUTIVE_CHEF)
+);
 
 // Menu Management
 
@@ -63,13 +79,9 @@ catering_router.use(protect, authorizeRoles(ROLES.CATERING_MANAGER));
  *       500:
  *         description: Server error
  */
-catering_router.post("/menu", upload.single("image"), addMenuItem);
+catering_router.post('/menu', upload.single('image'), addMenuItem);
 
-
-
-
-catering_router.post("/listorders",  listNewOrders);
-
+catering_router.post('/listorders', listNewOrders);
 
 /**
  * @swagger
@@ -243,5 +255,49 @@ catering_router.get('/feedback', viewFeedback);
 
 // Reports
 catering_router.get('/report', generateReport);
+
+// Get all orders
+catering_router.get('/orders', async (req, res) => {
+  try {
+    console.log('Fetching orders...');
+    console.log('Request headers:', req.headers);
+    console.log('User:', req.user);
+
+    if (!req.user) {
+      console.log('No user found in request');
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    // Check if user has the correct role
+    if (!['Catering Manager', 'Executive Chef'].includes(req.user.role)) {
+      console.log('User role not authorized:', req.user.role);
+      return res
+        .status(403)
+        .json({ message: 'You do not have permission to view orders' });
+    }
+
+    const orders = await Order.find()
+      .sort({ orderedDate: -1 })
+      .populate({
+        path: 'userId',
+        select: 'name email phone',
+      })
+      .populate({
+        path: 'menuItems.item',
+        select: 'name price image',
+      });
+
+    console.log('Found orders:', orders.length);
+
+    if (!orders || orders.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
 
 export default catering_router;

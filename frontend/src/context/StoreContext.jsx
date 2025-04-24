@@ -189,7 +189,7 @@ const StoreContextProvider = (props) => {
         toast.success('Added to cart successfully');
         fetchCart(); // Refresh cart data
       } else {
-        toast.error(response.data.message || 'Failed to add to cart');
+        // toast.error(response.data.message || 'Failed to add to cart');
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
