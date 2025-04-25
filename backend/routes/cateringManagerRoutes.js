@@ -233,7 +233,7 @@ catering_router.delete('/stock/delete/:id', deleteStockItem);
  *         description: Order accepted
  */
 catering_router.post('/order/accept/:orderId', (req, res) => {
-  console.log('POST /order/accept route called with body:', req.body);
+  
   acceptOrder(req, res);
 });
 

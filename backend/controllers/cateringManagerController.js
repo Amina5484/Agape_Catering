@@ -664,12 +664,31 @@ export const updateOrderStatus = async (req, res) => {
 
 // CHEF SCHEDULING
 export const assignSchedule = async (req, res) => {
+  console.log('Assigning schedule with request body:', req.body);
   try {
-    const { chefId, shiftTime, date } = req.body;
-    const schedule = new Schedule({ chefId, shiftTime, date });
+    const { chefId, shiftTime, date, orderId } = req.body;
+    const findOrder = await order.findById(orderId);
+    if (!findOrder) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    // Check if the chef is already scheduled for that date and time
+    const existingSchedule = await Schedule.findOne({
+      chefId,
+      shiftTime,
+      date,
+      findOrder,
+    });
+    if (existingSchedule) {
+      return res.status(400).json({
+        message: 'Chef is already scheduled for this date and time',
+      });
+    }
+    // Create a new schedule entry
+    const schedule = new Schedule({ chefId, shiftTime, date, orders:findOrder }); 
     await schedule.save();
     res.status(201).json({ message: 'Schedule assigned', schedule });
   } catch (error) {
+    console.error('Error assigning schedule:', error);
     res.status(500).json({ message: 'Server Error', error });
   }
 };
