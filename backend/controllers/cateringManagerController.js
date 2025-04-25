@@ -750,6 +750,25 @@ export const updateSchedule = async (req, res) => {
     res.status(500).json({ message: 'Server Error', error });
   }
 };
+export const deleteSchedule = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the schedule by ID
+    const schedule = await Schedule.findById(id);
+    if (!schedule) {
+      return res.status(404).json({ message: 'Schedule not found' });
+    }
+
+    // Delete the schedule
+    await Schedule.findByIdAndDelete(id);
+
+    res.status(200).json({ message: 'Schedule deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting schedule:', error);
+    res.status(500).json({ message: 'Server Error', error });
+  }
+};
 
 // VIEW CUSTOMER LOCATION
 export const viewCustomerLocation = async (req, res) => {
