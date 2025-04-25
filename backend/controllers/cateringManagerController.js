@@ -694,7 +694,13 @@ export const assignSchedule = async (req, res) => {
 };
 export const getSchedule = async (req, res) => {
   try {
-    const schedule = await Schedule.find();
+    const schedule = await Schedule.find().populate({
+      path: 'orders',
+      populate: {
+      path: 'menuItems.item',
+      model: 'Menu',
+      },
+    });
     res.status(200).json(schedule);
   } catch (error) {
     res.status(500).json({ message: 'Server Error', error });
