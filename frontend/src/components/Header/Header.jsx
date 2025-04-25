@@ -20,7 +20,7 @@ const Header = () => {
 
   return (
     <div
-      className="relative h-[70vh] sm:h-[80vh] md:h-[90vh] bg-cover bg-center flex items-end text-white mx-2 sm:mx-4 transition-all duration-1000"
+      className="relative h-[70vh] sm:h-[80vh] md:h-[90vh] bg-cover bg-center flex items-end text-white mx-2 sm:mx-4 transition-all duration-1000 mt-16"
       style={{
         backgroundImage: `url(${images[currentImageIndex]})`,
         backgroundSize: 'cover',
@@ -28,15 +28,18 @@ const Header = () => {
         transition: 'background-image 1s ease-in-out'
       }}
     >
-      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      {/* Dark overlay with lower z-index */}
+      <div className="absolute inset-0 bg-black bg-opacity-40 z-0"></div>
 
-      <div className="absolute inset-0 flex items-center justify-center">
+      {/* Center text with higher z-index */}
+      <div className="absolute inset-0 flex items-center justify-center z-10">
         <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold px-4 sm:px-6 py-2 rounded-lg text-white text-center">
           Welcome to Agape Catering
         </h1>
       </div>
 
-      <div className="w-full p-3 sm:p-4 md:p-6 relative z-10">
+      {/* Bottom content with highest z-index */}
+      <div className="w-full p-3 sm:p-4 md:p-6 relative z-20">
         <div className="max-w-md mx-auto">
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white opacity-100 text-left">
             Order Your Food Here
@@ -49,8 +52,8 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Image indicators */}
-      <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-1 sm:space-x-2">
+      {/* Image indicators with highest z-index */}
+      <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-1 sm:space-x-2 z-20">
         {images.map((_, index) => (
           <div
             key={index}

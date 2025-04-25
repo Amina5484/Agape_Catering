@@ -11,7 +11,7 @@ const AdminHome = () => {
       value: 'View ',
       link: '/admin/view-user',
       description: 'Manage user accounts and roles',
-      color: 'bg-indigo-100 text-indigo-600'
+      color: 'bg-orange-100 text-orange-600'
     },
     {
       id: 2,
@@ -20,7 +20,7 @@ const AdminHome = () => {
       value: 'Add New',
       link: '/admin/create-account',
       description: 'Create new user accounts',
-      color: 'bg-green-100 text-green-600'
+      color: 'bg-orange-100 text-orange-600'
     },
     {
       id: 3,
@@ -29,25 +29,25 @@ const AdminHome = () => {
       value: 'Manage',
       link: '/admin/user-management',
       description: 'Comprehensive user management',
-      color: 'bg-purple-100 text-purple-600'
+      color: 'bg-orange-100 text-orange-600'
     },
     {
       id: 4,
-      title: 'Profle Managment',
+      title: 'Profile Management',
       icon: <FaUserShield className="h-6 w-6" />,
       value: 'Configure',
       link: '/admin/settings',
       description: 'System configuration and settings',
-      color: 'bg-blue-100 text-blue-600'
+      color: 'bg-orange-100 text-orange-600'
     }
   ];
 
   return (
-    <div className="p-6 ml-64 mt-16">
+    <div className="p-6 mt-16">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-          <p className="mt-2 text-gray-600">Welcome to the system administration panel</p>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Admin Dashboard</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Welcome to the system administration panel</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -55,7 +55,7 @@ const AdminHome = () => {
             <Link
               key={item.id}
               to={item.link}
-              className="bg-white overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1"
+              className="bg-white dark:bg-gray-800 overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1"
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -66,15 +66,12 @@ const AdminHome = () => {
                     {item.value}
                   </span>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">{item.title}</h3>
-                <p className="text-gray-600 text-sm">{item.description}</p>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">{item.title}</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">{item.description}</p>
               </div>
             </Link>
           ))}
         </div>
-
-       
-      
       </div>
     </div>
   );

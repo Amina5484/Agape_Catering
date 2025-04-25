@@ -3,15 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useStore } from '../../context/StoreContext';
-import PasswordInput from '../../components/common/PasswordInput';
-import { FaUserPlus, FaArrowLeft, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { isValidName, isStrongPassword, isValidEthiopianPhoneNumber } from '../../utils/validation';
+import { FaUserPlus, FaArrowLeft } from 'react-icons/fa';
+import { isValidName, isValidEthiopianPhoneNumber } from '../../utils/validation';
 
 const CreateAccount = () => {
   const navigate = useNavigate();
   const { token } = useStore();
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [user, setUser] = useState({
     firstName: '',
@@ -20,7 +18,6 @@ const CreateAccount = () => {
     phone: '',
     gender: '',
     role: '',
-    password: '',
     photo: null,
   });
 
@@ -29,8 +26,6 @@ const CreateAccount = () => {
       case 'firstName':
       case 'lastName':
         return isValidName(value) ? null : 'Name must contain at least 3 alphabetical characters (no numbers or special characters)';
-      case 'password':
-        return isStrongPassword(value) ? null : 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character';
       case 'phone':
         return isValidEthiopianPhoneNumber(value) ? null : 'Phone number must be in format +2519XXXXXXXX or +2517XXXXXXXX (12 digits total)';
       default:
@@ -58,7 +53,6 @@ const CreateAccount = () => {
     const newErrors = {
       firstName: validateField('firstName', user.firstName),
       lastName: validateField('lastName', user.lastName),
-      password: validateField('password', user.password),
       phone: validateField('phone', user.phone)
     };
 
@@ -81,7 +75,6 @@ const CreateAccount = () => {
         name: `${user.firstName} ${user.lastName}`,
         email: user.email,
         phone: user.phone,
-        password: user.password,
         gender: user.gender,
       };
 
@@ -120,21 +113,17 @@ const CreateAccount = () => {
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 ml-64 mt-12 pt-4 sm:pt-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-indigo-600 to-indigo-800 px-4 sm:px-6 py-4">
+          <div className="bg-gradient-to-r from-orange-400 to-orange-600 px-4 sm:px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => navigate(-1)}
-                  className="text-white hover:text-indigo-200 transition-colors p-2 rounded-full hover:bg-indigo-700"
+                  className="text-white hover:text-orange-200 transition-colors p-2 rounded-full hover:bg-orange-500"
                 >
                   <FaArrowLeft className="w-5 h-5" />
                 </button>
@@ -142,7 +131,7 @@ const CreateAccount = () => {
                   Create New Account
                 </h2>
               </div>
-              <FaUserPlus className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-200" />
+              <FaUserPlus className="w-6 h-6 sm:w-8 sm:h-8 text-orange-200" />
             </div>
           </div>
 
@@ -161,8 +150,8 @@ const CreateAccount = () => {
                     value={user.firstName}
                     onChange={handleChange}
                     required
-                    className={`mt-1 block w-full rounded-lg border-${errors.firstName ? 'red-300' : 'gray-300'} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
-                    placeholder="Enter first name (minimum 3 letters, alphabets only)"
+                    className={`mt-1 block w-full rounded-lg border-${errors.firstName ? 'red-300' : 'gray-300'} shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm`}
+                    // placeholder="Enter first nFoame (minimum 3 letters, alphabets only)"
                   />
                   {errors.firstName && (
                     <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
@@ -180,8 +169,8 @@ const CreateAccount = () => {
                     value={user.lastName}
                     onChange={handleChange}
                     required
-                    className={`mt-1 block w-full rounded-lg border-${errors.lastName ? 'red-300' : 'gray-300'} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
-                    placeholder="Enter last name (minimum 3 letters, alphabets only)"
+                    className={`mt-1 block w-full rounded-lg border-${errors.lastName ? 'red-300' : 'gray-300'} shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm`}
+                    // placeholder="Enter last name (minimum 3 letters, alphabets only)"
                   />
                   {errors.lastName && (
                     <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
@@ -199,7 +188,7 @@ const CreateAccount = () => {
                     value={user.email}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
                     placeholder="Enter email address"
                   />
                 </div>
@@ -216,14 +205,14 @@ const CreateAccount = () => {
                       value={user.phone}
                       onChange={handleChange}
                       required
-                      placeholder="Format: +2519XXXXXXXX or +2517XXXXXXXX"
-                      className={`mt-1 block w-full rounded-lg border-${errors.phone ? 'red-300' : 'gray-300'} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
+                      // placeholder="format: +2519XXXXXXXX or +2517XXXXXXXX"
+                      className={`mt-1 block w-full rounded-lg border-${errors.phone ? 'red-300' : 'gray-300'} shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm`}
                     />
                     {errors.phone ? (
                       <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
                     ) : (
                       <p className="mt-1 text-xs text-gray-500">
-                        Phone number must be in Ethiopian format: +2519XXXXXXXX or +2517XXXXXXXX (12 digits total)
+                    
                       </p>
                     )}
                   </div>
@@ -239,7 +228,7 @@ const CreateAccount = () => {
                     value={user.gender}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
                   >
                     <option value="">Select Gender</option>
                     <option value="male">Male</option>
@@ -258,32 +247,12 @@ const CreateAccount = () => {
                     value={user.role}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
                   >
                     <option value="">Select Role</option>
                     <option value="Catering Manager">Catering Manager</option>
                     <option value="Executive Chef">Executive Chef</option>
                   </select>
-                </div>
-
-                {/* Password */}
-                <div className="md:col-span-2 space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <PasswordInput
-                      name="password"
-                      value={user.password}
-                      onChange={handleChange}
-                      required
-                      placeholder="Enter strong password (min 8 chars with uppercase, lowercase, number, special char)"
-                      className={`mt-1 block w-full rounded-lg border-${errors.password ? 'red-300' : 'gray-300'} shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
-                    />
-                    {errors.password && (
-                      <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                    )}
-                  </div>
                 </div>
               </div>
 
@@ -291,15 +260,14 @@ const CreateAccount = () => {
                 <button
                   type="button"
                   onClick={() => navigate(-1)}
-                  className="mr-4 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="mr-4 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${loading ? 'opacity-70 cursor-not-allowed' : ''
-                    }`}
+                  className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-400 hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                   {loading ? 'Creating...' : 'Create Account'}
                 </button>

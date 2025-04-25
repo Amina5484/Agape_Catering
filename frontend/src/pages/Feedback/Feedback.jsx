@@ -110,11 +110,11 @@ const FeedbackForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-800">Share Your Feedback</h2>
-          <p className="mt-2 text-lg text-slate-600">We value your opinion and would love to hear from you</p>
+          <h2 className="text-3xl font-bold text-orange-800">Share Your Feedback</h2>
+          <p className="mt-2 text-lg text-orange-600">We value your opinion and would love to hear from you</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
@@ -123,7 +123,7 @@ const FeedbackForm = () => {
               <div className="space-y-4">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaUser className="h-5 w-5 text-slate-400" />
+                    <FaUser className="h-5 w-5 text-orange-400" />
                   </div>
                   <input
                     type="text"
@@ -132,14 +132,14 @@ const FeedbackForm = () => {
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Your Name"
-                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200"
+                    className="block w-full pl-10 pr-3 py-3 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
                     disabled
                   />
                 </div>
 
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaEnvelope className="h-5 w-5 text-slate-400" />
+                    <FaEnvelope className="h-5 w-5 text-orange-400" />
                   </div>
                   <input
                     type="email"
@@ -148,14 +148,14 @@ const FeedbackForm = () => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Your Email"
-                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200"
+                    className="block w-full pl-10 pr-3 py-3 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
                     disabled
                   />
                 </div>
 
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaPhone className="h-5 w-5 text-slate-400" />
+                    <FaPhone className="h-5 w-5 text-orange-400" />
                   </div>
                   <input
                     type="tel"
@@ -164,14 +164,14 @@ const FeedbackForm = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="Your Phone Number"
-                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200"
+                    className="block w-full pl-10 pr-3 py-3 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200"
                     disabled
                   />
                 </div>
 
                 <div className="relative">
                   <div className="absolute top-3 left-3 flex items-start pointer-events-none">
-                    <FaComment className="h-5 w-5 text-slate-400" />
+                    <FaComment className="h-5 w-5 text-orange-400" />
                   </div>
                   <textarea
                     id="feedback"
@@ -180,7 +180,7 @@ const FeedbackForm = () => {
                     onChange={handleChange}
                     placeholder="Share your thoughts with us..."
                     rows="6"
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 ${errors.feedback ? 'border-red-500 bg-red-50' : 'border-slate-200'
+                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors duration-200 ${errors.feedback ? 'border-red-500 bg-red-50' : 'border-orange-200'
                       }`}
                   />
                   {errors.feedback && (
@@ -193,7 +193,7 @@ const FeedbackForm = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="w-full flex items-center justify-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   {loading ? (
                     <div className="flex items-center">

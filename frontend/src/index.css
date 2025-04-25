@@ -45,27 +45,78 @@
 
   .dark {
     /* Dark mode variables */
-    --color-background: 26, 32, 44;
-    /* dark gray-900 */
-    --color-text: 237, 242, 247;
-    /* gray-100 */
-    --color-accent: var(--color-royal-blue);
-    --color-accent-light: var(--color-deep-ocean);
-    --color-accent-dark: var(--color-deep-ocean);
-    --color-border: 74, 85, 104;
+    --color-background: 17, 24, 39;
+    /* gray-900 */
+    --color-text: 229, 231, 235;
+    /* gray-200 */
+    --color-accent: 249, 115, 22;
+    /* orange-500 */
+    --color-accent-light: 251, 146, 60;
+    /* orange-400 */
+    --color-accent-dark: 234, 88, 12;
+    /* orange-600 */
+    --color-border: 75, 85, 99;
     /* gray-600 */
-    --color-card: 45, 55, 72;
+    --color-card: 31, 41, 55;
     /* gray-800 */
-    --color-card-hover: 74, 85, 104;
-    /* gray-600 */
-    --color-success: var(--color-emerald-green);
-    --color-warning: var(--color-crimson-pop);
-    --color-hover: var(--color-forest-pulse);
+    --color-card-hover: 55, 65, 81;
+    /* gray-700 */
+    --color-success: 34, 197, 94;
+    /* green-500 */
+    --color-warning: 239, 68, 68;
+    /* red-500 */
+    --color-hover: 59, 130, 246;
+    /* blue-500 */
   }
 
   body {
     @apply bg-white dark:bg-gray-900 text-gray-800 dark:text-white;
     transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Dark mode styles for common elements */
+  .dark .card {
+    @apply bg-gray-800 border-gray-700 text-white;
+  }
+
+  .dark .card:hover {
+    @apply bg-gray-700;
+  }
+
+  .dark .button {
+    @apply bg-gray-700 text-white hover:bg-gray-600;
+  }
+
+  .dark .input {
+    @apply bg-gray-800 border-gray-700 text-white;
+  }
+
+  .dark .select {
+    @apply bg-gray-800 border-gray-700 text-white;
+  }
+
+  .dark .modal {
+    @apply bg-gray-800 border-gray-700 text-white;
+  }
+
+  .dark .dropdown {
+    @apply bg-gray-800 border-gray-700 text-white;
+  }
+
+  .dark .table {
+    @apply bg-gray-800 text-white;
+  }
+
+  .dark .table th {
+    @apply bg-gray-700 text-white;
+  }
+
+  .dark .table td {
+    @apply border-gray-700;
+  }
+
+  .dark .table tr:hover {
+    @apply bg-gray-700;
   }
 
   /* Smooth transitions for all elements */

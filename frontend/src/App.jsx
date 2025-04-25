@@ -109,7 +109,9 @@ const AppContent = () => {
             <ManagerNavbar />
           </SidebarProvider>
         ) : isSystemRoute ? (
-          <SystemNavbar />
+          <SidebarProvider>
+            <SystemNavbar />
+          </SidebarProvider>
         ) : isChefRoute ? null : (
           <Navbar setShowLogin={setShowLogin} />
         )}
@@ -152,21 +154,17 @@ const AppContent = () => {
             path="/admin"
             element={
               <ProtectedRoute allowedRoles={['System Admin']}>
-                <SystemSidebar />
+                <SidebarProvider>
+                  <SystemSidebar />
+                </SidebarProvider>
               </ProtectedRoute>
             }
           >
             <Route index element={<AdminHome />} />
-            <Route
-              path="create-account"
-              element={<CreateAccount url={url} />}
-            />
+            <Route path="create-account" element={<CreateAccount url={url} />} />
             <Route path="edit-user" element={<EditStaff url={url} />} />
             <Route path="settings" element={<SystemSettings url={url} />} />
-            <Route
-              path="user-management"
-              element={<UserManagement url={url} />}
-            />
+            <Route path="user-management" element={<UserManagement url={url} />} />
             <Route path="view-user" element={<ViewUser />} />
           </Route>
 

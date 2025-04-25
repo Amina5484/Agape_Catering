@@ -158,7 +158,7 @@ const StoreContextProvider = (props) => {
         setCartItems(response.data.cartData || []);
       } else {
         setCartItems([]);
-  
+
       }
     } catch (error) {
       console.error('Error fetching cart:', error);

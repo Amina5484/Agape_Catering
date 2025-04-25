@@ -1,14 +1,17 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
-import order from './orderModel.js';
+
 
 const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   phone: { type: String, required: true, unique: true },
   gender: { type: String, enum: ['male', 'female', 'other'], default: 'male' },
-  photo: { type: String, default: './uploads/1740571467659-cookies.png' },
+  photo: { type: String, default: './uploads/default-profile.png' },
   password: { type: String, required: true },
+  otp: { type: Number },
+  otpExpiration: { type: Date },
+  is2FAVerified: { type: Boolean, default: false },
   role: {
     type: String,
     enum: ['Customer', 'Catering Manager', 'Executive Chef', 'System Admin'],
@@ -24,7 +27,6 @@ const UserSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-// Hash the password before saving the user
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);
@@ -32,17 +34,8 @@ UserSchema.pre('save', async function (next) {
   next();
 });
 
-// Method to compare entered password with hashed password
 UserSchema.methods.matchPassword = async function (enteredPassword) {
-  try {
-    console.log('Comparing passwords for user:', this.email);
-    const isMatch = await bcrypt.compare(enteredPassword, this.password);
-    console.log('Password match result:', isMatch);
-    return isMatch;
-  } catch (error) {
-    console.error('Error comparing passwords:', error);
-    return false;
-  }
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
 export default mongoose.model('userModel', UserSchema);

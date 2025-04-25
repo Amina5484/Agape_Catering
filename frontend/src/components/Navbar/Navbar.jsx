@@ -12,6 +12,7 @@ import {
   FaSun,
   FaHistory,
   FaClipboardList,
+  FaTimes,
 } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { StoreContext } from '../../context/StoreContext';
@@ -19,6 +20,10 @@ import { StoreContext } from '../../context/StoreContext';
 const Navbar = ({ setShowLogin }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchRef = useRef(null);
+  const searchInputRef = useRef(null);
   const {
     token,
     setToken,
@@ -33,6 +38,37 @@ const Navbar = ({ setShowLogin }) => {
   const profileRef = useRef(null);
 
   const navigate = useNavigate();
+
+  // Handle search
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/menu?search=${encodeURIComponent(searchQuery.trim())}`);
+      setShowSearch(false);
+      setSearchQuery('');
+    }
+  };
+
+  // Focus search input when search is shown
+  useEffect(() => {
+    if (showSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showSearch]);
+
+  // Close search when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSearch(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Listen for login state changes
   useEffect(() => {
@@ -93,10 +129,33 @@ const Navbar = ({ setShowLogin }) => {
       </div>
 
       <div className="sm:hidden flex items-center space-x-3">
-        <FaSearch
-          className="w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hover:text-gray-400"
-          title="Search"
-        />
+        <div className="relative flex items-center">
+          <FaSearch
+            className="w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hover:text-gray-400"
+            title="Search"
+            onClick={() => setShowSearch(!showSearch)}
+          />
+          {showSearch && (
+            <div className="absolute left-0 top-0 -translate-x-full w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2">
+              <form onSubmit={handleSearch} className="flex items-center">
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search..."
+                  className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 dark:text-white"
+                />
+                <button
+                  type="submit"
+                  className="ml-2 p-2 text-orange-500 hover:text-orange-600"
+                >
+                  <FaSearch size={16} />
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
         <Link to="/cart">
           <FaShoppingCart
             className="w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hover:text-gray-400"
@@ -127,11 +186,37 @@ const Navbar = ({ setShowLogin }) => {
               title="Cart"
             />
           </Link>
-          <FaSearch
-            className="w-4 h-4 sm:w-5 sm:h-5 cursor-pointer text-orange-500 hover:text-gray-400"
-            title="Search"
-          />
-          <Link to="/feedback" className="cursor-pointer hover:text-gray-400">
+          <div className="relative flex items-center">
+            <FaSearch
+              className="w-4 h-4 sm:w-5 sm:h-5 cursor-pointer text-orange-500 hover:text-gray-400"
+              title="Search"
+              onClick={() => setShowSearch(!showSearch)}
+            />
+            {showSearch && (
+              <div className="absolute left-0 top-0 -translate-x-full w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2">
+                <form onSubmit={handleSearch} className="flex items-center">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search..."
+                    className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 dark:text-white"
+                  />
+                  <button
+                    type="submit"
+                    className="ml-2 p-2 text-orange-500 hover:text-orange-600"
+                  >
+                    <FaSearch size={16} />
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+          <Link
+            to="/feedback"
+            className="cursor-pointer text-gray-800 dark:text-white hover:text-orange-500 dark:hover:text-orange-400 transition-colors duration-200"
+          >
             Feedback
           </Link>
 
@@ -214,7 +299,7 @@ const Navbar = ({ setShowLogin }) => {
             <li className="cursor-pointer hover:text-gray-400">
               <Link to="/categories">Category</Link>
             </li>
-            <li className="cursor-pointer hover:text-gray-400">
+            <li className="cursor-pointer hover:text-orange-500 dark:hover:text-orange-400">
               <Link to="/feedback">Feedback</Link>
             </li>
             <li className="cursor-pointer hover:text-gray-400">

@@ -17,6 +17,7 @@ const ForgotPassword = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    // Handle email submit to send OTP
     const handleEmailSubmit = async (e) => {
         e.preventDefault();
         if (!email.trim()) {
@@ -26,7 +27,7 @@ const ForgotPassword = () => {
 
         setIsLoading(true);
         try {
-            const response = await axios.post('http://localhost:4000/api/auth/forgot-password', { email });
+            const response = await axios.post('http://localhost:4000/api/user/forgot-password', { email });
             toast.success(response.data.message || 'OTP sent to your email');
             setStep(2);
         } catch (error) {
@@ -37,6 +38,7 @@ const ForgotPassword = () => {
         }
     };
 
+    // Handle OTP verification
     const handleOtpVerify = async (e) => {
         e.preventDefault();
         if (!otp.trim()) {
@@ -46,7 +48,10 @@ const ForgotPassword = () => {
 
         setIsLoading(true);
         try {
-            const response = await axios.post('http://localhost:4000/api/auth/verify-otp', { email, otp });
+            const response = await axios.post('http://localhost:4000/api/user/verify-otp', {
+                email,
+                otp: parseInt(otp)
+            });
             setToken(response.data.token);
             toast.success('OTP verified successfully');
             setStep(3);
@@ -58,6 +63,7 @@ const ForgotPassword = () => {
         }
     };
 
+    // Handle password reset
     const handlePasswordReset = async (e) => {
         e.preventDefault();
         if (!newPassword.trim() || !confirmPassword.trim()) {
@@ -72,10 +78,9 @@ const ForgotPassword = () => {
 
         setIsLoading(true);
         try {
-            const response = await axios.post('http://localhost:4000/api/auth/reset-password', {
+            const response = await axios.post('http://localhost:4000/api/user/reset-password', {
                 token,
-                password: newPassword,
-                otp
+                newPassword: newPassword
             });
             toast.success(response.data.message || 'Password reset successful');
             navigate('/login');
@@ -106,6 +111,7 @@ const ForgotPassword = () => {
                             </h2>
                         </div>
 
+                        {/* Step 1 - Email input */}
                         {step === 1 && (
                             <form onSubmit={handleEmailSubmit} className="space-y-3">
                                 <div className="flex justify-center my-4">
@@ -149,6 +155,7 @@ const ForgotPassword = () => {
                             </form>
                         )}
 
+                        {/* Step 2 - OTP verification */}
                         {step === 2 && (
                             <form onSubmit={handleOtpVerify} className="space-y-3">
                                 <div className="flex justify-center my-4">
@@ -201,6 +208,7 @@ const ForgotPassword = () => {
                             </form>
                         )}
 
+                        {/* Step 3 - Password reset */}
                         {step === 3 && (
                             <form onSubmit={handlePasswordReset} className="space-y-3">
                                 <div className="flex justify-center my-4">
@@ -277,4 +285,4 @@ const ForgotPassword = () => {
     );
 };
 
-export default ForgotPassword; 
+export default ForgotPassword;
