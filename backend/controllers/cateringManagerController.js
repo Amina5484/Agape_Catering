@@ -706,6 +706,50 @@ export const getSchedule = async (req, res) => {
     res.status(500).json({ message: 'Server Error', error });
   }
 };
+export const updateSchedule = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { chefId, shiftTime, date, orderId } = req.body;
+
+    // Find the schedule by ID
+    const schedule = await Schedule.findById(id);
+    if (!schedule) {
+      return res.status(404).json({ message: 'Schedule not found' });
+    }
+
+    // Check if the order exists
+    const findOrder = await order.findById(orderId);
+    if (!findOrder) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Check if the chef is already scheduled for the new date and time
+    const existingSchedule = await Schedule.findOne({
+      chefId,
+      shiftTime,
+      date,
+      _id: { $ne: id }, // Exclude the current schedule being updated
+    });
+    if (existingSchedule) {
+      return res.status(400).json({
+        message: 'Chef is already scheduled for this date and time',
+      });
+    }
+
+    // Update the schedule
+    schedule.chefId = chefId;
+    schedule.shiftTime = shiftTime;
+    schedule.date = date;
+    schedule.orders = findOrder;
+
+    await schedule.save();
+
+    res.status(200).json({ message: 'Schedule updated successfully', schedule });
+  } catch (error) {
+    console.error('Error updating schedule:', error);
+    res.status(500).json({ message: 'Server Error', error });
+  }
+};
 
 // VIEW CUSTOMER LOCATION
 export const viewCustomerLocation = async (req, res) => {

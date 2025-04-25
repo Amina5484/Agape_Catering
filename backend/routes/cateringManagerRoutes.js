@@ -12,6 +12,7 @@ import {
   getStock,
   acceptOrder,
   assignSchedule,
+  updateSchedule,
   updateOrderStatus,
   viewCustomerLocation,
   viewFeedback,
@@ -260,6 +261,7 @@ catering_router.put('/order/update-status/:orderId', (req, res) => {
 
 // Schedule Management
 catering_router.post('/schedule/assign', assignSchedule);
+catering_router.put('/schedule/update', updateSchedule);
 catering_router.get('/schedule', getSchedule);
 
 // Customer Location
