@@ -1,12 +1,13 @@
 import express from 'express';
 import { 
-   getMenu,
+   getMenu,getCurrentOrder,getOrderHistory
 } from '../controllers/customerController.js';
 import { upload } from "../middleware/multer.js";
 import { protect, authorizeRoles } from '../config/authMiddleware.js';
 
-import authMiddleware from "../middleware/auth.js"
+// import authMiddleware from "../middleware/auth.js"
 // import { placeOrder } from "../controllers/orderController.js"
+
 
 const customer_router = express.Router();
 // customer_router.use(protect, authorizeRoles("Customer"));
@@ -31,6 +32,8 @@ const customer_router = express.Router();
  *         description: A list of menu items
  */
 customer_router.get('/menu', getMenu);
+customer_router.get('/myorder', protect, authorizeRoles("Customer"), getCurrentOrder);
+customer_router.get('/myorderhistory', protect, authorizeRoles("Customer"), getOrderHistory);
 
 
 
