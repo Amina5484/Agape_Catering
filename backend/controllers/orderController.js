@@ -14,11 +14,11 @@ const CHAPA_SECRET_KEY = process.env.CHAPA_SECRET_KEY;
 export const createOrder = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { Address, DeliveryDate, TypeOfOrder } = req.body;
+    const { Address, DeliveryDate, TypeOfOrder, NumberOfGuest, specialInstructions } = req.body;
 
-    if (!Address || !DeliveryDate || !TypeOfOrder) {
+    if (!Address || !DeliveryDate || !TypeOfOrder || !NumberOfGuest) {
       return res.status(400).json({
-        message: 'Address, DeliveryDate, and TypeOfOrder are required.',
+        message: 'Address, DeliveryDate, TypeOfOrder, and NumberOfGuest are required.',
       });
     }
 
@@ -86,13 +86,29 @@ export const createOrder = async (req, res) => {
     const newOrder = new Order({
       userId,
       Address,
-      DeliveryDate,
+
       TypeOfOrder,
       menuItems: orderItems,
       totalAmount: total,
       paidAmount: amountToPayNow,
-      paymentStatus: 'pending',
+      paymentStatus: 'partially_paid',
       orderStatus: 'pending',
+      deliveryDateValue: DeliveryDate,
+      specialInstructions,
+      numberOfGuest: NumberOfGuest,
+
+      paymentHistory: [
+        {
+          recordedBy: userId,
+          amount: amountToPayNow,
+          date: new Date(),
+          transactionId: chapaResponse.data.data.tx_ref || `txn_${Date.now()}`,
+          status: 'success',
+          method: 'chapa',
+          paymentType: 'partial',
+          paymentDescription: 'Initial payment for order',
+        },
+      ],
     });
 
     await newOrder.save();
@@ -128,6 +144,7 @@ export const createOrder = async (req, res) => {
     } catch (err) {
       console.error('Email sending failed:', err.message);
     }
+    
 
     res.status(201).json({
       message: 'Order placed successfully. Please pay 40% to confirm.',

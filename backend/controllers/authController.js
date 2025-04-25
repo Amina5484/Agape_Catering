@@ -152,16 +152,16 @@ export const loginUser = async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    console.log(
-      'User found:',
-      user
-        ? {
-          id: user._id,
-          email: user.email,
-          role: user.role,
-        }
-        : 'No user found'
-    );
+    // console.log(
+    //   'User found:',
+    //   user
+    //     ? {
+    //       id: user._id,
+    //       email: user.email,
+    //       role: user.role,
+    //     }
+    //     : 'No user found'
+    // );
 
     if (!user) {
       console.log('User not found for email:', email);

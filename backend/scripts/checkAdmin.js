@@ -18,12 +18,12 @@ const checkAdmin = async () => {
       process.exit(1);
     }
 
-    console.log('Admin user found:', {
-      name: admin.name,
-      email: admin.email,
-      role: admin.role,
-      id: admin._id
-    });
+    // console.log('Admin user found:', {
+    //   name: admin.name,
+    //   email: admin.email,
+    //   role: admin.role,
+    //   id: admin._id
+    // });
 
     // Check if password is correct
     const isPasswordValid = await admin.matchPassword('Admin@123');

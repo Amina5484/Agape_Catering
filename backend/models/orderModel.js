@@ -26,6 +26,16 @@ const paymentHistorySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
+  paymentType: {
+    type: String,
+    enum: ['full', 'partial'],
+    default: 'full',
+  },
+
+  paymentDescription: {
+    type: String,
+    default: 'Payment for order',
+  },
 });
 
 const orderSchema = new mongoose.Schema({
@@ -38,6 +48,15 @@ const orderSchema = new mongoose.Schema({
     type: String,
     enum: ['urgent', 'scheduled'],
     default: 'scheduled',
+  },
+  numberOfGuest: {
+    type: Number,
+    required: true,
+    min: 10,
+  },
+  specialInstructions: {
+    type: String,
+    default: '',
   },
   deliveryDate: { type: Date },
   Address: { type: Object, required: true },
@@ -54,7 +73,7 @@ const orderSchema = new mongoose.Schema({
   paidAmount: { type: Number, default: 0 },
   paymentStatus: {
     type: String,
-    enum: ['pending', 'partially_paid', 'paid', 'refunded'],
+    enum: ['pending', 'partially_paid', 'paid'],
     default: 'pending',
   },
   orderStatus: {

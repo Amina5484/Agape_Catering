@@ -227,9 +227,9 @@ export const deleteStockItem = async (req, res) => {
 
 export const getStock = async (req, res) => {
   try {
-    console.log('Fetching stock items...');
+
     const stock = await Stock.find();
-    console.log('Found stock items:', stock.length);
+
 
     // Ensure each stock item has initialQuantity
     const stockWithInitialQuantity = stock.map((item) => ({
@@ -287,10 +287,7 @@ export const acceptOrder = async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    console.log('Accepted order:', {
-      newStatus: updatedOrder.orderStatus,
-      orderId,
-    });
+
 
     // Handle customer notification if requested
     if (notifyCustomer) {
@@ -324,7 +321,7 @@ export const acceptOrder = async (req, res) => {
             html: emailHTML,
           });
 
-          console.log(`Acceptance notification email sent to: ${userEmail}`);
+         
         } else {
           console.log('Customer email not available for notification');
         }
@@ -465,8 +462,32 @@ export const updateOrderStatus = async (req, res) => {
                 paymentUrl
               ),
             });
+            console.log('==============================================');
             console.log(`Payment request email sent to: ${user.email}`);
+            console.log('==============================================');
+
+            orderData.paymentHistory.push({
+              recordedBy: user._id,
+              amount: remainingAmount,
+              date: new Date(),
+              transactionId: chapaResponse.data.data.tx_ref || `txn_${Date.now()}`,
+              status: 'success',
+              method: 'chapa',
+              paymentType: 'Full',
+              paymentDescription: 'Remaining payment for order',
+            });
+
+            console.log('==============================================');
+            console.log('Payment history added to order:', orderData.paymentHistory);
+            console.log('==============================================');
+
+            orderData.status = 'paid'; // Set status to paid after processing payment
+
+            // Save the updated order
+            await orderData.save();
           }
+            // Add payment history to the order
+            
         } catch (paymentError) {
           console.error('Error processing payment notification:', paymentError);
           // Continue with status update even if payment notification fails
@@ -619,6 +640,7 @@ export const updateOrderStatus = async (req, res) => {
           });
 
           console.log(`Status update email sent to: ${userEmail}`);
+
         } else {
           console.log('Customer email not available for notification');
         }

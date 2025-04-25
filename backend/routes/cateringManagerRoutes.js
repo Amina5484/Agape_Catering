@@ -347,7 +347,7 @@ catering_router.get('/order/:orderId', async (req, res) => {
 });
 
 catering_router.post('/order/update-status/:orderId', async (req, res) => {
-  console.log('POST /order/update-status route called with body:', req.body);
+  // console.log('POST /order/update-status route called with body:', req.body);
   try {
     const { orderId } = req.params;
     const {
@@ -402,7 +402,7 @@ catering_router.post('/order/update-status/:orderId', async (req, res) => {
           error: userErr.message,
         });
       }
-      console.log('User found:', user);
+      // console.log('User found:', user);
 
       const chapaPaymentData = {
         amount: orderData.totalAmount - orderData.paidAmount,
@@ -434,7 +434,7 @@ catering_router.post('/order/update-status/:orderId', async (req, res) => {
             },
           }
         );
-        console.log(chapaResponse);
+        // console.log(chapaResponse);
 
         const paymentUrl = chapaResponse.data?.data?.checkout_url;
         if (!paymentUrl) {
@@ -455,16 +455,16 @@ catering_router.post('/order/update-status/:orderId', async (req, res) => {
 
         const remaning_amount = orderData.totalAmount - orderData.paidAmount;
         try {
-          console.log(
-            user.name,
-            orderId,
-            new Date(orderData.createdAt).toLocaleString(), // Convert to human-readable date and time
-            orderData.menuItems,
-            orderData.totalAmount,
-            orderData.paidAmount,
-            orderData.totalAmount - orderData.paidAmount,
-            paymentUrl
-          );
+          // console.log(
+          //   user.name,
+          //   orderId,
+          //   new Date(orderData.createdAt).toLocaleString(), // Convert to human-readable date and time
+          //   orderData.menuItems,
+          //   orderData.totalAmount,
+          //   orderData.paidAmount,
+          //   orderData.totalAmount - orderData.paidAmount,
+          //   paymentUrl
+          // );
           await sendEmail({
             to: user.email,
             subject: 'Your Order is Ready for Pickup',
@@ -480,6 +480,26 @@ catering_router.post('/order/update-status/:orderId', async (req, res) => {
             ),
           });
           console.log('Email sent successfully');
+  
+          orderData.paymentHistory.push({
+            recordedBy: user._id,
+            amount: remaning_amount,
+            date: new Date(),
+            transactionId: chapaResponse.data.data.tx_ref || `txn_${Date.now()}`,
+            status: 'success',
+            method: 'chapa',
+            paymentType: 'full',
+            paymentDescription: 'Remaining payment for order',
+          });
+
+          console.log('==============================================');
+          console.log('Payment history added to order:', orderData.paymentHistory);
+          console.log('==============================================');
+
+          orderData.status = 'paid'; // Set status to paid after processing payment
+
+          // Save the updated order
+          await orderData.save();
         } catch (emailError) {
           console.error('Failed to send email:', emailError.message);
           // Not throwing to allow order status update to proceed
