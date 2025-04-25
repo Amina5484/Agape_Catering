@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useStore } from '../context/StoreContext';
-import { FaMapMarkerAlt, FaCheck, FaTimes, FaSpinner } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaTimes } from 'react-icons/fa';
 
 const OrderManagement = () => {
   const { token } = useStore();
@@ -18,15 +18,13 @@ const OrderManagement = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token'); // Get token from localStorage
+      const token = localStorage.getItem('token');
 
       if (!token) {
         toast.error('No authentication token found. Please log in again.');
         setLoading(false);
         return;
       }
-
-      console.log('Fetching orders with token:', token);
 
       const response = await axios.get(
         'http://localhost:4000/api/catering/orders',
@@ -37,8 +35,6 @@ const OrderManagement = () => {
         }
       );
 
-      console.log('Orders response:', response.data);
-
       if (response.data) {
         setOrders(response.data);
       } else {
@@ -47,85 +43,72 @@ const OrderManagement = () => {
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
-      console.error('Error response:', error.response);
-
-      if (error.response?.status === 401) {
-        toast.error('Session expired. Please log in again.');
-        // You might want to redirect to login here
-      } else if (error.response?.status === 403) {
-        toast.error('You do not have permission to view orders');
-      } else {
-        toast.error(error.response?.data?.message || 'Failed to fetch orders');
-      }
-
+      toast.error(error.response?.data?.message || 'Failed to fetch orders');
       setOrders([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAcceptOrder = async (orderId) => {
-    try {
-      await axios.post(
-        `http://localhost:4000/api/catering/order/accept/${orderId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      toast.success('Order accepted successfully');
-      fetchOrders();
-    } catch (error) {
-      console.error('Error accepting order:', error);
-      toast.error(error.response?.data?.message || 'Failed to accept order');
-    }
-  };
-
-  const handleUpdateStatus = async (orderId, status) => {
+  const handleStatusChange = async (orderId, newStatus) => {
     try {
       await axios.put(
         `http://localhost:4000/api/catering/order/update-status/${orderId}`,
-        { status },
+        { status: newStatus },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      toast.success('Order status updated successfully');
+      toast.success('Order status updated');
       fetchOrders();
     } catch (error) {
-      console.error('Error updating order status:', error);
-      toast.error(
-        error.response?.data?.message || 'Failed to update order status'
-      );
+      console.error('Error updating status:', error);
+      toast.error(error.response?.data?.message || 'Failed to update status');
     }
   };
 
-  const handleViewLocation = async (customerId) => {
+  const handleViewLocation = async (order) => {
     try {
-      if (!customerId) {
-        toast.error('Customer ID is missing');
+      if (!order || !order.Address || !order.Address.coordinates) {
+        toast.error('Order address or coordinates information is missing');
         return;
       }
 
-      const response = await axios.get(
-        `http://localhost:4000/api/catering/customer/${customerId}/location`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setCustomerLocation(response.data);
-      setSelectedOrder(customerId);
+      const { latitude, longitude } = order.Address.coordinates;
+
+      if (!latitude || !longitude) {
+        toast.error('Invalid coordinates');
+        return;
+      }
+
+      setCustomerLocation({
+        address: order.Address.address || 'Not provided',
+        city: order.Address.city || 'Not provided',
+        phone: order.userId?.phone || 'Not provided',
+        name: order.userId?.name || 'Not provided',
+        coordinates: { latitude, longitude },
+      });
+      setSelectedOrder(order._id); // Open modal for this order
     } catch (error) {
-      console.error('Error fetching customer location:', error);
-      toast.error(
-        error.response?.data?.message || 'Failed to fetch customer location'
+      console.error('Error processing location data:', error);
+      toast.error('Failed to process location data');
+    }
+  };
+
+  const navigateToGoogleMaps = (coordinates) => {
+    if (coordinates?.latitude && coordinates?.longitude) {
+      // Navigate to Google Maps with coordinates
+      const mapUrl = `https://www.google.com/maps/dir/?api=1&destination=${coordinates.latitude},${coordinates.longitude}`;
+      window.open(mapUrl, '_blank'); // Open in new tab
+    } else {
+      // Fallback: Use address if coordinates are not available
+      const addressQuery = encodeURIComponent(
+        `${customerLocation?.address || ''}, ${customerLocation?.city || ''}`
       );
+      const mapUrl = `https://www.google.com/maps/search/?api=1&query=${addressQuery}`;
+      window.open(mapUrl, '_blank'); // Open in new tab
     }
   };
 
@@ -146,7 +129,7 @@ const OrderManagement = () => {
 
         <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-blue-600">
+            <thead className="bg-orange-400">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Order ID
@@ -178,93 +161,61 @@ const OrderManagement = () => {
                     key={order._id}
                     className="hover:bg-gray-50 transition duration-150"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-800">
-                        {order._id?.substring(0, 8)}...
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                      {order._id?.substring(0, 8)}...
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-800">
-                        {order.userId?.name || 'N/A'}
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                      <div>{order.userId?.name || 'N/A'}</div>
                       <div className="text-xs text-gray-500">
                         {order.userId?.phone || 'N/A'}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-800">
-                        {Array.isArray(order.menuItems) ? (
-                          order.menuItems.map((item) => (
-                            <div
-                              key={item._id}
-                              className="flex items-center space-x-2"
-                            >
-                              <span className="font-medium">
-                                {item.item?.name}
-                              </span>
-                              <span className="text-gray-500">
-                                x {item.quantity}
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <span className="text-gray-500">No items</span>
-                        )}
-                      </div>
+                    <td className="px-6 py-4 text-sm text-gray-800">
+                      {Array.isArray(order.menuItems) ? (
+                        order.menuItems.map((item) => (
+                          <div
+                            key={item._id}
+                            className="flex items-center space-x-2"
+                          >
+                            <span className="font-medium">
+                              {item.item?.name}
+                            </span>
+                            <span className="text-gray-500">
+                              x {item.quantity}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <span className="text-gray-500">No items</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                      {order.totalAmount?.toLocaleString('en-ET', {
+                        style: 'currency',
+                        currency: 'ETB',
+                      }) || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                      {order.orderedDate
+                        ? new Date(order.orderedDate).toLocaleDateString()
+                        : 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-800">
-                        {order.totalAmount?.toLocaleString('en-ET', {
-                          style: 'currency',
-                          currency: 'ETB',
-                        }) || 'N/A'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-800">
-                        {order.orderedDate
-                          ? new Date(order.orderedDate).toLocaleDateString()
-                          : 'N/A'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          order.orderStatus === 'Pending'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : order.orderStatus === 'Accepted'
-                            ? 'bg-green-100 text-green-800'
-                            : order.orderStatus === 'Completed'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
+                      <select
+                        value={order.orderStatus}
+                        onChange={(e) =>
+                          handleStatusChange(order._id, e.target.value)
+                        }
+                        className="text-xs bg-gray-100 text-gray-800 rounded-md px-2 py-1 focus:outline-none focus:ring focus:ring-orange-300"
                       >
-                        {order.orderStatus || 'Unknown'}
-                      </span>
+                        <option value="Pending">Pending</option>
+                        <option value="Accepted">Accepted</option>
+                        <option value="Completed">Completed</option>
+                      </select>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
-                      {order.orderStatus === 'Pending' && (
-                        <button
-                          onClick={() => handleAcceptOrder(order._id)}
-                          className="flex items-center text-green-600 hover:text-green-800 transition duration-300 hover:scale-110"
-                        >
-                          <FaCheck className="mr-1" />
-                          Accept
-                        </button>
-                      )}
-                      {order.orderStatus === 'Accepted' && (
-                        <button
-                          onClick={() =>
-                            handleUpdateStatus(order._id, 'Completed')
-                          }
-                          className="flex items-center text-blue-600 hover:text-blue-800 transition duration-300 hover:scale-110"
-                        >
-                          <FaSpinner className="mr-1" />
-                          Complete
-                        </button>
-                      )}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
-                        onClick={() => handleViewLocation(order.userId?._id)}
+                        onClick={() => handleViewLocation(order)}
                         className="flex items-center text-gray-600 hover:text-gray-800 transition duration-300 hover:scale-110"
                       >
                         <FaMapMarkerAlt className="mr-1" />
@@ -301,39 +252,42 @@ const OrderManagement = () => {
             </tbody>
           </table>
         </div>
-
-        {selectedOrder && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-xl p-8 max-w-lg w-full">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-semibold text-gray-700">
-                  Customer Location
-                </h3>
-                <button
-                  onClick={() => setSelectedOrder(null)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <FaTimes className="w-6 h-6" />
-                </button>
-              </div>
-              <div className="space-y-4">
-                <p className="text-gray-800">
-                  <span className="font-medium">Address:</span>{' '}
-                  {customerLocation?.address || 'N/A'}
-                </p>
-                <p className="text-gray-800">
-                  <span className="font-medium">City:</span>{' '}
-                  {customerLocation?.city || 'N/A'}
-                </p>
-                <p className="text-gray-800">
-                  <span className="font-medium">Phone:</span>{' '}
-                  {customerLocation?.phone || 'N/A'}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {selectedOrder && customerLocation && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+          onClick={() => setSelectedOrder(null)}
+        >
+          <div
+            className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Customer Location</h3>
+              <button onClick={() => setSelectedOrder(null)}>
+                <FaTimes className="text-gray-400 hover:text-gray-600" />
+              </button>
+            </div>
+            <p>
+              <strong>Name:</strong> {customerLocation.name}
+            </p>
+            <p>
+              <strong>Phone:</strong> {customerLocation.phone}
+            </p>
+            <p>
+              <strong>Address:</strong> {customerLocation.address},{' '}
+              {customerLocation.city}
+            </p>
+            <button
+              onClick={() => navigateToGoogleMaps(customerLocation.coordinates)}
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-200"
+            >
+              Open in Google Maps
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
