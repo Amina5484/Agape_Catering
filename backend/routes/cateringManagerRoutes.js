@@ -337,7 +337,7 @@ catering_router.post('/order/update-status/:orderId', async (req, res) => {
       let user;
       try {
         user = await userModel.findById(orderData.userId);
-        
+
         if (!user) {
           return res.status(404).json({ message: 'User not found' });
         }
@@ -377,24 +377,24 @@ catering_router.post('/order/update-status/:orderId', async (req, res) => {
           }
         );
         console.log(chapaResponse);
-        
+
         const paymentUrl = chapaResponse.data?.data?.checkout_url;
         if (!paymentUrl) {
           throw new Error('Payment URL not received from Chapa');
         }
         const order_date = new Date(orderData.createdAt).toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true,
-      });
-      
-      const remaning_amount = orderData.totalAmount - orderData.paidAmount;
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true,
+        });
+
+        const remaning_amount = orderData.totalAmount - orderData.paidAmount;
         try {
-            console.log(
+          console.log(
             user.name,
             orderId,
             new Date(orderData.createdAt).toLocaleString(), // Convert to human-readable date and time
@@ -403,14 +403,14 @@ catering_router.post('/order/update-status/:orderId', async (req, res) => {
             orderData.paidAmount,
             orderData.totalAmount - orderData.paidAmount,
             paymentUrl
-            );
+          );
           await sendEmail({
             to: user.email,
             subject: 'Your Order is Ready for Pickup',
             html: orderSecondPaymentEmailHTML(
               user.name,
               orderId,
-              order_date  ,
+              order_date,
               orderData.menuItems,
               orderData.totalAmount,
               orderData.paidAmount,

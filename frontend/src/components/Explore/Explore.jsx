@@ -74,9 +74,8 @@ const Explore = ({ category, setCategory }) => {
     return (
       <div className="text-center py-12">
         <p
-          className={`text-xl font-semibold ${
-            isDarkMode ? 'text-red-400' : 'text-red-500'
-          }`}
+          className={`text-xl font-semibold ${isDarkMode ? 'text-red-400' : 'text-red-500'
+            }`}
         >
           {error}
         </p>
@@ -106,9 +105,8 @@ const Explore = ({ category, setCategory }) => {
     <div className="py-8">
       <div className="container mx-auto px-4">
         <h1
-          className={`text-3xl font-bold text-center mb-8 ${
-            isDarkMode ? 'text-white' : 'text-gray-900'
-          }`}
+          className={`text-3xl font-bold text-center mb-8 ${isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}
         >
           Menu Categories
         </h1>
@@ -117,11 +115,10 @@ const Explore = ({ category, setCategory }) => {
           {categories.map((cat) => (
             <motion.div
               key={cat._id}
-              className={`w-40 h-40 flex flex-col items-center justify-center rounded-full shadow-lg cursor-pointer transition-all duration-300 ${
-                isDarkMode
-                  ? 'bg-gray-800 hover:bg-gray-700'
-                  : 'bg-white hover:bg-gray-50'
-              }`}
+              className={`w-40 h-40 flex flex-col items-center justify-center rounded-full shadow-lg cursor-pointer transition-all duration-300 ${isDarkMode
+                ? 'bg-gray-800 hover:bg-gray-700'
+                : 'bg-white hover:bg-gray-50'
+                }`}
               onClick={() => setCategory(cat._id)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}

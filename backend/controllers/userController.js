@@ -313,46 +313,7 @@ const resetPassword = async (req, res) => {
     }
     res.status(500).json({ success: false, message: 'Server error' });
   }
-  const loginUser = async (req, res) => {
-    const { email, password, twoFactor } = req.body;
-
-    try {
-      const user = await userModel.findOne({ email });
-      if (!user)
-        return res.status(404).json({ success: false, message: 'User not found' });
-
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch)
-        return res.status(400).json({ success: false, message: 'Invalid credentials' });
-
-      if (twoFactor) {
-        // If 2FA is requested
-        const otp = crypto.randomInt(100000, 999999);
-        user.otp = otp;
-        user.otpExpiration = Date.now() + 10 * 60 * 1000;
-        user.is2FAVerified = false;
-        await user.save();
-
-        await sendOtpEmail(user.email, otp);
-
-        return res.status(200).json({
-          success: true,
-          message: 'OTP sent to email. Please verify to complete login.',
-        });
-      } else {
-        // Regular login
-        const token = createToken(user._id);
-        return res.status(200).json({
-          success: true,
-          token,
-          user: { id: user._id, name: user.name, role: user.role },
-        });
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      res.status(500).json({ success: false, message: 'Server error' });
-    }
-  }
+ 
 };
 export {
   loginUser,
@@ -362,5 +323,5 @@ export {
   requestOtp,
   verifyOtp,
   resetPassword,
-  verify2FA,
+  
 };

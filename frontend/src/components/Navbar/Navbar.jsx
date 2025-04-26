@@ -7,12 +7,8 @@ import {
   FaShoppingBag,
   FaSignOutAlt,
   FaUser,
-  FaCog,
-  FaMoon,
-  FaSun,
   FaHistory,
   FaClipboardList,
-  FaTimes,
 } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { StoreContext } from '../../context/StoreContext';
@@ -27,8 +23,6 @@ const Navbar = ({ setShowLogin }) => {
   const {
     token,
     setToken,
-    darkMode,
-    toggleDarkMode,
     user,
     resetLoginState,
     logout: contextLogout,
@@ -39,7 +33,6 @@ const Navbar = ({ setShowLogin }) => {
 
   const navigate = useNavigate();
 
-  // Handle search
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -49,36 +42,17 @@ const Navbar = ({ setShowLogin }) => {
     }
   };
 
-  // Focus search input when search is shown
   useEffect(() => {
     if (showSearch && searchInputRef.current) {
       searchInputRef.current.focus();
     }
   }, [showSearch]);
 
-  // Close search when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowSearch(false);
       }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  // Listen for login state changes
-  useEffect(() => {
-    // Close dropdowns when login state changes
-    setIsProfileOpen(false);
-    setIsOpen(false);
-  }, [isLoggedIn, token]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setIsProfileOpen(false);
       }
@@ -90,34 +64,29 @@ const Navbar = ({ setShowLogin }) => {
     };
   }, []);
 
+  useEffect(() => {
+    setIsProfileOpen(false);
+    setIsOpen(false);
+  }, [isLoggedIn, token]);
+
   const logout = () => {
-    // Use the context logout function which properly clears all state
     contextLogout();
     setIsProfileOpen(false);
     setIsOpen(false);
-    // Navigate to home page
     navigate('/');
   };
 
   const handleLoginClick = () => {
-    // Reset login state before showing login form
     resetLoginState();
     setShowLogin(true);
-    // Close any open menus
     setIsOpen(false);
     setIsProfileOpen(false);
   };
 
-  // Check if user is logged in and is a customer
   const isCustomerLoggedIn = isLoggedIn && userRole === 'Customer';
 
-  // Debug log to help track state
-  useEffect(() => {
-    console.log('Login state:', { isLoggedIn, userRole, isCustomerLoggedIn });
-  }, [isLoggedIn, userRole, isCustomerLoggedIn]);
-
   return (
-    <div className="p-2 flex items-center bg-white dark:bg-gray-900 dark:text-white shadow-md fixed top-0 left-0 w-full z-10 transition-colors duration-300">
+    <div className="p-2 flex items-center bg-white text-black shadow-md fixed top-0 left-0 w-full z-10 transition-colors duration-300">
       <div className="flex-1 flex justify-start">
         <Link to="/">
           <img
@@ -136,7 +105,7 @@ const Navbar = ({ setShowLogin }) => {
             onClick={() => setShowSearch(!showSearch)}
           />
           {showSearch && (
-            <div className="absolute left-0 top-0 -translate-x-full w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2">
+            <div className="absolute left-0 top-0 -translate-x-full w-48 bg-white rounded-lg shadow-lg p-2">
               <form onSubmit={handleSearch} className="flex items-center">
                 <input
                   ref={searchInputRef}
@@ -144,7 +113,7 @@ const Navbar = ({ setShowLogin }) => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search..."
-                  className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 dark:text-white"
+                  className="w-full px-3 py-2 text-sm bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
                 <button
                   type="submit"
@@ -170,7 +139,7 @@ const Navbar = ({ setShowLogin }) => {
       </div>
 
       <div className="hidden sm:flex flex-1 justify-end px-4 sm:px-8 md:px-16">
-        <ul className="flex items-center space-x-4 sm:space-x-6 md:space-x-8 text-xs sm:text-sm md:text-base font-medium text-black dark:text-white">
+        <ul className="flex items-center space-x-4 sm:space-x-6 md:space-x-8 text-xs sm:text-sm md:text-base font-medium">
           <Link to="/" className="cursor-pointer hover:text-gray-400">
             Home
           </Link>
@@ -193,7 +162,7 @@ const Navbar = ({ setShowLogin }) => {
               onClick={() => setShowSearch(!showSearch)}
             />
             {showSearch && (
-              <div className="absolute left-0 top-0 -translate-x-full w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2">
+              <div className="absolute left-0 top-0 -translate-x-full w-48 bg-white rounded-lg shadow-lg p-2">
                 <form onSubmit={handleSearch} className="flex items-center">
                   <input
                     ref={searchInputRef}
@@ -201,7 +170,7 @@ const Navbar = ({ setShowLogin }) => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search..."
-                    className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 dark:text-white"
+                    className="w-full px-3 py-2 text-sm bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                   <button
                     type="submit"
@@ -215,60 +184,47 @@ const Navbar = ({ setShowLogin }) => {
           </div>
           <Link
             to="/feedback"
-            className="cursor-pointer text-gray-800 dark:text-white hover:text-orange-500 dark:hover:text-orange-400 transition-colors duration-200"
+            className="cursor-pointer text-gray-800 hover:text-orange-500 transition-colors duration-200"
           >
             Feedback
           </Link>
-
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300"
-            title={darkMode ? 'Light Mode' : 'Dark Mode'}
-          >
-            {darkMode ? (
-              <FaSun className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
-            ) : (
-              <FaMoon className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400 dark:text-gray-300" />
-            )}
-          </button>
 
           {/* User Profile Dropdown */}
           {isCustomerLoggedIn ? (
             <div className="relative" ref={profileRef}>
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 transition-colors"
               >
                 <FaUser className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
               </button>
 
               {isProfileOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-50">
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
                   <Link
                     to="/customer/orders"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <FaClipboardList className="mr-2" />
                     Order Status
                   </Link>
                   <Link
                     to="/customer/order-history"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <FaHistory className="mr-2" />
                     Order History
                   </Link>
                   <Link
                     to="/customer/profile"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <FaCog className="mr-2" />
+                    <FaUser className="mr-2" />
                     Manage Profile
                   </Link>
                   <button
                     onClick={logout}
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                   >
                     <FaSignOutAlt className="mr-2" />
                     Logout
@@ -288,8 +244,8 @@ const Navbar = ({ setShowLogin }) => {
       </div>
 
       {isOpen && (
-        <div className="absolute top-12 sm:top-14 left-0 w-full bg-white dark:bg-gray-800 shadow-lg p-3 sm:p-4 sm:hidden transition-colors duration-300">
-          <ul className="flex flex-col space-y-3 sm:space-y-4 text-center text-black dark:text-white">
+        <div className="absolute top-12 sm:top-14 left-0 w-full bg-white shadow-lg p-3 sm:p-4 sm:hidden transition-colors duration-300">
+          <ul className="flex flex-col space-y-3 sm:space-y-4 text-center text-black">
             <li className="cursor-pointer hover:text-gray-400">
               <Link to="/">Home</Link>
             </li>
@@ -299,27 +255,10 @@ const Navbar = ({ setShowLogin }) => {
             <li className="cursor-pointer hover:text-gray-400">
               <Link to="/categories">Category</Link>
             </li>
-            <li className="cursor-pointer hover:text-orange-500 dark:hover:text-orange-400">
+            <li className="cursor-pointer hover:text-gray-400">
               <Link to="/feedback">Feedback</Link>
             </li>
-            <li className="cursor-pointer hover:text-gray-400">
-              <button
-                onClick={toggleDarkMode}
-                className="flex items-center justify-center w-full py-2"
-              >
-                {darkMode ? (
-                  <>
-                    <FaSun className="mr-2 text-yellow-500" />
-                    <span>Light Mode</span>
-                  </>
-                ) : (
-                  <>
-                    <FaMoon className="mr-2 text-gray-600 dark:text-gray-300" />
-                    <span>Dark Mode</span>
-                  </>
-                )}
-              </button>
-            </li>
+
             {!isCustomerLoggedIn ? (
               <button
                 className="bg-blue-500 rounded text-white px-4 py-1 text-sm hover:bg-blue-600 transition"
@@ -340,7 +279,7 @@ const Navbar = ({ setShowLogin }) => {
                 </li>
                 <li
                   onClick={logout}
-                  className="cursor-pointer hover:text-gray-400 text-red-600 dark:text-red-400"
+                  className="cursor-pointer hover:text-gray-400 text-red-600"
                 >
                   Logout
                 </li>

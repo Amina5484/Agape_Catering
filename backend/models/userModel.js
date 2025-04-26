@@ -11,7 +11,7 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, required: true },
   otp: { type: Number },
   otpExpiration: { type: Date },
-  is2FAVerified: { type: Boolean, default: false },
+  // is2FAVerified: { type: Boolean, default: false },
   role: {
     type: String,
     enum: ['Customer', 'Catering Manager', 'Executive Chef', 'System Admin'],

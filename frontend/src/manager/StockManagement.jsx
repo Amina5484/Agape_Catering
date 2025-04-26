@@ -4,6 +4,27 @@ import { toast } from 'react-toastify';
 import { useStore } from '../context/StoreContext';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter } from 'react-icons/fa';
 
+const DeleteModal = ({ isOpen, onClose, onConfirm }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm">
+        <h2 className="text-lg font-semibold mb-4">Confirm Delete</h2>
+        <p>Are you sure you want to delete this stock item?</p>
+        <div className="flex justify-end mt-4">
+          <button onClick={onClose} className="mr-2 px-4 py-2 bg-gray-300 rounded">
+            Cancel
+          </button>
+          <button onClick={onConfirm} className="px-4 py-2 bg-red-600 text-white rounded">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const StockManagement = () => {
   const { token } = useStore();
   const [stockItems, setStockItems] = useState([]);
@@ -18,6 +39,9 @@ const StockManagement = () => {
     unit: '',
     initialQuantity: '',
   });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+
   const fetchStock = async () => {
     console.log('Fetching stock items...');
     setLoading(true);
@@ -132,11 +156,11 @@ const StockManagement = () => {
             prevItems.map((item) =>
               item._id === selectedItem._id
                 ? {
-                    ...item,
-                    ...response.data.updatedStock,
-                    initialQuantity:
-                      selectedItem.initialQuantity || selectedItem.quantity,
-                  }
+                  ...item,
+                  ...response.data.updatedStock,
+                  initialQuantity:
+                    selectedItem.initialQuantity || selectedItem.quantity,
+                }
                 : item
             )
           );
@@ -190,11 +214,16 @@ const StockManagement = () => {
     }
   };
 
-  const handleDelete = async (itemId) => {
-    if (window.confirm('Are you sure you want to delete this stock item?')) {
+  const handleDelete = (id) => {
+    setDeletingId(id);
+    setIsModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deletingId) {
       try {
         const response = await axios.delete(
-          `http://localhost:4000/api/catering/stock/delete/${itemId}`,
+          `http://localhost:4000/api/catering/stock/delete/${deletingId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -203,14 +232,20 @@ const StockManagement = () => {
         );
 
         if (response.data && response.data.success) {
-          // Remove the item from the local state
           setStockItems((prevItems) =>
-            prevItems.filter((item) => item._id !== itemId)
+            prevItems.filter((item) => item._id !== deletingId)
           );
-          toast.success('Stock item deleted successfully');
+          toast.success('Stock item deleted successfully', {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
         } else {
           toast.error(response.data?.message || 'Failed to delete stock item');
-          // Refresh the stock list in case of error
           fetchStock();
         }
       } catch (error) {
@@ -218,8 +253,10 @@ const StockManagement = () => {
         toast.error(
           error.response?.data?.message || 'Failed to delete stock item'
         );
-        // Refresh the stock list in case of error
         fetchStock();
+      } finally {
+        setIsModalOpen(false);
+        setDeletingId(null);
       }
     }
   };
@@ -439,11 +476,10 @@ const StockManagement = () => {
                         </td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              item.isLowStock
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-green-100 text-green-800'
-                            }`}
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.isLowStock
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-green-100 text-green-800'
+                              }`}
                           >
                             {item.isLowStock ? 'Low' : 'Normal'}
                           </span>
@@ -499,6 +535,11 @@ const StockManagement = () => {
           </div>
         </div>
       </div>
+      <DeleteModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };

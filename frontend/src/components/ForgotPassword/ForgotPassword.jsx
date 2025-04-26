@@ -145,11 +145,7 @@ const ForgotPassword = () => {
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className={`w-full py-2 px-4 rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 ${isDarkMode
-                                        ? 'bg-indigo-700 hover:bg-indigo-800 focus:ring-indigo-500 focus:ring-offset-gray-900'
-                                        : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 focus:ring-offset-white'
-                                        } ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-                                >
+                                    className={`w-full py-2 px-4 rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200  ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}>
                                     {isLoading ? 'Sending...' : 'Send OTP'}
                                 </button>
                             </form>
@@ -257,10 +253,7 @@ const ForgotPassword = () => {
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className={`w-full py-2 px-4 rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 ${isDarkMode
-                                        ? 'bg-indigo-700 hover:bg-indigo-800 focus:ring-indigo-500 focus:ring-offset-gray-900'
-                                        : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 focus:ring-offset-white'
-                                        } ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                    className={`w-full py-2 px-4 rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                                 >
                                     {isLoading ? 'Resetting Password...' : 'Reset Password'}
                                 </button>
@@ -270,11 +263,11 @@ const ForgotPassword = () => {
                 </div>
 
                 <div className="text-center">
-                    <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <p >
                         Remember your password?{' '}
                         <span
                             onClick={() => navigate('/login')}
-                            className={`font-medium cursor-pointer hover:underline ${isDarkMode ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-500'}`}
+                            className={`font-medium cursor-pointer hover:underline`}
                         >
                             Back to login
                         </span>

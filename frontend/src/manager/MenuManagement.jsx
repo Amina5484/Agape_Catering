@@ -2,8 +2,29 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useStore } from '../context/StoreContext';
-import { FaTrash, FaEdit, FaImage } from 'react-icons/fa';
+import { FaTrash, FaEdit } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+
+const DeleteModal = ({ isOpen, onClose, onConfirm }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm">
+        <h2 className="text-lg font-semibold mb-4">Confirm Delete</h2>
+        <p>Are you sure you want to delete this menu item?</p>
+        <div className="flex justify-end mt-4">
+          <button onClick={onClose} className="mr-2 px-4 py-2 bg-gray-300 rounded">
+            Cancel
+          </button>
+          <button onClick={onConfirm} className="px-4 py-2 bg-red-600 text-white rounded">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const MenuManagement = () => {
   const { token } = useStore();
@@ -23,6 +44,8 @@ const MenuManagement = () => {
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     fetchAllData();
@@ -126,16 +149,24 @@ const MenuManagement = () => {
     setEditingId(item._id);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this menu item?')) {
+  const handleDelete = (id) => {
+    setDeletingId(id);
+    setIsModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deletingId) {
       try {
-        await axios.delete(`http://localhost:4000/api/menu/${id}`, {
+        await axios.delete(`http://localhost:4000/api/menu/${deletingId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         toast.success('Menu item deleted successfully');
         fetchAllData();
       } catch (error) {
         toast.error('Failed to delete menu item');
+      } finally {
+        setIsModalOpen(false);
+        setDeletingId(null);
       }
     }
   };
@@ -174,14 +205,6 @@ const MenuManagement = () => {
   return (
     <div className="p-4 md:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        {/* <div className="mb-6 md:mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
-            Menu Management
-          </h2>
-          {/* <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Create and manage your menu items
-          </p> */}
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -345,10 +368,7 @@ const MenuManagement = () => {
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                     {filteredMenuItems.map((item) => (
-                      <tr
-                        key={item._id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                      >
+                      <tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                         <td className="px-4 py-4 whitespace-nowrap">
                           <img
                             src={`http://localhost:4000${item.image}`}
@@ -375,7 +395,7 @@ const MenuManagement = () => {
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900 dark:text-white">
-                            ${item.price.toFixed(2)}
+                            {item.price.toFixed(2)}birr
                           </div>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
@@ -401,6 +421,8 @@ const MenuManagement = () => {
           </motion.div>
         </div>
       </div>
+
+      <DeleteModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onConfirm={confirmDelete} />
     </div>
   );
 };
