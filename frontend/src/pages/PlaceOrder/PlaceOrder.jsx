@@ -28,6 +28,27 @@ L.Icon.Default.mergeOptions({
 
 const AddisAbaba = [9.03, 38.74]; // Default map center
 
+// Helper function for consistent date formatting throughout the app
+const formatDate = (dateValue) => {
+  if (!dateValue) return 'N/A';
+
+  try {
+    const date = new Date(dateValue);
+    // Check if date is valid
+    if (isNaN(date.getTime())) return 'Invalid Date';
+
+    // Format: Month Day, Year (e.g., April 23, 2025)
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  } catch (err) {
+    console.error('Date formatting error:', err);
+    return 'Date Error';
+  }
+};
+
 // Map Component to Handle Location Selection
 const LocationSelector = ({ setLocation, setLocationInput, setShowMap }) => {
   const map = useMap();
@@ -61,10 +82,11 @@ const LocationSelector = ({ setLocation, setLocationInput, setShowMap }) => {
 };
 
 const PlaceOrder = () => {
-  const { token } = useContext(StoreContext);
+  const { token, userId } = useContext(StoreContext);
   const navigate = useNavigate();
   const location = useLocation();
   const { cartData } = location.state || {};
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
 
   // If no cart data, redirect back to cart
   useEffect(() => {
@@ -81,7 +103,84 @@ const PlaceOrder = () => {
     email: '',
     phone: '',
     address: '',
+    guests: 10,
+    specialInstructions: '',
   });
+
+  // Fetch user profile on component mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      setIsProfileLoading(true);
+      try {
+        // Try multiple possible endpoints since it's unclear which one is correct
+        let userData = null;
+        let response = null;
+
+        try {
+          // First try customer endpoint
+          response = await axios.get(
+            'http://localhost:4000/api/customer/profile',
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          userData = response.data.user || response.data;
+        } catch (err) {
+          console.log('First endpoint failed, trying alternative');
+          // If that fails, try user endpoint
+          response = await axios.get('http://localhost:4000/api/user/profile', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          userData = response.data.user || response.data;
+        }
+
+        if (!userData || (!userData.name && !userData.fullName)) {
+          console.warn('User data incomplete, checking token info');
+          // As a fallback, use token data if available
+          const tokenData = token
+            ? JSON.parse(atob(token.split('.')[1]))
+            : null;
+          if (tokenData && tokenData.name) {
+            userData = { ...userData, name: tokenData.name };
+          }
+        }
+
+        console.log('User profile data:', userData);
+
+        setFormData((prev) => ({
+          ...prev,
+          fullName: userData?.name || userData?.fullName || 'User',
+          email: userData?.email || '',
+          phone: userData?.phone || '0000000000',
+          address: userData?.address || 'Default Address',
+        }));
+        setIsProfileLoading(false);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        // Instead of showing error, set default values
+        setFormData((prev) => ({
+          ...prev,
+          fullName: 'Customer',
+          email: '',
+          phone: '0000000000',
+          address: 'Default Address',
+        }));
+        setIsProfileLoading(false);
+      }
+    };
+
+    if (token) {
+      fetchUserProfile();
+    } else {
+      setIsProfileLoading(false);
+      // Set default values if no token
+      setFormData((prev) => ({
+        ...prev,
+        fullName: 'Guest',
+        phone: '0000000000',
+      }));
+    }
+  }, [token]);
 
   const [deliveryLocation, setDeliveryLocation] = useState({
     lat: null,
@@ -142,6 +241,7 @@ const PlaceOrder = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Comprehensive validation
     if (!deliveryLocation.lat || !deliveryLocation.lng) {
       toast.error('Please select a delivery location.');
       return;
@@ -154,25 +254,31 @@ const PlaceOrder = () => {
       toast.error('Please select the type of order.');
       return;
     }
+    if (!formData.guests || parseInt(formData.guests) < 10) {
+      toast.error('Please specify at least 10 guests.');
+      return;
+    }
 
     try {
       // Format the order data to match the backend model structure
       const orderData = {
-        // No need to specify userId as it will be extracted from the token
         TypeOfOrder: orderType === 'Urgent' ? 'urgent' : 'scheduled',
         DeliveryDate: new Date(deliveryDate).toISOString(),
+        NumberOfGuest: parseInt(formData.guests),
+        specialInstructions: formData.specialInstructions || '',
         Address: {
-          addressText: locationInput,
-          streetAddress: formData.address,
+          addressText: locationInput || formData.address || 'Selected location',
+          streetAddress: formData.address || 'Address',
           coordinates: deliveryLocation,
-          fullName: formData.fullName,
-          phone: formData.phone,
-          email: formData.email,
+          fullName: formData.fullName || 'Customer',
+          phone: formData.phone || '0000000000',
+          email: formData.email || '',
         },
-        // The controller will get cart items from the database
       };
 
-      // Call checkout API
+      console.log('Sending order data:', orderData);
+
+      // Call order creation API
       const response = await axios.post(
         'http://localhost:4000/api/order/checkout',
         orderData,
@@ -184,26 +290,19 @@ const PlaceOrder = () => {
         }
       );
 
-      if (response.data.success || response.data.payment_url) {
+      if (response.data.payment_url) {
         toast.success('Order placed successfully!');
-        // If payment URL is returned, open it in a new tab and stay on current page
-        if (response.data.payment_url) {
-          const paymentWindow = window.open(
-            response.data.payment_url,
-            '_blank'
+        // Open payment URL in new tab
+        const paymentWindow = window.open(response.data.payment_url, '_blank');
+        if (paymentWindow) {
+          paymentWindow.focus();
+          toast.success(
+            'Payment page opened in new tab. Please complete the payment.'
           );
-          if (paymentWindow) {
-            paymentWindow.focus();
-            toast.success(
-              'Payment page opened in new tab. Please complete the payment.'
-            );
-          } else {
-            toast.error(
-              'Please allow popups for this site to proceed with payment.'
-            );
-          }
-          // Stay on the current page
-          return;
+        } else {
+          toast.error(
+            'Please allow popups for this site to proceed with payment.'
+          );
         }
       } else {
         toast.error(
@@ -265,6 +364,21 @@ const PlaceOrder = () => {
               />
             </div>
 
+            {/* Special Instructions */}
+            {/* <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Special Instructions
+              </label>
+              <textarea
+                name="specialInstructions"
+                value={formData.specialInstructions}
+                onChange={handleInputChange}
+                placeholder="Any special requirements or instructions"
+                rows="3"
+                className="border p-2 rounded-md w-full text-green-600"
+              ></textarea>
+            </div> */}
+
             {/* Delivery Date */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
@@ -273,11 +387,21 @@ const PlaceOrder = () => {
               <input
                 type="date"
                 value={deliveryDate}
-                onChange={(e) => setDeliveryDate(e.target.value)}
+                onChange={(e) => {
+                  // Ensure the date is valid and properly formatted
+                  const selectedDate = e.target.value;
+                  setDeliveryDate(selectedDate);
+                  console.log('Selected delivery date:', selectedDate);
+                  console.log('Formatted as:', formatDate(selectedDate));
+                }}
                 min={minDeliveryDate}
                 required
                 className="border p-2 rounded-md w-full text-green-600"
               />
+              <div className="mt-1 text-xs text-gray-500">
+                {deliveryDate &&
+                  `Your selected date: ${formatDate(deliveryDate)}`}
+              </div>
             </div>
 
             {/* Location Selection */}

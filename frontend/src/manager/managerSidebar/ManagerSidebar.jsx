@@ -89,11 +89,6 @@ const ManagerSidebar = () => {
       icon: <HiShoppingCart className="w-5 h-5" />,
     },
     {
-      path: '/manager/schedule',
-      name: 'Schedule',
-      icon: <HiCalendar className="w-5 h-5" />,
-    },
-    {
       path: '/manager/generate-report',
       name: 'Reports',
       icon: <HiChartBar className="w-5 h-5" />,

@@ -230,32 +230,9 @@ const Cart = () => {
 
               {/* Delivery Information */}
               <div className="bg-white rounded-xl shadow-sm p-6 mt-8">
-                {/* <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Delivery Information
-                </h2> */}
+              
                 <div className="space-y-4">
-                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Delivery Address
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        placeholder="Enter delivery address"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Contact Number
-                      </label>
-                      <input
-                        type="tel"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        placeholder="Enter contact number"
-                      />
-                    </div>
-                  </div> */}
+                 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Special Instructions

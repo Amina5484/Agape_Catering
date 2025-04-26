@@ -25,20 +25,22 @@ import OrderDetails from './pages/OrderDetails/OrderDetails';
 
 // Chef Imports
 import ChefDashboard from './chef/ChefDashboard';
-import OrderManagement from './components/chef/OrderManagement';
 import InventoryManagement from './components/chef/InventoryManagement';
 import ChefProfile from './chef/ChefProfile';
+import ChefOrderManagement from './components/chef/ChefOrderManagement';
+import ChefHome from './chef/ChefHome';
+import Schedule from './chef/Schedule';
 
 // Manager Imports
 import ManagerSidebar from './manager/managerSidebar/ManagerSidebar';
 import ManagerNavbar from './manager/managerNavbar/Navbar';
+import OrderManagement from './manager/OrderManagement';
 import Add from './pages/Add/Add';
 import List from './pages/List/List';
 import Orders from './pages/Orders/Orders';
 import ManagerHome from './manager/ManagerHome/ManagerHome';
 import ViewFeedback from './manager/viewFeedback';
 import GenerateReport from './manager/GenerateReport';
-import ScheduleManagement from './manager/ScheduleManagement';
 import MenuManagement from './manager/MenuManagement';
 import StockManagement from './manager/StockManagement';
 import CategoryManagement from './manager/CategoryManagement';
@@ -181,8 +183,10 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           >
-            <Route index element={<OrderManagement />} />
-            <Route path="orders" element={<OrderManagement />} />
+            <Route index element={<ChefHome />} />
+            <Route path="orders" element={<ChefOrderManagement />} />
+            <Route path="schedule" element={<Schedule />} />
+            <Route path="orders/:orderId" element={<OrderDetails />} />
             <Route path="stock" element={<InventoryManagement />} />
             <Route path="profile" element={<ChefProfile />} />
           </Route>
@@ -205,7 +209,6 @@ const AppContent = () => {
             <Route path="profile" element={<CustomerProfile />} />
             <Route path="stock" element={<StockManagement />} />
             <Route path="generate-report" element={<GenerateReport />} />
-            <Route path="schedule" element={<ScheduleManagement />} />
             <Route path="feedback" element={<ViewFeedback />} />
             <Route path="menu" element={<MenuManagement />} />
             <Route path="categories" element={<CategoryManagement />} />

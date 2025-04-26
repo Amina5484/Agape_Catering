@@ -15,6 +15,7 @@
     "axios": "^1.7.9",
     "chapa-nodejs": "^2.0.1",
     "chart.js": "^4.4.9",
+    "date-fns": "^4.1.0",
     "file-saver": "^2.0.5",
     "formik": "^2.4.5",
     "framer-motion": "^12.7.4",

@@ -11,7 +11,13 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: {
     type: String,
-    enum: ['Customer', 'Catering Manager', 'Executive Chef', 'System Admin'],
+    enum: [
+      'Customer',
+      'Catering Manager',
+      'Chef',
+      'Executive Chef',
+      'System Admin',
+    ],
     default: 'Customer',
   },
   previousOrders: [

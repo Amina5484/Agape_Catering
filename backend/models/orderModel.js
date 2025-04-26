@@ -58,6 +58,44 @@ const orderSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  // Fields for chef assignment
+  assignedToChef: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'userModel',
+    default: null,
+  },
+  preparationInstructions: {
+    type: String,
+    default: '',
+  },
+  assignedAt: {
+    type: Date,
+    default: null,
+  },
+  assignedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'userModel',
+    default: null,
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'in-progress', 'completed', 'cancelled'],
+    default: 'pending',
+  },
+  // Status history to track changes
+  statusHistory: [
+    {
+      status: String,
+      updatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'userModel',
+      },
+      timestamp: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
   deliveryDate: { type: Date },
   Address: { type: Object, required: true },
   menuItems: [

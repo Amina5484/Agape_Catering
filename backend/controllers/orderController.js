@@ -14,11 +14,18 @@ const CHAPA_SECRET_KEY = process.env.CHAPA_SECRET_KEY;
 export const createOrder = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { Address, DeliveryDate, TypeOfOrder, NumberOfGuest, specialInstructions } = req.body;
+    const {
+      Address,
+      DeliveryDate,
+      TypeOfOrder,
+      NumberOfGuest,
+      specialInstructions,
+    } = req.body;
 
     if (!Address || !DeliveryDate || !TypeOfOrder || !NumberOfGuest) {
       return res.status(400).json({
-        message: 'Address, DeliveryDate, TypeOfOrder, and NumberOfGuest are required.',
+        message:
+          'Address, DeliveryDate, TypeOfOrder, and NumberOfGuest are required.',
       });
     }
 
@@ -43,6 +50,33 @@ export const createOrder = async (req, res) => {
     const user = await userModel.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
+    const orderItems = cart.items.map((item) => ({
+      item: item.menuItem._id,
+      quantity: item.quantity,
+      price: item.price,
+      totalPrice: item.totalPrice,
+      specialInstructions: item.specialInstructions,
+      deliveryFee: item.deliveryFee,
+    }));
+
+    // Create the order first
+    const newOrder = new Order({
+      userId,
+      Address,
+      TypeOfOrder,
+      menuItems: orderItems,
+      totalAmount: total,
+      paidAmount: 0, // Will be updated after payment
+      paymentStatus: 'pending',
+      orderStatus: 'pending',
+      deliveryDateValue: DeliveryDate,
+      specialInstructions,
+      numberOfGuest: NumberOfGuest,
+    });
+
+    await newOrder.save();
+
+    // Now initialize Chapa payment with the order ID
     const chapaPaymentData = {
       amount: amountToPayNow,
       currency: 'ETB',
@@ -50,15 +84,28 @@ export const createOrder = async (req, res) => {
       first_name: user.name || 'User',
       last_name: '',
       phone: user.phone || '0911121314',
-      tx_ref: `order_${userId}_${Date.now()}`,
-      callback_url: 'http://localhost:3000/payment-success',
-      return_url: 'http://localhost:3000/payment-success',
+      tx_ref: `order_${newOrder._id}_${Date.now()}`,
+      callback_url: `${
+        process.env.FRONTEND_URL || 'http://localhost:3000'
+      }/payment-success`,
+      return_url: `${
+        process.env.FRONTEND_URL || 'http://localhost:3000'
+      }/payment-success`,
       customization: {
         title: 'Agape Catering',
         description: 'Payment for your catering order',
       },
-      meta: { userId: userId.toString() },
+      meta: {
+        userId: userId.toString(),
+        orderId: newOrder._id.toString(),
+      },
     };
+
+    console.log('Initializing Chapa payment with data:', {
+      ...chapaPaymentData,
+      amount: amountToPayNow,
+      email: user.email,
+    });
 
     const chapaResponse = await axios.post(
       'https://api.chapa.co/v1/transaction/initialize',
@@ -71,48 +118,36 @@ export const createOrder = async (req, res) => {
       }
     );
 
+    console.log('Chapa response:', chapaResponse.data);
+
     const checkout_url = chapaResponse?.data?.data?.checkout_url;
-    if (!checkout_url) throw new Error('Failed to initialize payment');
+    if (!checkout_url) {
+      console.error(
+        'Failed to get checkout URL from Chapa:',
+        chapaResponse.data
+      );
+      throw new Error('Failed to initialize payment');
+    }
 
-    const orderItems = cart.items.map((item) => ({
-      item: item.menuItem._id,
-      quantity: item.quantity,
-      price: item.price,
-      totalPrice: item.totalPrice,
-      specialInstructions: item.specialInstructions,
-      deliveryFee: item.deliveryFee,
-    }));
-
-    const newOrder = new Order({
-      userId,
-      Address,
-
-      TypeOfOrder,
-      menuItems: orderItems,
-      totalAmount: total,
-      paidAmount: amountToPayNow,
-      paymentStatus: 'partially_paid',
-      orderStatus: 'pending',
-      deliveryDateValue: DeliveryDate,
-      specialInstructions,
-      numberOfGuest: NumberOfGuest,
-
-      paymentHistory: [
-        {
-          recordedBy: userId,
-          amount: amountToPayNow,
-          date: new Date(),
-          transactionId: chapaResponse.data.data.tx_ref || `txn_${Date.now()}`,
-          status: 'success',
-          method: 'chapa',
-          paymentType: 'partial',
-          paymentDescription: 'Initial payment for order',
-        },
-      ],
-    });
+    // Update order with payment information
+    newOrder.paidAmount = amountToPayNow;
+    newOrder.paymentStatus = 'partially_paid';
+    newOrder.paymentHistory = [
+      {
+        recordedBy: userId,
+        amount: amountToPayNow,
+        date: new Date(),
+        transactionId: chapaResponse.data.data.tx_ref || `txn_${Date.now()}`,
+        status: 'success',
+        method: 'chapa',
+        paymentType: 'partial',
+        paymentDescription: 'Initial payment for order',
+      },
+    ];
 
     await newOrder.save();
 
+    // Update user's previous orders
     user.previousOrders = user.previousOrders || [];
     user.previousOrders.push({
       items: orderItems,
@@ -121,12 +156,12 @@ export const createOrder = async (req, res) => {
     });
     await user.save();
 
-    notifyManager(newOrder);
-
+    // Clear cart
     cart.items = [];
     cart.status = 'ordered';
     await cart.save();
 
+    // Send email notification
     try {
       await sendEmail({
         to: user.email,
@@ -144,7 +179,6 @@ export const createOrder = async (req, res) => {
     } catch (err) {
       console.error('Email sending failed:', err.message);
     }
-    
 
     res.status(201).json({
       message: 'Order placed successfully. Please pay 40% to confirm.',

@@ -99,8 +99,68 @@ mongoose
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((err) => console.error('❌ MongoDB Connection Failed:', err));
 
+// Add a helper endpoint to see all registered routes (only in development)
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/api/debug/routes', (req, res) => {
+    console.log('DEBUG: Listing all registered routes');
+    const routes = [];
+
+    app._router.stack.forEach((middleware) => {
+      if (middleware.route) {
+        // Routes registered directly on the app
+        routes.push({
+          path: middleware.route.path,
+          methods: Object.keys(middleware.route.methods),
+        });
+      } else if (middleware.name === 'router') {
+        // Routes registered in a router middleware
+        middleware.handle.stack.forEach((handler) => {
+          if (handler.route) {
+            const path = handler.route.path;
+            routes.push({
+              path: middleware.regexp.toString().includes('/api/')
+                ? `/api${path}`
+                : path,
+              methods: Object.keys(handler.route.methods),
+            });
+          }
+        });
+      }
+    });
+
+    res.json(routes);
+  });
+}
+
 // ✅ Start Server
 app.listen(port, () => {
   console.log(`🚀 Server running at http://localhost:${port}`);
   console.log(`📄 Swagger Docs available at http://localhost:${port}/api-docs`);
+
+  // Log all registered routes on startup
+  console.log('📝 Registered Routes:');
+  app._router.stack.forEach((middleware) => {
+    if (middleware.route) {
+      // Routes registered directly on the app
+      console.log(
+        `${Object.keys(middleware.route.methods).join(', ').toUpperCase()} ${
+          middleware.route.path
+        }`
+      );
+    } else if (middleware.name === 'router') {
+      // Routes registered in a router middleware
+      const basePath = middleware.regexp.toString().includes('/api/')
+        ? '/api'
+        : '';
+      middleware.handle.stack.forEach((handler) => {
+        if (handler.route) {
+          console.log(
+            `${Object.keys(handler.route.methods)
+              .join(', ')
+              .toUpperCase()} ${basePath}${handler.route.path}`
+          );
+        }
+      });
+    }
+  });
 });
