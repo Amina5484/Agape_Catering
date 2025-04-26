@@ -20,6 +20,7 @@ import {
   generateReport,
   getSchedule,
   listNewOrders,
+  updateOrderScheduleStatus
 } from '../controllers/cateringManagerController.js';
 import { upload } from '../middleware/multer.js';
 import order from '../models/orderModel.js';
@@ -489,5 +490,17 @@ catering_router.get('/chef/schedules', protect, async (req, res) => {
     });
   }
 });
+
+/**
+ * @swagger
+ * /api/catering/chef/schedules:
+ *   put:
+ *     summary: update the order status
+ *     tags: [Chef Management]
+ *     responses:
+ *       200:
+ *         description: List of schedules assigned to the chef
+ */
+catering_router.post('/chef/schedules/:scheduleId', protect, updateOrderScheduleStatus);
 
 export default catering_router;

@@ -5,6 +5,7 @@ import Feedback from '../models/feedback.js';
 import Food from '../models/foodmodel.js';
 import order from '../models/orderModel.js';
 import userModel from '../models/userModel.js';
+import schedule from '../models/schedule.js';
 
 export const addMenuItem = async (req, res) => {
   try {
@@ -662,6 +663,38 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
+export const updateOrderScheduleStatus = async (req, res) => {
+  try {
+    const { scheduleId } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = ['preparing', 'completed'];
+
+    // Validate the status
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid schedule status' });
+    }
+
+    // Find the schedule by ID
+    const scheduleStatus = await Schedule.findById(scheduleId);
+    if (!scheduleStatus) {
+      return res.status(404).json({ message: 'Schedule not found' });
+    }
+
+    // Update the status
+    scheduleStatus.status = status;
+    await scheduleStatus.save();
+
+    res.status(200).json({
+      message: 'Schedule status updated successfully',
+      schedule: scheduleStatus,
+    });
+  } catch (error) {
+    console.error('Error updating schedule status:', error);
+    res.status(500).json({ message: 'Server Error', error: error.toString() });
+  }
+};
+
 // CHEF SCHEDULING
 export const assignSchedule = async (req, res) => {
   console.log('Assigning schedule with request body:', req.body);
@@ -671,6 +704,8 @@ export const assignSchedule = async (req, res) => {
     if (!findOrder) {
       return res.status(404).json({ message: 'Order not found' });
     }
+    findOrder.assignedToChef = chefId;
+    await findOrder.save();
     // Check if the chef is already scheduled for that date and time
     const existingSchedule = await Schedule.findOne({
       chefId,

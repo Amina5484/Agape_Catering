@@ -3,7 +3,8 @@ import order from './orderModel.js';
 
 const scheduleSchema = new mongoose.Schema({
   chefId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  shiftTime: { type: String, required: true }, // e.g., "Morning", "Evening"
+  shiftTime: { type: String, required: true }, 
+  status: { type: String, required: true, default: 'pending' }, 
   orders: { type: mongoose.Schema.Types.ObjectId, ref: 'order' },
   date: { type: Date, required: true },
 });
