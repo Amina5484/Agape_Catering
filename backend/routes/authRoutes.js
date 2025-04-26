@@ -4,7 +4,8 @@ import {
     registerCateringManager, 
     registerExecutiveChef, 
     registerSystemAdmin, 
-    loginUser  
+    loginUser,
+    changePassword  
 } from '../controllers/authController.js';
 import { protect, authorizeRoles } from '../config/authMiddleware.js';
 import ROLES from '../config/roles.js';
@@ -163,5 +164,32 @@ authRouter.post('/register/system-admin', registerSystemAdmin);
  *         description: Invalid credentials
  */
 authRouter.post('/login', loginUser);
+
+
+/**
+ * @swagger
+ * /api/auth/change-password:
+ *   post:
+ *     summary: Authenticate user and get a token
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               previousPassword:
+ *                 type: string
+ *               new-password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Authentication successful, returns a token
+ *       401:
+ *         description: Invalid credentials
+ */
+authRouter.post('/change-password',protect, changePassword);
+
 
 export default authRouter;

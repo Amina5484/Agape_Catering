@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 import ROLES from '../config/roles.js';
-
+import bcrypt from 'bcrypt';
 const isValidPhoneNumber = (phone) => {
   const phoneRegex = /^(\+251|0)?9\d{8}$/; // Supports Ethiopian phone numbers in formats like +251943317021 or 0943317021
   return phoneRegex.test(phone);
@@ -203,5 +203,33 @@ export const loginUser = async (req, res) => {
       message: 'Server Error',
       error: error.message,
     });
+  }
+};
+
+
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user._id; // assuming authentication middleware sets req.user
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isMatch = await user.matchPassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    // ✅ Just set the new password (plain), let Mongoose pre('save') hash it
+    user.password = newPassword;
+
+    await user.save(); // pre('save') will hash automatically!
+
+    res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ message: 'Server Error' });
   }
 };
