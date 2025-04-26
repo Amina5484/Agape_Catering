@@ -1,13 +1,12 @@
 import userModel from '../models/userModel.js';
 import Cart from '../models/cartModel.js';
-import order from '../models/orderModel.js';
+import Order from '../models/orderModel.js';
 import axios from 'axios';
-import { sendEmail } from '../utils/sendEmail.js';
-import orderReceiptEmailHTML from '../email_templates/orderEmail.js'; // for email template
-
 import dotenv from 'dotenv';
+import { sendEmail } from '../utils/sendEmail.js';
+import orderReceiptEmailHTML from '../email_templates/orderEmail.js';
+import mongoose from 'mongoose';
 
-// Load environment variables
 dotenv.config();
 
 const CHAPA_SECRET_KEY = process.env.CHAPA_SECRET_KEY;
@@ -15,24 +14,29 @@ const CHAPA_SECRET_KEY = process.env.CHAPA_SECRET_KEY;
 export const createOrder = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { Address, DeliveryDate, TypeOfOrder } = req.body;
-    if (!Address || !DeliveryDate || !TypeOfOrder) {
-      return res
-        .status(400)
-        .json({
-          message: 'Address, DeliveryDate, and TypeOfOrder are required.',
-        });
+    const {
+      Address,
+      DeliveryDate,
+      TypeOfOrder,
+      NumberOfGuest,
+      specialInstructions,
+    } = req.body;
+
+    if (!Address || !DeliveryDate || !TypeOfOrder || !NumberOfGuest) {
+      return res.status(400).json({
+        message:
+          'Address, DeliveryDate, TypeOfOrder, and NumberOfGuest are required.',
+      });
     }
+
     if (
       TypeOfOrder === 'scheduled' &&
       new Date(DeliveryDate) <= new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
     ) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Scheduled delivery date must be at least 14 days in the future.',
-        });
+      return res.status(400).json({
+        message:
+          'Scheduled delivery date must be at least 14 days in the future.',
+      });
     }
 
     const cart = await Cart.findOne({ userId }).populate('items.menuItem');
@@ -44,48 +48,8 @@ export const createOrder = async (req, res) => {
     const amountToPayNow = +(total * 0.4).toFixed(2);
 
     const user = await userModel.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
-    }
+    if (!user) return res.status(404).json({ message: 'User not found.' });
 
-    // 1. Initialize Chapa Payment
-    const chapaPaymentData = {
-      amount: amountToPayNow,
-      currency: 'ETB',
-      email: user.email,
-      first_name: user.name || 'User',
-      last_name: '',
-      phone: user.phone || '0911121314',
-      tx_ref: `order_${userId}_${Date.now()}`,
-      callback_url: 'http://localhost:3000/payment-success',
-      return_url: 'http://localhost:3000/payment-success',
-      customization: {
-        title: 'Agape Catering',
-        description: 'Payment for your catering order',
-      },
-      meta: {
-        // orderId: newOrder._id.toString(),
-        userId: userId.toString(),
-      },
-    };
-
-    const chapaResponse = await axios.post(
-      'https://api.chapa.co/v1/transaction/initialize',
-      chapaPaymentData,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    const checkout_url = chapaResponse?.data?.data?.checkout_url;
-    if (!checkout_url) {
-      throw new Error('Failed to initialize payment');
-    }
-
-    // 2. Create order only if payment initialization is successful
     const orderItems = cart.items.map((item) => ({
       item: item.menuItem._id,
       quantity: item.quantity,
@@ -95,62 +59,133 @@ export const createOrder = async (req, res) => {
       deliveryFee: item.deliveryFee,
     }));
 
-    const newOrder = new order({
+    // Create the order first
+    const newOrder = new Order({
       userId,
       Address,
-      DeliveryDate,
       TypeOfOrder,
       menuItems: orderItems,
       totalAmount: total,
-      paidAmount: 0,
+      paidAmount: 0, // Will be updated after payment
       paymentStatus: 'pending',
       orderStatus: 'pending',
+      deliveryDateValue: DeliveryDate,
+      specialInstructions,
+      numberOfGuest: NumberOfGuest,
     });
 
     await newOrder.save();
 
-    // 3. Update user's previous orders
-    const previousOrder = {
+    // Now initialize Chapa payment with the order ID
+    const chapaPaymentData = {
+      amount: amountToPayNow,
+      currency: 'ETB',
+      email: user.email,
+      first_name: user.name || 'User',
+      last_name: '',
+      phone: user.phone || '0911121314',
+      tx_ref: `order_${newOrder._id}_${Date.now()}`,
+      callback_url: `${
+        process.env.FRONTEND_URL || 'http://localhost:3000'
+      }/payment-success`,
+      return_url: `${
+        process.env.FRONTEND_URL || 'http://localhost:3000'
+      }/payment-success`,
+      customization: {
+        title: 'Agape Catering',
+        description: 'Payment for your catering order',
+      },
+      meta: {
+        userId: userId.toString(),
+        orderId: newOrder._id.toString(),
+      },
+    };
+
+    console.log('Initializing Chapa payment with data:', {
+      ...chapaPaymentData,
+      amount: amountToPayNow,
+      email: user.email,
+    });
+
+    const chapaResponse = await axios.post(
+      'https://api.chapa.co/v1/transaction/initialize',
+      chapaPaymentData,
+      {
+        headers: {
+          Authorization: `Bearer ${CHAPA_SECRET_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    console.log('Chapa response:', chapaResponse.data);
+
+    const checkout_url = chapaResponse?.data?.data?.checkout_url;
+    if (!checkout_url) {
+      console.error(
+        'Failed to get checkout URL from Chapa:',
+        chapaResponse.data
+      );
+      throw new Error('Failed to initialize payment');
+    }
+
+    // Update order with payment information
+    newOrder.paidAmount = amountToPayNow;
+    newOrder.paymentStatus = 'partially_paid';
+    newOrder.paymentHistory = [
+      {
+        recordedBy: userId,
+        amount: amountToPayNow,
+        date: new Date(),
+        transactionId: chapaResponse.data.data.tx_ref || `txn_${Date.now()}`,
+        status: 'success',
+        method: 'chapa',
+        paymentType: 'partial',
+        paymentDescription: 'Initial payment for order',
+      },
+    ];
+
+    await newOrder.save();
+
+    // Update user's previous orders
+    user.previousOrders = user.previousOrders || [];
+    user.previousOrders.push({
       items: orderItems,
       orderDate: new Date(),
       totalAmount: total,
-    };
-
-    user.previousOrders = user.previousOrders || [];
-    user.previousOrders.push(previousOrder);
+    });
     await user.save();
 
+    // Clear cart
+    cart.items = [];
+    cart.status = 'ordered';
+    await cart.save();
 
-    // 5. Notify manager
-    notifyManager(newOrder);
+    // Send email notification
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: 'Order Receipt',
+        html: orderReceiptEmailHTML(
+          user.name || 'User',
+          newOrder._id,
+          new Date().toDateString(),
+          orderItems,
+          total,
+          amountToPayNow,
+          total - amountToPayNow
+        ),
+      });
+    } catch (err) {
+      console.error('Email sending failed:', err.message);
+    }
 
-    // 6. Return payment URL
     res.status(201).json({
       message: 'Order placed successfully. Please pay 40% to confirm.',
       orderId: newOrder._id,
       amountToPay: amountToPayNow,
       payment_url: checkout_url,
     });
-
-    
-    try {
-      await sendEmail({
-        to: user.email,
-        subject: 'Order Recept',
-        html: orderReceiptEmailHTML(user.first_name, newOrder._id, "April 24, 2025", orderItems, total, amountToPayNow, total - amountToPayNow),
-      });
-    } catch (emailError) {
-      console.error('Failed to send email:', emailError);
-      // Continue with registration even if email fails
-      // The password will be returned in the response
-    }
-
-        // 4. Clear cart and mark as ordered
-        cart.items = [];
-        cart.status = 'ordered';
-        await cart.save();
-    
-
   } catch (error) {
     console.error(
       'Error creating order:',
@@ -162,290 +197,471 @@ export const createOrder = async (req, res) => {
   }
 };
 
-// Basic notify manager
+export const getUserOrders = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (req.user._id.toString() !== userId) {
+      return res.status(403).json({ message: 'Unauthorized access to orders' });
+    }
+
+    const orders = await Order.find({ userId })
+      .sort({ orderedDate: -1 })
+      .populate('menuItems.item', 'name price');
+
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ message: 'No orders found' });
+    }
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error fetching orders:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export const getOrderDetails = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await Order.findById(orderId).populate(
+      'menuItems.item',
+      'name price'
+    );
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    if (order.userId.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: 'Unauthorized access to order details' });
+    }
+
+    res.status(200).json(order);
+  } catch (error) {
+    console.error('Error fetching order details:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate('userId', 'name email phone')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error fetching all orders:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const {
+      status,
+      orderStatus,
+      notifyCustomer,
+      customerEmail,
+      customerName,
+      customerPhone,
+      message,
+    } = req.body;
+
+    // Use orderStatus or status, whichever is provided
+    const newStatus = orderStatus || status;
+
+    if (!newStatus)
+      return res.status(400).json({ message: 'Status is required' });
+
+    const order = await Order.findById(orderId);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    // Update order status
+    order.orderStatus = newStatus;
+    await order.save();
+
+    let emailSent = false;
+    let emailTo = null;
+    let userName = 'Customer';
+
+    // Send email when status is confirmed (backward compatibility)
+    if (newStatus === 'confirmed') {
+      const user = await userModel.findById(order.userId);
+      if (!user) {
+        console.log('User not found for order confirmation notification');
+      } else {
+        emailTo = user.email;
+        userName = user.name || 'Customer';
+
+        const orderItems = order.menuItems.map((item) => ({
+          name: item.item.name,
+          quantity: item.quantity,
+          price: item.price,
+          totalPrice: item.totalPrice,
+        }));
+
+        try {
+          await sendEmail({
+            to: user.email,
+            subject: 'Your Order Has Been Confirmed!',
+            html: orderReceiptEmailHTML(
+              user.name || 'User',
+              order._id,
+              order.orderedDate.toDateString(),
+              orderItems,
+              order.totalAmount,
+              order.paidAmount,
+              order.totalAmount - order.paidAmount
+            ),
+          });
+          console.log('Confirmation email sent successfully.');
+          emailSent = true;
+        } catch (err) {
+          console.error('Error sending confirmation email:', err.message);
+        }
+      }
+    }
+
+    // Handle customer notification for status updates if notifyCustomer flag is true
+    if (notifyCustomer) {
+      emailTo = customerEmail;
+      userName = customerName || 'Customer';
+
+      // If email not provided in request, try to get it from the user associated with the order
+      if (!emailTo) {
+        const user = await userModel.findById(order.userId);
+        if (user) {
+          emailTo = user.email;
+          userName = user.name || 'Customer';
+        }
+      }
+
+      if (emailTo) {
+        try {
+          // Custom message if provided, otherwise use default
+          const statusMessage =
+            message ||
+            `Your order (ID: ${order._id
+              .toString()
+              .substring(
+                0,
+                8
+              )}...) status has been updated to: <strong>${newStatus.toUpperCase()}</strong>.`;
+
+          // Status-specific email templates
+          let emailSubject = `Order Status Update: ${newStatus.toUpperCase()}`;
+          let emailHTML = '';
+
+          // Create different email content based on status
+          switch (newStatus.toLowerCase()) {
+            case 'accepted':
+            case 'confirmed':
+              emailSubject =
+                'Great News! Your Agape Catering Order is Confirmed';
+              emailHTML = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
+                  <h2 style="color: #5c6bc0;">Order Confirmed!</h2>
+                  <p>Hello ${userName},</p>
+                  <p>Wonderful news! Your order has been <strong>CONFIRMED</strong> and our team is getting ready to prepare your delicious food.</p>
+                  <p>Order ID: <strong>${order._id
+                    .toString()
+                    .substring(0, 8)}...</strong></p>
+                  <p>We'll keep you updated as your order progresses. Thank you for choosing Agape Catering!</p>
+                  <p>With gratitude,<br>Agape Catering Team</p>
+                </div>
+              `;
+              break;
+
+            case 'preparing':
+              emailSubject = 'Your Agape Catering Order is Being Prepared';
+              emailHTML = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
+                  <h2 style="color: #5c6bc0;">Order Being Prepared</h2>
+                  <p>Hello ${userName},</p>
+                  <p>Our chefs are now preparing your order with care and the finest ingredients!</p>
+                  <p>Order ID: <strong>${order._id
+                    .toString()
+                    .substring(0, 8)}...</strong></p>
+                  <p>Thank you for your patience. We're putting our heart into making your food perfect.</p>
+                  <p>Warm regards,<br>Agape Catering Team</p>
+                </div>
+              `;
+              break;
+
+            case 'ready':
+              emailSubject = 'Your Agape Catering Order is Ready for Delivery';
+              emailHTML = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
+                  <h2 style="color: #5c6bc0;">Order Ready for Delivery</h2>
+                  <p>Hello ${userName},</p>
+                  <p>Great news! Your order is now ready and will soon be on its way to you.</p>
+                  <p>Order ID: <strong>${order._id
+                    .toString()
+                    .substring(0, 8)}...</strong></p>
+                  <p>Our delivery team will contact you shortly. Thank you for choosing Agape Catering!</p>
+                  <p>Best regards,<br>Agape Catering Team</p>
+                </div>
+              `;
+              break;
+
+            case 'delivered':
+              emailSubject = 'Your Agape Catering Order has been Delivered';
+              emailHTML = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
+                  <h2 style="color: #5c6bc0;">Order Successfully Delivered</h2>
+                  <p>Hello ${userName},</p>
+                  <p>Your order has been successfully delivered! We hope you enjoy your meal.</p>
+                  <p>Order ID: <strong>${order._id
+                    .toString()
+                    .substring(0, 8)}...</strong></p>
+                  <p>It was our pleasure to serve you. We'd love to hear your feedback about your experience.</p>
+                  <p>With appreciation,<br>Agape Catering Team</p>
+                </div>
+              `;
+              break;
+
+            default:
+              // Default template for any other status
+              emailHTML = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
+                  <h2 style="color: #5c6bc0;">Order Status Update</h2>
+                  <p>Hello ${userName},</p>
+                  <p>${statusMessage}</p>
+                  <p>Thank you for choosing Agape Catering!</p>
+                  <p>For any questions, please contact us.</p>
+                  <p>Regards,<br>Agape Catering Team</p>
+                </div>
+              `;
+          }
+
+          await sendEmail({
+            to: emailTo,
+            subject: emailSubject,
+            html: emailHTML,
+          });
+          console.log(`Status update email sent to customer: ${emailTo}`);
+          emailSent = true;
+        } catch (err) {
+          console.error('Error sending status update email:', err.message);
+        }
+      } else {
+        console.log('Customer email not available for notification');
+      }
+    }
+
+    res.status(200).json({
+      message: 'Order status updated',
+      order,
+      notificationSent: emailSent,
+      recipientEmail: emailTo,
+    });
+  } catch (error) {
+    console.error('Error updating order status:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 const notifyManager = (order) => {
   console.log(
     `🚨 Manager Notified: New Order from user ${order.userId} with ID ${order._id}`
   );
 };
 
-// // 🛒 Place order with 50% initial payment
-// const placeOrder = async (req, res) => {
-//   try {
-//     const { userId, items,totalAmount } = req.body;
+export const verifyPayment = async (req, res) => {
+  try {
+    const { tx_ref, transaction_id } = req.query;
 
-//     if (!userId || !items  || !totalAmount) {
-//       return res.status(400).json({ message: 'Missing required fields' });
-//     }
+    if (!tx_ref) {
+      return res.status(400).json({
+        success: false,
+        message: 'Transaction reference is required',
+      });
+    }
 
-//     const user = await userModel.findById(userId);
-//     console.log(user.name);
-//     if (!user) {
-//       return res.status(404).json({ message: 'user not found' });
-//     }
+    // Extract order ID from tx_ref (format: order_userId_timestamp)
+    const orderId = tx_ref.split('_')[1];
 
-//     const halfAmount = totalAmount / 1.8;
+    // Verify the transaction with Chapa (optional, can be added later)
+    // const verificationResponse = await axios.get(
+    //   `https://api.chapa.co/v1/transaction/verify/${transaction_id}`,
+    //   {
+    //     headers: {
+    //       Authorization: `Bearer ${CHAPA_SECRET_KEY}`,
+    //     },
+    //   }
+    // );
 
-//         console.log('first_name:', user.name);
-//     // Process half payment
-//     const chapaResponse = await processChapaPayment({
-//       amount: halfAmount,
-//       description: 'Initial 40% Payment',
-//       user: {
-//         first_name:  user.name.toString() || 'user',
-//         last_name:  user.name || '',
-//         email: user.email,
-//         phone_number: user.phone || '0911121314',
-//       },
-//     });
-//     console.log('chapaResponse:', chapaResponse);
+    // Find the order
+    const order = await Order.findOne({
+      _id: mongoose.Types.ObjectId.isValid(orderId) ? orderId : null,
+    });
 
-//     if (!chapaResponse.success || !chapaResponse.transactionId) {
-//       return res.status(400).json({
-//         message: 'Payment failed',
-//         error: chapaResponse.error || 'No transaction ID',
-//       });
-//     }
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found',
+      });
+    }
 
-//     // Save order
-//     const order = await orderModel.create({
-//       userId,
-//       items,
-//       totalAmount,
-//       paidAmount: halfAmount,
-//       paymentStatus: 'Half Paid',
-//       status: 'Pending',
-//       paymentTxRefs: [
-//         {
-//           tx_ref: chapaResponse.transactionId.tx_ref,
-//           amount: halfAmount,
-//         },
-//       ],
-//     });
+    // Update payment status
+    const previousPaymentStatus = order.paymentStatus;
+    const remainingAmount = order.totalAmount - order.paidAmount;
 
-//     res.status(201).json({
-//       message:
-//         'Order placed with initial payment. Complete payment on delivery.',
-//       order,
-//       chapaResponse,
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Server error', error: error.message });
-//   }
-// };
+    // If the remaining amount is 0 or very small (accounting for rounding errors)
+    if (remainingAmount <= 1) {
+      order.paymentStatus = 'paid';
+    } else {
+      order.paymentStatus = 'partially_paid';
+    }
 
-// // 💰 Pay remaining 50% (on delivery)
-// const processFinalPayment = async (req, res) => {
-//   try {
-//     const { orderId } = req.params;
+    // Add payment to history
+    if (!order.paymentHistory) {
+      order.paymentHistory = [];
+    }
 
-//     const order = await orderModel.findById(orderId).populate('customerId');
-//     if (!order) {
-//       return res.status(404).json({ message: 'Order not found' });
-//     }
+    order.paymentHistory.push({
+      amount: remainingAmount,
+      date: new Date(),
+      transactionId: transaction_id || tx_ref,
+      status: 'success',
+    });
 
-//     if (order.paymentStatus !== 'Half Paid') {
-//       return res
-//         .status(400)
-//         .json({ message: 'Final payment not allowed at this stage' });
-//     }
+    // Update the paid amount
+    order.paidAmount = order.totalAmount;
 
-//     const remainingAmount = order.totalAmount - order.paidAmount;
+    await order.save();
 
-//     // Process remaining payment
-//     const chapaResponse = await processChapaPayment({
-//       amount: remainingAmount,
-//       description: 'Final 50% Payment on Delivery',
-//       user: {
-//         first_name: order.customerId.firstName || 'Customer',
-//         last_name: order.customerId.lastName || '',
-//         email: order.customerId.email,
-//         phone_number: order.customerId.phone || '0911121314',
-//       },
-//     });
+    // Notify managers about the payment
+    try {
+      // Get all catering managers
+      const managers = await userModel.find({
+        role: { $in: ['Catering Manager', 'Executive Chef'] },
+      });
 
-//     if (!chapaResponse.success || !chapaResponse.transactionId) {
-//       return res.status(400).json({
-//         message: 'Final payment failed',
-//         error: chapaResponse.error || 'No transaction ID',
-//       });
-//     }
+      if (managers && managers.length > 0) {
+        const { sendEmail } = await import('../utils/sendEmail.js');
 
-//     // Update order
-//     order.paidAmount += remainingAmount;
-//     order.paymentStatus = 'Paid';
-//     order.status = 'Completed';
-//     order.paymentTxRefs.push({
-//       tx_ref: chapaResponse.transactionId.tx_ref,
-//       amount: remainingAmount,
-//     });
-//     await order.save();
+        // Send notifications to managers
+        for (const manager of managers) {
+          await sendEmail({
+            to: manager.email,
+            subject: 'Payment Received for Order',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
+                <h2 style="color: #5c6bc0;">Payment Notification</h2>
+                <p>Hello ${manager.name},</p>
+                <p>A payment has been received for order #${order._id
+                  .toString()
+                  .substring(0, 8)}...</p>
+                <p><strong>Amount Paid:</strong> ${remainingAmount.toLocaleString(
+                  'en-ET',
+                  { style: 'currency', currency: 'ETB' }
+                )}</p>
+                <p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
+                <p>The order status is currently: <strong>${
+                  order.orderStatus
+                }</strong></p>
+                <p>You can check the order details in the management dashboard.</p>
+                <p>Regards,<br>Agape Catering System</p>
+              </div>
+            `,
+          });
+        }
+      }
+    } catch (notificationError) {
+      console.error(
+        'Failed to notify managers about payment:',
+        notificationError
+      );
+      // Continue even if notification fails
+    }
 
-//     res.status(200).json({
-//       message: 'Final payment successful and order completed',
-//       order,
-//       chapaResponse,
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Server error', error: error.message });
-//   }
-// };
+    res.status(200).json({
+      success: true,
+      message: 'Payment verified successfully',
+      order: {
+        _id: order._id,
+        orderStatus: order.orderStatus,
+        paymentStatus: order.paymentStatus,
+        totalAmount: order.totalAmount,
+        paidAmount: order.paidAmount,
+        TypeOfOrder: order.TypeOfOrder,
+        DeliveryDate: order.DeliveryDate,
+      },
+    });
+  } catch (error) {
+    console.error('Error verifying payment:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+};
 
-// // Get user's orders
-// const getUserOrders = async (req, res) => {
-//   try {
-//     const { userId } = req.params;
+export const addPaymentRecord = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { amount, transactionId, paymentMethod } = req.body;
 
-//     // Verify that the requesting user is the same as the userId in the params
-//     if (req.user._id.toString() !== userId) {
-//       return res.status(403).json({
-//         success: false,
-//         message: 'You are not authorized to view these orders',
-//       });
-//     }
+    if (!amount || amount <= 0) {
+      return res
+        .status(400)
+        .json({ message: 'Valid payment amount is required' });
+    }
 
-//     const orders = await orderModel
-//       .find({ customerId: userId })
-//       .sort({ createdAt: -1 }); // Sort by newest first
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
 
-//     res.status(200).json({
-//       success: true,
-//       orders,
-//     });
-//   } catch (error) {
-//     console.error('Error fetching user orders:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Failed to fetch orders',
-//       error: error.message,
-//     });
-//   }
-// };
+    // Validate the payment amount doesn't exceed the remaining balance
+    const remainingBalance = order.totalAmount - order.paidAmount;
+    if (amount > remainingBalance) {
+      return res.status(400).json({
+        message: `Payment amount cannot exceed the remaining balance of ${remainingBalance}`,
+      });
+    }
 
-// // Get order details
-// const getOrderDetails = async (req, res) => {
-//   try {
-//     const { orderId } = req.params;
+    // Add to payment history
+    if (!order.paymentHistory) {
+      order.paymentHistory = [];
+    }
 
-//     const order = await orderModel
-//       .findById(orderId)
-//       .populate('customerId', 'firstName lastName email phone');
+    order.paymentHistory.push({
+      amount,
+      date: new Date(),
+      transactionId: transactionId || `manual_${Date.now()}`,
+      status: 'success',
+      method: paymentMethod || 'manual',
+      recordedBy: req.user._id,
+    });
 
-//     if (!order) {
-//       return res.status(404).json({
-//         success: false,
-//         message: 'Order not found',
-//       });
-//     }
+    // Update paid amount
+    order.paidAmount += amount;
 
-//     // Verify that the requesting user is the owner of the order
-//     if (req.user._id.toString() !== order.customerId._id.toString()) {
-//       return res.status(403).json({
-//         success: false,
-//         message: 'You are not authorized to view this order',
-//       });
-//     }
+    // Update payment status
+    if (order.paidAmount >= order.totalAmount) {
+      order.paymentStatus = 'paid';
+    } else {
+      order.paymentStatus = 'partially_paid';
+    }
 
-//     res.status(200).json({
-//       success: true,
-//       order,
-//     });
-//   } catch (error) {
-//     console.error('Error fetching order details:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Failed to fetch order details',
-//       error: error.message,
-//     });
-//   }
-// };
+    await order.save();
 
-// // Get all orders (for managers and admins)
-// const getAllOrders = async (req, res) => {
-//   try {
-//     const orders = await orderModel
-//       .find()
-//       .populate('customerId', 'firstName lastName email phone')
-//       .sort({ createdAt: -1 }); // Sort by newest first
-
-//     res.status(200).json({
-//       success: true,
-//       orders,
-//     });
-//   } catch (error) {
-//     console.error('Error fetching all orders:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Failed to fetch orders',
-//       error: error.message,
-//     });
-//   }
-// };
-
-// // Update order status (for managers and admins)
-// const updateOrderStatus = async (req, res) => {
-//   try {
-//     const { orderId } = req.params;
-//     const { status } = req.body;
-
-//     if (!status) {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'Status is required',
-//       });
-//     }
-
-//     const order = await orderModel.findById(orderId);
-
-//     if (!order) {
-//       return res.status(404).json({
-//         success: false,
-//         message: 'Order not found',
-//       });
-//     }
-
-//     order.status = status;
-//     await order.save();
-
-//     res.status(200).json({
-//       success: true,
-//       message: 'Order status updated successfully',
-//       order,
-//     });
-//   } catch (error) {
-//     console.error('Error updating order status:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Failed to update order status',
-//       error: error.message,
-//     });
-//   }
-// };
-
-// // Checkout (placeholder)
-// const checkout = async (req, res) => {
-//   try {
-//     const cart = await Cart.findOne({ userId: req.user._id });
-//     if (!cart || cart.items.length === 0)
-//       return res.status(400).json({ message: 'Cart is empty' });
-
-//     cart.status = 'ordered';
-//     await cart.save();
-
-//     // TODO: create order, handle payment, etc.
-
-//     res.status(200).json({ message: 'Order placed successfully!' });
-//   } catch (err) {
-//     res.status(500).json({ message: 'Error during checkout', error: err });
-//   }
-// };
-
-export // placeOrder,
-// processFinalPayment,
-// getUserOrders,
-// getOrderDetails,
-// getAllOrders,
-// updateOrderStatus,
-// Checkout
-// createOrder,
- {};
+    res.status(200).json({
+      message: 'Payment record added successfully',
+      order: {
+        _id: order._id,
+        paymentStatus: order.paymentStatus,
+        totalAmount: order.totalAmount,
+        paidAmount: order.paidAmount,
+        remainingBalance: order.totalAmount - order.paidAmount,
+      },
+    });
+  } catch (error) {
+    console.error('Error adding payment record:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

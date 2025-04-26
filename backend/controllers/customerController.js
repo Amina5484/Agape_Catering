@@ -1,8 +1,9 @@
 import Menu from '../models/menu.js';
 import Stock from '../models/stock.js';
+import order from '../models/orderModel.js';
 //import Order from '../models/order.js';
-import Schedule from '../models/schedule.js';
-import Feedback from '../models/feedback.js';
+// import Schedule from '../models/schedule.js';
+// import Feedback from '../models/feedback.js';
 
 
 export const getMenu = async (req, res) => {
@@ -55,76 +56,56 @@ export const getStock = async (req, res) => {
     }
 };
 
-// ORDER MANAGEMENT
-export const acceptOrder = async (req, res) => {
+// export const getCurrentOrder = async (req, res) => {
+//     console.log(req.user._id);
+//     try {
+//         if (!req.user._id) {
+//             return res.status(400).json({ message: "User ID not found" });
+//         }
+//         const { userId } = req.user;
+//         console.log(userId);
+//         const userOrder = await order.findOne({ userId }).populate('items.itemId', 'name price '); // Populate with menu item details
+//         if (!userOrder) {
+//             return res.status(404).json({ message: "No current order found" });
+//         }
+//         res.status(200).json(userOrder);
+//     } catch (error) {
+//         res.status(500).json({ message: "Server Error", error });
+//     }
+// }
+export const getCurrentOrder = async (req, res) => {
     try {
-        const { orderId } = req.params;
-        const order = await Order.findByIdAndUpdate(orderId, { status: "Accepted" }, { new: true });
-        res.status(200).json({ message: "Order accepted", order });
+      const userId = req.user.id; // Assuming req.user is populated by middleware
+  
+      const currentOrder = await order.findOne({
+        userId,
+        orderStatus: { $nin: ['delivered', 'cancelled'] },
+      }).populate('menuItems.item', 'name price');
+  
+      if (!currentOrder) {
+        return res.status(404).json({ message: 'No current active order found' });
+      }
+  
+      res.status(200).json(currentOrder);
     } catch (error) {
-        res.status(500).json({ message: "Server Error", error });
+      console.error('Error getting current order:', error);
+      res.status(500).json({ message: 'Server Error', error });
     }
-};
+  };
 
-export const updateOrderStatus = async (req, res) => {
+  export const getOrderHistory = async (req, res) => {
     try {
-        const { orderId } = req.params;
-        const { status } = req.body;
-        const order = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
-        res.status(200).json({ message: "Order status updated", order });
+      const userId = req.user.id;
+  
+      const pastOrders = await order.find({
+        userId,
+        orderStatus: { $in: ['delivered', 'cancelled'] },
+      }).sort({ createdAt: -1 }).populate('menuItems.item', 'name price');
+  
+      res.status(200).json(pastOrders);
     } catch (error) {
-        res.status(500).json({ message: "Server Error", error });
+      console.error('Error fetching order history:', error);
+      res.status(500).json({ message: 'Server Error', error });
     }
-};
-
-// CHEF SCHEDULING
-export const assignSchedule = async (req, res) => {
-    try {
-        const { chefId, shiftTime, date } = req.body;
-        const schedule = new Schedule({ chefId, shiftTime, date });
-        await schedule.save();
-        res.status(201).json({ message: "Schedule assigned", schedule });
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error });
-    }
-};
-export const getSchedule = async (req, res) => {
-    try {
-        const schedule = await Schedule.find();
-        res.status(200).json(schedule);
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error });
-    }
-};
-
-// VIEW CUSTOMER LOCATION
-export const viewCustomerLocation = async (req, res) => {
-    try {
-        const { customerId } = req.params;
-        const customer = await Order.findOne({ customerId }).populate("customer", "location");
-        res.status(200).json(customer?.customer?.location || {});
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error });
-    }
-};
-
-// VIEW FEEDBACK
-export const viewFeedback = async (req, res) => {
-    try {
-        const feedback = await Feedback.find();
-        res.status(200).json(feedback);
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error });
-    }
-};
-
-// GENERATE REPORT
-export const generateReport = async (req, res) => {
-    try {
-        const orders = await Order.find();
-        const stock = await Stock.find();
-        res.status(200).json({ orders, stock });
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error });
-    }
-};
+  };
+  

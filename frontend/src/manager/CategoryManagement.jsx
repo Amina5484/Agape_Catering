@@ -13,6 +13,7 @@ const CategoryManagement = () => {
   const [formData, setFormData] = useState({
     categoryName: '',
     image: null
+
   });
   const [previewImage, setPreviewImage] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -26,11 +27,15 @@ const CategoryManagement = () => {
     fetchCategories();
   }, []);
 
+
   const fetchCategories = async () => {
     try {
       setLoading(true);
       const response = await axios.get('http://localhost:4000/api/category', {
-        headers: { Authorization: `Bearer ${token}` }
+
+
+        headers: { Authorization: `Bearer ${token}` },
+
       });
       setCategories(response.data);
       setError(null);
@@ -57,9 +62,11 @@ const CategoryManagement = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
+
     }));
   };
 
@@ -71,19 +78,37 @@ const CategoryManagement = () => {
       formDataToSend.append('image', formData.image);
 
       if (isEditing) {
-        await axios.put(`http://localhost:4000/api/category/update/${editingId}`, formDataToSend, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
+
+        // await axios.put(`http://localhost:4000/api/category/update/${editingId}`, formDataToSend, {
+        //   headers: {
+        //     Authorization: `Bearer ${token}`,
+        //     'Content-Type': 'multipart/form-data'
+        //   }
+        // });
+
+        await axios.put(
+          `http://localhost:4000/api/category/update/${editingId}`,
+          formDataToSend,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
+            },
           }
-        });
+        );
+
         toast.success('Category updated successfully');
       } else {
         await axios.post('http://localhost:4000/api/category', formDataToSend, {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
+// <<<<<<< HEAD
+//             'Content-Type': 'multipart/form-data'
+//           }
+// =======
+            'Content-Type': 'multipart/form-data',
+          },
+
         });
         toast.success('Category added successfully');
       }
@@ -98,12 +123,15 @@ const CategoryManagement = () => {
   const handleEdit = (category) => {
     setFormData({
       categoryName: category.categoryName,
-      image: null
+
+      image: null,
+
     });
     setPreviewImage(`http://localhost:4000${category.image}`);
     setIsEditing(true);
     setEditingId(category._id);
   };
+
 
   const handleDelete = (id) => {
     setCategoryToDelete(id);
@@ -123,20 +151,38 @@ const CategoryManagement = () => {
     } finally {
       setShowDeleteModal(false);
       setCategoryToDelete(null);
+// =======
+//   const handleDelete = async (id) => {
+//     if (window.confirm('Are you sure you want to delete this category?')) {
+//       try {
+//         await axios.delete(`http://localhost:4000/api/category/delete/${id}`, {
+//           headers: { Authorization: `Bearer ${token}` },
+//         });
+//         toast.success('Category deleted successfully');
+//         fetchCategories();
+//       } catch (error) {
+//         toast.error('Failed to delete category');
+//       }
+// >>>>>>> 976d0548e758fc8d51cf6cc251f59710507395ae
     }
   };
 
   const resetForm = () => {
     setFormData({
       categoryName: '',
+
       image: null
+
+
     });
     setPreviewImage(null);
     setIsEditing(false);
     setEditingId(null);
   };
 
-  const filteredCategories = categories.filter(category =>
+
+  const filteredCategories = categories.filter((category) =>
+
     category.categoryName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -152,7 +198,10 @@ const CategoryManagement = () => {
     <div className="p-4 md:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-1">
+
+        
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
                 {isEditing ? 'Edit Category' : 'Add New Category'}
@@ -205,7 +254,15 @@ const CategoryManagement = () => {
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-2">
+
+         
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="lg:col-span-2"
+          >
+
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
               <div className="mb-6">
                 <input
@@ -234,7 +291,9 @@ const CategoryManagement = () => {
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                     {filteredCategories.map((category) => (
+
                       <tr key={category._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+
                         <td className="px-4 py-4 whitespace-nowrap">
                           <img
                             src={`http://localhost:4000${category.image}`}
@@ -271,6 +330,7 @@ const CategoryManagement = () => {
         </div>
       </div>
 
+
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -294,9 +354,11 @@ const CategoryManagement = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };
 
 export default CategoryManagement;
+
 

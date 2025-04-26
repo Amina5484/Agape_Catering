@@ -21,23 +21,26 @@ import PaymentSuccess from './pages/PaymentSuccess/PaymentSuccess';
 import StoreContextProvider, { useStore } from './context/StoreContext';
 import CustomerProfile from './customer/CustomerProfile';
 import CustomerOrders from './pages/Orders/Orders';
+import OrderDetails from './pages/OrderDetails/OrderDetails';
 
 // Chef Imports
 import ChefDashboard from './chef/ChefDashboard';
-import OrderManagement from './components/chef/OrderManagement';
 import InventoryManagement from './components/chef/InventoryManagement';
 import ChefProfile from './chef/ChefProfile';
+import ChefOrderManagement from './components/chef/ChefOrderManagement';
+import ChefHome from './chef/ChefHome';
+import Schedule from './chef/Schedule';
 
 // Manager Imports
 import ManagerSidebar from './manager/managerSidebar/ManagerSidebar';
 import ManagerNavbar from './manager/managerNavbar/Navbar';
+import OrderManagement from './manager/OrderManagement';
 import Add from './pages/Add/Add';
 import List from './pages/List/List';
 import Orders from './pages/Orders/Orders';
 import ManagerHome from './manager/ManagerHome/ManagerHome';
 import ViewFeedback from './manager/viewFeedback';
 import GenerateReport from './manager/GenerateReport';
-import ScheduleManagement from './manager/ScheduleManagement';
 import MenuManagement from './manager/MenuManagement';
 import StockManagement from './manager/StockManagement';
 import CategoryManagement from './manager/CategoryManagement';
@@ -93,8 +96,9 @@ const AppContent = () => {
   return (
     <>
       <div
-        className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'
-          }`}
+        className={`min-h-screen transition-colors duration-300 ${
+          darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'
+        }`}
       >
         <ToastContainer
           position="top-right"
@@ -177,8 +181,10 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           >
-            <Route index element={<OrderManagement />} />
-            <Route path="orders" element={<OrderManagement />} />
+            <Route index element={<ChefHome />} />
+            <Route path="orders" element={<ChefOrderManagement />} />
+            <Route path="schedule" element={<Schedule />} />
+            <Route path="orders/:orderId" element={<OrderDetails />} />
             <Route path="stock" element={<InventoryManagement />} />
             <Route path="profile" element={<ChefProfile />} />
           </Route>
@@ -201,7 +207,6 @@ const AppContent = () => {
             <Route path="profile" element={<CustomerProfile />} />
             <Route path="stock" element={<StockManagement />} />
             <Route path="generate-report" element={<GenerateReport />} />
-            <Route path="schedule" element={<ScheduleManagement />} />
             <Route path="feedback" element={<ViewFeedback />} />
             <Route path="menu" element={<MenuManagement />} />
             <Route path="categories" element={<CategoryManagement />} />
@@ -215,7 +220,7 @@ const AppContent = () => {
             path="/categories"
             element={
               <div className="pt-16 dark:bg-gray-900 transition-colors duration-300">
-                <Explore category="All" setCategory={() => { }} />
+                <Explore category="All" setCategory={() => {}} />
               </div>
             }
           />
@@ -223,6 +228,7 @@ const AppContent = () => {
           <Route path="/view-feedback" element={<ViewFeedback />} />
           <Route path="/contact" element={<Footer />} />
           <Route path="/place-order" element={<PlaceOrder />} />
+          <Route path="/order-details/:orderId" element={<OrderDetails />} />
 
           <Route
             path="/customer/orders"

@@ -12,12 +12,15 @@ import {
   getStock,
   acceptOrder,
   assignSchedule,
+  updateSchedule,
+  deleteSchedule,
   updateOrderStatus,
   viewCustomerLocation,
   viewFeedback,
   generateReport,
   getSchedule,
   listNewOrders,
+  updateOrderScheduleStatus
 } from '../controllers/cateringManagerController.js';
 import { upload } from '../middleware/multer.js';
 import order from '../models/orderModel.js';
@@ -26,6 +29,7 @@ import { sendEmail } from '../utils/sendEmail.js';
 import orderSecondPaymentEmailHTML from '../email_templates/orderSecondPaymentEmailHTML.js';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import Schedule from '../models/schedule.js';
 
 // Load environment variables
 dotenv.config();
@@ -232,7 +236,9 @@ catering_router.delete('/stock/delete/:id', deleteStockItem);
  *       200:
  *         description: Order accepted
  */
-catering_router.post('/order/accept/:orderId', acceptOrder);
+catering_router.post('/order/accept/:orderId', (req, res) => {
+  acceptOrder(req, res);
+});
 
 /**
  * @swagger
@@ -250,10 +256,15 @@ catering_router.post('/order/accept/:orderId', acceptOrder);
  *       200:
  *         description: Order status updated
  */
-catering_router.put('/order/update-status/:orderId', updateOrderStatus);
+catering_router.put('/order/update-status/:orderId', (req, res) => {
+  console.log('PUT /order/update-status route called with body:', req.body);
+  updateOrderStatus(req, res);
+});
 
 // Schedule Management
 catering_router.post('/schedule/assign', assignSchedule);
+catering_router.put('/schedule/update/:id', updateSchedule);
+catering_router.put('/schedule/delete/:id', deleteSchedule);
 catering_router.get('/schedule', getSchedule);
 
 // Customer Location
@@ -268,7 +279,9 @@ catering_router.get('/report', generateReport);
 // Get all orders
 catering_router.get('/orders', async (req, res) => {
   try {
-    console.log('=============================================================================');
+    console.log(
+      '============================================================================='
+    );
     console.log('Fetching orders...');
     // console.log('Request headers:', req.headers);
     // console.log('User:', req.user);
@@ -286,7 +299,8 @@ catering_router.get('/orders', async (req, res) => {
     //     .json({ message: 'You do not have permission to view orders' });
     // }
 
-    const orders = await order.find()
+    const orders = await order
+      .find()
       .sort({ orderedDate: -1 })
       .populate({
         path: 'userId',
@@ -310,28 +324,74 @@ catering_router.get('/orders', async (req, res) => {
   }
 });
 
-catering_router.post('/order/update-status/:orderId', async (req, res) => {
-  console.log("called")
+// Get order details by ID for manager
+catering_router.get('/order/:orderId', async (req, res) => {
   try {
     const { orderId } = req.params;
-    const { status } = req.body;
+
+    const orderDetails = await order
+      .findById(orderId)
+      .populate({
+        path: 'userId',
+        select: 'name email phone',
+      })
+      .populate({
+        path: 'menuItems.item',
+        select: 'name price image description',
+      });
+
+    if (!orderDetails) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.status(200).json(orderDetails);
+  } catch (error) {
+    console.error('Error fetching order details:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
+catering_router.post('/order/update-status/:orderId', async (req, res) => {
+  // console.log('POST /order/update-status route called with body:', req.body);
+  try {
+    const { orderId } = req.params;
+    const {
+      status,
+      notifyCustomer,
+      customerEmail,
+      customerName,
+      customerPhone,
+      message,
+    } = req.body;
 
     // Validate the status
-    const validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'delivered'];
-    if (!validStatuses.includes(status)) {
+    const validStatuses = [
+      'pending',
+      'confirmed',
+      'preparing',
+      'ready',
+      'delivered',
+      'cancelled',
+    ];
+
+    const normalizedStatus = status.toLowerCase();
+    if (!validStatuses.includes(normalizedStatus)) {
       return res.status(400).json({ message: 'Invalid order status' });
     }
 
     // Only trigger payment email when status is set to 'ready'
-    if (status === 'ready') {
+    if (normalizedStatus === 'ready') {
       let orderData;
       try {
-        orderData = await order.findById(orderId).populate('menuItems.item');;
+        orderData = await order.findById(orderId).populate('menuItems.item');
         if (!orderData) {
           return res.status(404).json({ message: 'Order not found' });
         }
       } catch (dbErr) {
-        return res.status(500).json({ message: 'Error fetching order from database', error: dbErr.message });
+        return res.status(500).json({
+          message: 'Error fetching order from database',
+          error: dbErr.message,
+        });
       }
 
       let user;
@@ -342,9 +402,12 @@ catering_router.post('/order/update-status/:orderId', async (req, res) => {
           return res.status(404).json({ message: 'User not found' });
         }
       } catch (userErr) {
-        return res.status(500).json({ message: 'Error fetching user from database', error: userErr.message });
+        return res.status(500).json({
+          message: 'Error fetching user from database',
+          error: userErr.message,
+        });
       }
-      console.log('User found:', user);
+      // console.log('User found:', user);
 
       const chapaPaymentData = {
         amount: orderData.totalAmount - orderData.paidAmount,
@@ -371,85 +434,125 @@ catering_router.post('/order/update-status/:orderId', async (req, res) => {
           chapaPaymentData,
           {
             headers: {
-              Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}`,
+              Authorization: `Bearer ${CHAPA_SECRET_KEY}`,
               'Content-Type': 'application/json',
             },
           }
         );
-        console.log(chapaResponse);
 
-        const paymentUrl = chapaResponse.data?.data?.checkout_url;
-        if (!paymentUrl) {
-          throw new Error('Payment URL not received from Chapa');
-        }
-        const order_date = new Date(orderData.createdAt).toLocaleString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: true,
-        });
+      //   console.log(chapaResponse);
 
-        const remaning_amount = orderData.totalAmount - orderData.paidAmount;
-        try {
-          console.log(
-            user.name,
-            orderId,
-            new Date(orderData.createdAt).toLocaleString(), // Convert to human-readable date and time
-            orderData.menuItems,
-            orderData.totalAmount,
-            orderData.paidAmount,
-            orderData.totalAmount - orderData.paidAmount,
-            paymentUrl
-          );
-          await sendEmail({
-            to: user.email,
-            subject: 'Your Order is Ready for Pickup',
-            html: orderSecondPaymentEmailHTML(
-              user.name,
-              orderId,
-              order_date,
-              orderData.menuItems,
-              orderData.totalAmount,
-              orderData.paidAmount,
-              remaning_amount,
-              paymentUrl
-            ),
-          });
-          console.log('Email sent successfully');
-        } catch (emailError) {
-          console.error('Failed to send email:', emailError.message);
-          // Not throwing to allow order status update to proceed
-        }
-      } catch (chapaErr) {
-        return res.status(500).json({ message: 'Chapa payment initialization failed', error: chapaErr.message });
+      //   const paymentUrl = chapaResponse.data?.data?.checkout_url;
+      //   if (!paymentUrl) {
+      //     throw new Error('Payment URL not received from Chapa');
+      //   }
+      //   const order_date = new Date(orderData.createdAt).toLocaleString('en-US', {
+      //     year: 'numeric',
+      //     month: 'long',
+      //     day: 'numeric',
+      //     hour: '2-digit',
+      //     minute: '2-digit',
+      //     second: '2-digit',
+      //     hour12: true,
+      //   });
+
+      //   const remaning_amount = orderData.totalAmount - orderData.paidAmount;
+      //   try {
+      //     console.log(
+      //       user.name,
+      //       orderId,
+      //       new Date(orderData.createdAt).toLocaleString(), // Convert to human-readable date and time
+      //       orderData.menuItems,
+      //       orderData.totalAmount,
+      //       orderData.paidAmount,
+      //       orderData.totalAmount - orderData.paidAmount,
+      //       paymentUrl
+      //     );
+      //     await sendEmail({
+      //       to: user.email,
+      //       subject: 'Your Order is Ready for Pickup',
+      //       html: orderSecondPaymentEmailHTML(
+      //         user.name,
+      //         orderId,
+      //         order_date,
+      //         orderData.menuItems,
+      //         orderData.totalAmount,
+      //         orderData.paidAmount,
+      //         remaning_amount,
+      //         paymentUrl
+      //       ),
+      //     });
+      //     console.log('Email sent successfully');
+      //   } catch (emailError) {
+      //     console.error('Failed to send email:', emailError.message);
+      //     // Not throwing to allow order status update to proceed
+      //   }
+      // } catch (chapaErr) {
+      //   return res.status(500).json({ message: 'Chapa payment initialization failed', error: chapaErr.message });
+
+
+        res.status(200).json(chapaResponse.data);
+      } catch (error) {
+        console.error('Error initializing payment:', error);
+        res.status(500).json({ message: 'Server Error', error: error.message });
+
       }
+    } else {
+      res.status(200).json({ message: 'Payment email not triggered' });
     }
-
-    // Update order status
-    let updatedOrder;
-    try {
-      updatedOrder = await order.findByIdAndUpdate(
-        orderId,
-        { orderStatus: status },
-        { new: true }
-      );
-    } catch (updateErr) {
-      return res.status(500).json({ message: 'Error updating order status', error: updateErr.message });
-    }
-
-    if (!updatedOrder) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-
-    res.status(200).json({ message: 'Order status updated successfully', order: updatedOrder });
-
   } catch (error) {
-    console.error('Unhandled server error:', error);
-    res.status(500).json({ message: 'Unexpected Server Error', error: error.message });
+    console.error('Error updating order status:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
   }
 });
+
+// Endpoint for chef to get their schedules
+/**
+ * @swagger
+ * /api/catering/chef/schedules:
+ *   get:
+ *     summary: Get schedules for the logged-in chef
+ *     tags: [Chef Management]
+ *     responses:
+ *       200:
+ *         description: List of schedules assigned to the chef
+ */
+catering_router.get('/chef/schedules', protect, async (req, res) => {
+  try {
+    console.log('Fetching schedules for chef ID:', req.user._id);
+
+    // Find all schedules assigned to the current chef
+    const schedules = await Schedule.find({ chefId: req.user._id })
+      .populate({
+        path: 'orders',
+        populate: {
+          path: 'menuItems.item',
+          model: 'Menu',
+        },
+      })
+      .sort({ date: 1 });
+
+    console.log(`Found ${schedules.length} schedules for chef`);
+    res.status(200).json(schedules);
+  } catch (error) {
+    console.error('Error fetching chef schedules:', error);
+    res.status(500).json({
+      message: 'Error fetching schedules',
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/catering/chef/schedules:
+ *   put:
+ *     summary: update the order status
+ *     tags: [Chef Management]
+ *     responses:
+ *       200:
+ *         description: List of schedules assigned to the chef
+ */
+catering_router.post('/chef/schedules/:scheduleId', protect, updateOrderScheduleStatus);
 
 export default catering_router;

@@ -130,34 +130,14 @@ const ChefDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       <div className="flex">
         {/* Sidebar */}
-        <div className="w-64 bg-white shadow-lg h-screen fixed">
+        <div className="w-64 bg-white shadow-sm h-screen fixed">
           <div className="p-6">
-            <div className="flex items-center justify-center mb-8">
-              <FaUtensils className="text-3xl text-orange-500 mr-2" />
-              <h2 className="text-2xl font-bold text-gray-800">
-                Chef Dashboard
-              </h2>
-            </div>
-
-            {/* User Profile Section */}
-            <div className="mb-8 p-4 bg-orange-50 rounded-lg">
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                  <FaUser className="text-orange-500 text-xl" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900">
-                    {user?.name}
-                  </p>
-                  <p className="text-xs text-gray-500">Chef</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Navigation Menu */}
+            <h2 className="text-2xl font-bold text-gray-800 mb-8">
+              Chef Dashboard
+            </h2>
             <nav className="space-y-2">
               <Link
                 to="/chef"
@@ -172,17 +152,19 @@ const ChefDashboard = () => {
                 <span>Dashboard</span>
               </Link>
 
+             
+
               <Link
-                to="/chef/orders"
-                onClick={() => setActiveMenu('orders')}
+                to="/chef/schedule"
+                onClick={() => setActiveMenu('schedule')}
                 className={`flex items-center p-3 rounded-lg transition-colors ${
-                  activeMenu === 'orders'
+                  activeMenu === 'schedule'
                     ? 'bg-orange-100 text-orange-600'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <FaClipboardList className="mr-3 text-orange-500" />
-                <span>Orders</span>
+                <FaCalendarAlt className="mr-3 text-orange-500" />
+                <span>Schedule</span>
               </Link>
 
               <Link
@@ -199,19 +181,6 @@ const ChefDashboard = () => {
               </Link>
 
               <Link
-                to="/chef/schedule"
-                onClick={() => setActiveMenu('schedule')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${
-                  activeMenu === 'schedule'
-                    ? 'bg-orange-100 text-orange-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <FaCalendarAlt className="mr-3 text-orange-500" />
-                <span>Schedule</span>
-              </Link>
-
-              <Link
                 to="/chef/profile"
                 onClick={() => setActiveMenu('profile')}
                 className={`flex items-center p-3 rounded-lg transition-colors ${
@@ -220,7 +189,7 @@ const ChefDashboard = () => {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <FaChartLine className="mr-3 text-orange-500" />
+                <FaUser className="mr-3 text-orange-500" />
                 <span>Profile</span>
               </Link>
             </nav>
