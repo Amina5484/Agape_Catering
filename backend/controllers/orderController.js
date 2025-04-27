@@ -425,7 +425,7 @@ export const updateOrderStatus = async (req, res) => {
               // Default template for any other status
               emailHTML = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
-                  <h2 style="color: #5c6bc0;">Order Status Update</h2>
+                  <h2 style="color: #FFEE00D0;">Order Status Update</h2>
                   <p>Hello ${userName},</p>
                   <p>${statusMessage}</p>
                   <p>Thank you for choosing Agape Catering!</p>
