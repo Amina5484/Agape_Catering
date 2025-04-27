@@ -675,6 +675,15 @@ export const updateOrderScheduleStatus = async (req, res) => {
       return res.status(404).json({ message: 'Schedule not found' });
     }
 
+    const orderId = scheduleStatus.orders;
+    const orderToUpdate = await order.findById(orderId);
+    if (!orderToUpdate) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    // Update the order status
+    orderToUpdate.orderStatus = status;
+
+
     // send email to catering manager
     const cateringManagers = await userModel.find({ role: 'Catering Manager' });
 
@@ -696,6 +705,9 @@ export const updateOrderScheduleStatus = async (req, res) => {
               </div>
             `,
           });
+          console.log(
+            `Notification email sent to Catering Manager: ${manager.email}`
+          );
         }
       }
     }
