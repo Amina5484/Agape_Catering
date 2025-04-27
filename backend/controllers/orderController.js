@@ -69,7 +69,7 @@ export const createOrder = async (req, res) => {
         menuItems: orderItems,
         totalAmount: total,
         paidAmount: 0, // Will be updated after payment
-        paymentStatus: 'pending',
+        paymentStatus: 'paid',
         orderStatus: 'pending',
         deliveryDateValue: DeliveryDate,
         specialInstructions:specialInstructions,
