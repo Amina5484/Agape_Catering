@@ -30,10 +30,10 @@ const Footer = () => {
               className="w-8 h-8 text-orange-400 hover:text-white transition-transform transform hover:scale-110 cursor-pointer"
               title="Email"
             />
-            <FaFacebook
+            {/* <FaFacebook
               className="w-8 h-8 text-orange-400 hover:text-white transition-transform transform hover:scale-110 cursor-pointer"
               title="Facebook"
-            />
+            /> */}
             <a
               href="https://www.tiktok.com/@agapecatering?_t=ZM-8tnaQeDp6DF&_r=1"
               target="_blank"

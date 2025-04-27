@@ -15,46 +15,46 @@ export const getMenu = async (req, res) => {
     }
 };
 
-// STOCK MANAGEMENT
-export const addStockItem = async (req, res) => {
-    try {
-        const { name, quantity, unit } = req.body;
-        const stockItem = new Stock({ name, quantity, unit });
-        await stockItem.save();
-        res.status(201).json({ message: "Stock item added", stockItem });
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error });
-    }
-};
+// // STOCK MANAGEMENT
+// export const addStockItem = async (req, res) => {
+//     try {
+//         const { name, quantity, unit } = req.body;
+//         const stockItem = new Stock({ name, quantity, unit });
+//         await stockItem.save();
+//         res.status(201).json({ message: "Stock item added", stockItem });
+//     } catch (error) {
+//         res.status(500).json({ message: "Server Error", error });
+//     }
+// };
 
-export const updateStockItem = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updatedStock = await Stock.findByIdAndUpdate(id, req.body, { new: true });
-        res.status(200).json({ message: "Stock updated", updatedStock });
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error });
-    }
-};
+// export const updateStockItem = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const updatedStock = await Stock.findByIdAndUpdate(id, req.body, { new: true });
+//         res.status(200).json({ message: "Stock updated", updatedStock });
+//     } catch (error) {
+//         res.status(500).json({ message: "Server Error", error });
+//     }
+// };
 
-export const deleteStockItem = async (req, res) => {
-    try {
-        const { id } = req.params;
-        await Stock.findByIdAndDelete(id);
-        res.status(200).json({ message: "Stock item deleted" });
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error });
-    }
-};
+// export const deleteStockItem = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         await Stock.findByIdAndDelete(id);
+//         res.status(200).json({ message: "Stock item deleted" });
+//     } catch (error) {
+//         res.status(500).json({ message: "Server Error", error });
+//     }
+// };
 
-export const getStock = async (req, res) => {
-    try {
-        const stock = await Stock.find();
-        res.status(200).json(stock);
-    } catch (error) {
-        res.status(500).json({ message: "Server Error", error });
-    }
-};
+// export const getStock = async (req, res) => {
+//     try {
+//         const stock = await Stock.find();
+//         res.status(200).json(stock);
+//     } catch (error) {
+//         res.status(500).json({ message: "Server Error", error });
+//     }
+// };
 
 // export const getCurrentOrder = async (req, res) => {
 //     console.log(req.user._id);

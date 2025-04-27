@@ -127,7 +127,7 @@ const StoreContextProvider = (props) => {
   // Logout function
   const logout = () => {
     resetLoginState();
-    toast.success('Logged out successfully');
+    // toast.success('Logged out successfully');
     window.location.href = '/';
   };
 

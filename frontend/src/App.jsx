@@ -56,7 +56,7 @@ import EditStaff from './SystemAdmin/EditStaff';
 import AdminHome from './SystemAdmin/AdminHome';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import MenuDisplay from './components/MenuDisplay/MenuDisplay';
-import BackupManagement from './components/BackupManagement';
+//import BackupManagement from './components/BackupManagement';
 import ProfileManagement from './SystemAdmin/ProfileManagement';
 
 // Remove unused placeholder components
@@ -178,7 +178,7 @@ const AppContent = () => {
               element={<UserManagement url={url} />}
             />
             <Route path="view-user" element={<ViewUser />} />
-            <Route path="backup" element={<BackupManagement />} />
+          
             <Route path="profile" element={<ProfileManagement />} />
           </Route>
 

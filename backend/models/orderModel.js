@@ -46,7 +46,7 @@ const orderSchema = new mongoose.Schema({
   },
   typeOfOrder: {
     type: String,
-    enum: ['urgent', 'scheduled']
+    enum: ['urgent', 'scheduled'],
   },
   numberOfGuest: {
     type: Number,
@@ -58,9 +58,7 @@ const orderSchema = new mongoose.Schema({
     default: '',
   },
   // Fields for chef assignment
- 
 
- 
   status: {
     type: String,
     enum: ['pending', 'in-progress', 'completed', 'cancelled'],

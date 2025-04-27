@@ -799,7 +799,7 @@ const OrderManagement = () => {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-lg shadow-xl">
-          <div className="sticky top-0 bg-blue-600 text-white px-6 py-4 flex justify-between items-center">
+          <div className="sticky top-0 bg-orange-400 text-white px-6 py-4 flex justify-between items-center">
             <h3 className="text-xl font-bold">Order Details</h3>
             <button
               onClick={onClose}
@@ -1024,7 +1024,7 @@ const OrderManagement = () => {
             <div className="mb-6 bg-gray-50 p-4 rounded-lg">
               <h3 className="font-semibold mb-2 flex items-center justify-between">
                 Payment Information
-                <span
+                {/* <span
                   className={`px-2 py-1 text-xs rounded-full ${
                     order.paymentStatus === 'paid'
                       ? 'bg-green-100 text-green-800'
@@ -1038,7 +1038,7 @@ const OrderManagement = () => {
                     : order.paymentStatus === 'partially_paid'
                     ? 'PARTIALLY PAID'
                     : 'UNPAID'}
-                </span>
+                </span> */}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <p>
@@ -1100,7 +1100,7 @@ const OrderManagement = () => {
               {/* Payment Record Button - Only show if not fully paid */}
               {order.paymentStatus !== 'paid' && (
                 <div className="mt-4">
-                  <button
+                  {/* <button
                     onClick={() => {
                       setShowPaymentModal(true);
                       setSelectedOrder(order);
@@ -1123,7 +1123,7 @@ const OrderManagement = () => {
                       />
                     </svg>
                     Record Payment
-                  </button>
+                  </button> */}
                 </div>
               )}
 

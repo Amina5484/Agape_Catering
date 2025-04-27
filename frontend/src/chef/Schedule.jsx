@@ -67,8 +67,8 @@ const Schedule = () => {
       }
 
       // Update the order status using the correct endpoint
-      await axios.put(
-        `http://localhost:4000/api/order/${schedule.orders._id}/status`,
+      await axios.post(
+        `http://localhost:4000/api/catering/chef/schedules/${scheduleId}`,
         { status: newStatus },
         {
           headers: {

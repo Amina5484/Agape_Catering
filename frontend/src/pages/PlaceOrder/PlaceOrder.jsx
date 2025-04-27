@@ -365,7 +365,7 @@ const PlaceOrder = () => {
             </div>
 
             {/* Special Instructions */}
-            {/* <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700">
                 Special Instructions
               </label>
@@ -377,7 +377,7 @@ const PlaceOrder = () => {
                 rows="3"
                 className="border p-2 rounded-md w-full text-green-600"
               ></textarea>
-            </div> */}
+            </div>
 
             {/* Delivery Date */}
             <div>

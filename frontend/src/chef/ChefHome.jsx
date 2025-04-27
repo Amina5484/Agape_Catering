@@ -72,6 +72,8 @@ const ChefHome = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Schedules Card */}
         <div
+
+
           className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer"
           onClick={() => navigate('/chef/schedule')}
         >
@@ -84,9 +86,9 @@ const ChefHome = () => {
                 Schedules
               </h3>
             </div>
-            <span className="text-2xl font-bold text-orange-500">
+            {/* <span className="text-2xl font-bold text-orange-500">
               {stats.schedules}
-            </span>
+            </span> */}
           </div>
           <p className="text-gray-600">View and manage your scheduled orders</p>
         </div>
@@ -105,9 +107,9 @@ const ChefHome = () => {
                 Inventory
               </h3>
             </div>
-            <span className="text-2xl font-bold text-blue-500">
+            {/* <span className="text-2xl font-bold text-blue-500">
               {stats.inventory}
-            </span>
+            </span> */}
           </div>
           <p className="text-gray-600">
             Manage your kitchen inventory and stock levels

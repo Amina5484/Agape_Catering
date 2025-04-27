@@ -137,7 +137,7 @@ const ViewFeedback = () => {
               </button>
 
               <div className="relative">
-                <button
+                {/* <button
                   onClick={() => setShowNotifications(!showNotifications)}
                   className="p-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 transition-colors duration-200 shadow-sm relative"
                 >
@@ -147,7 +147,7 @@ const ViewFeedback = () => {
                       {notifications.length}
                     </span>
                   )}
-                </button>
+                </button> */}
 
                 {showNotifications && (
                   <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-slate-200 z-10">

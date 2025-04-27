@@ -52,7 +52,7 @@ const ChefDashboard = () => {
       });
     } catch (error) {
       console.error('Error fetching user data:', error);
-      toast.error('Failed to load profile data');
+      // toast.error('Failed to load profile data');
     }
   };
 

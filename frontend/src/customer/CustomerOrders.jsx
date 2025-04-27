@@ -48,47 +48,57 @@ const CustomerOrders = () => {
         }
     };
 
-    const fetchCurrentOrders = async () => {
-        try {
-            console.log('Fetching current orders...');
-            const response = await axiosInstance.get('/customer/myorder');
-            console.log('Current orders response:', response.data);
-            const orders = Array.isArray(response.data) ? response.data : [response.data];
-            setCurrentOrders(orders);
+     const fetchCurrentOrders = async () => {
+       try {
+         console.log('Fetching current orders...');
+         const token = localStorage.getItem('token');
 
-            // Fetch menu items for each order
-            orders.forEach(order => {
-                if (order.menuItems?.length > 0) {
-                    fetchMenuItems(order);
-                }
-            });
-        } catch (error) {
-            console.error('Error fetching current orders:', error);
-            toast.error('Failed to load current orders');
-        }
-    };
+         const response = await axiosInstance.get('/customer/myorder/', {
+           headers: {
+             Authorization: `Bearer ${token}`,
+           },
+         });
 
-    const fetchOrderHistory = async () => {
-        try {
-            console.log('Fetching order history...');
-            const response = await axiosInstance.get('/customer/myorderhistory');
-            console.log('Order history response:', response.data);
-            const orders = Array.isArray(response.data) ? response.data : [response.data];
-            setOrderHistory(orders);
+         console.log('Current orders response:', response.data);
 
-            // Fetch menu items for each order
-            orders.forEach(order => {
-                if (order.menuItems?.length > 0) {
-                    fetchMenuItems(order);
-                }
-            });
-        } catch (error) {
-            console.error('Error fetching order history:', error);
-            toast.error('Failed to load order history');
-        } finally {
-            setLoading(false);
-        }
-    };
+         const orders = Array.isArray(response.data)
+           ? response.data
+           : [response.data];
+         setCurrentOrders(orders);
+
+         // No need to fetch menu items separately anymore
+       } catch (error) {
+         console.error('Error fetching current orders:', error);
+         toast.error('Failed to load current orders');
+       }
+     };
+
+     const fetchOrderHistory = async () => {
+       try {
+         console.log('Fetching order history...');
+         const token = localStorage.getItem('token');
+
+         const response = await axiosInstance.get('/customer/myorderhistory/', {
+           headers: {
+             Authorization: `Bearer ${token}`,
+           },
+         });
+
+         console.log('Order history response:', response.data);
+
+         const orders = Array.isArray(response.data)
+           ? response.data
+           : [response.data];
+         setOrderHistory(orders);
+
+         // No need to fetch menu items separately anymore
+       } catch (error) {
+         console.error('Error fetching order history:', error);
+         toast.error('Failed to load order history');
+       } finally {
+         setLoading(false);
+       }
+     };
 
     const getStatusIcon = (status) => {
         switch (status.toLowerCase()) {

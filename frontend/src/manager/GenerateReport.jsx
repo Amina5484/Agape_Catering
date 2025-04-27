@@ -345,7 +345,7 @@ const GenerateReport = () => {
               </div>
             </div>
           </div>
-
+{/* 
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-purple-100 text-purple-600">
@@ -360,7 +360,7 @@ const GenerateReport = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Charts Section */}
@@ -385,7 +385,7 @@ const GenerateReport = () => {
           </div>
 
           {/* Order Status Pie Chart */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          {/* <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
               Order Status Breakdown
             </h3>
@@ -416,7 +416,7 @@ const GenerateReport = () => {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Stock Level Chart */}
