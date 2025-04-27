@@ -187,10 +187,11 @@ export const createOrder = async (req, res) => {
             .status(500)
             .json({ message: 'Something went wrong.', error: error.message });
         }
-      return res.status(2000).json({
-        message:
-          'Scheduled delivery date must be at least 14 days in the future.',
-      });
+      return res.status(200).json({ message: 'Order placed successfully. Please pay 100% to confirm.',
+      orderId: newOrder._id,
+      amountToPay: amountToPayNow,
+      payment_url: checkout_url,
+    });
     }
     const cart = await Cart.findOne({ userId }).populate('items.menuItem');
     if (!cart || cart.items.length === 0) {
