@@ -20,7 +20,7 @@ import PlaceOrder from './pages/PlaceOrder/PlaceOrder';
 import PaymentSuccess from './pages/PaymentSuccess/PaymentSuccess';
 import StoreContextProvider, { useStore } from './context/StoreContext';
 import CustomerProfile from './customer/CustomerProfile';
-import CustomerOrders from './pages/Orders/Orders';
+import CustomerOrders from './customer/CustomerOrders';
 import OrderDetails from './pages/OrderDetails/OrderDetails';
 
 // Chef Imports

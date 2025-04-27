@@ -16,7 +16,7 @@ import {
 const ChefDashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [tasks, setTasks] = useState([]);
+  // const [tasks, setTasks] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -32,7 +32,7 @@ const ChefDashboard = () => {
 
   useEffect(() => {
     fetchUserData();
-    fetchTasks();
+    // fetchTasks(); // Removing this line since the function is commented out
     fetchSchedules();
   }, []);
 
@@ -56,15 +56,15 @@ const ChefDashboard = () => {
     }
   };
 
-  const fetchTasks = async () => {
-    try {
-      const response = await axiosInstance.get('/chef/tasks');
-      setTasks(response.data);
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
-      toast.error('Failed to load tasks');
-    }
-  };
+  // const fetchTasks = async () => {
+  //   try {
+  //     const response = await axiosInstance.get('/chef/tasks');
+  //     setTasks(response.data);
+  //   } catch (error) {
+  //     console.error('Error fetching tasks:', error);
+  //     toast.error('Failed to load tasks');
+  //   }
+  // };
 
   const fetchSchedules = async () => {
     try {
@@ -78,41 +78,41 @@ const ChefDashboard = () => {
     }
   };
 
-  const handleProfileUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      const formData = new FormData();
-      formData.append('firstName', profileData.firstName);
-      formData.append('lastName', profileData.lastName);
-      formData.append('email', profileData.email);
-      formData.append('gender', profileData.gender);
-      if (profileData.currentPassword && profileData.newPassword) {
-        formData.append('currentPassword', profileData.currentPassword);
-        formData.append('newPassword', profileData.newPassword);
-      }
-      if (profileData.photo) {
-        formData.append('photo', profileData.photo);
-      }
+  // const handleProfileUpdate = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append('firstName', profileData.firstName);
+  //     formData.append('lastName', profileData.lastName);
+  //     formData.append('email', profileData.email);
+  //     formData.append('gender', profileData.gender);
+  //     if (profileData.currentPassword && profileData.newPassword) {
+  //       formData.append('currentPassword', profileData.currentPassword);
+  //       formData.append('newPassword', profileData.newPassword);
+  //     }
+  //     if (profileData.photo) {
+  //       formData.append('photo', profileData.photo);
+  //     }
 
-      await axiosInstance.put('/user/profile', formData);
-      toast.success('Profile updated successfully');
-      fetchUserData();
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
-    }
-  };
+  //     await axiosInstance.put('/user/profile', formData);
+  //     toast.success('Profile updated successfully');
+  //     fetchUserData();
+  //   } catch (error) {
+  //     console.error('Error updating profile:', error);
+  //     toast.error('Failed to update profile');
+  //   }
+  // };
 
-  const handleTaskUpdate = async (taskId, status) => {
-    try {
-      await axiosInstance.put(`/chef/tasks/${taskId}`, { status });
-      toast.success('Task updated successfully');
-      fetchTasks();
-    } catch (error) {
-      console.error('Error updating task:', error);
-      toast.error('Failed to update task');
-    }
-  };
+  // const handleTaskUpdate = async (taskId, status) => {
+  //   try {
+  //     await axiosInstance.put(`/chef/tasks/${taskId}`, { status });
+  //     toast.success('Task updated successfully');
+  //     fetchTasks();
+  //   } catch (error) {
+  //     console.error('Error updating task:', error);
+  //     toast.error('Failed to update task');
+  //   }
+  // };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -142,26 +142,24 @@ const ChefDashboard = () => {
               <Link
                 to="/chef"
                 onClick={() => setActiveMenu('dashboard')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${
-                  activeMenu === 'dashboard'
-                    ? 'bg-orange-100 text-orange-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'dashboard'
+                  ? 'bg-orange-100 text-orange-600'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <FaHome className="mr-3 text-orange-500" />
                 <span>Dashboard</span>
               </Link>
 
-             
+
 
               <Link
                 to="/chef/schedule"
                 onClick={() => setActiveMenu('schedule')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${
-                  activeMenu === 'schedule'
-                    ? 'bg-orange-100 text-orange-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'schedule'
+                  ? 'bg-orange-100 text-orange-600'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <FaCalendarAlt className="mr-3 text-orange-500" />
                 <span>Schedule</span>
@@ -170,24 +168,22 @@ const ChefDashboard = () => {
               <Link
                 to="/chef/stock"
                 onClick={() => setActiveMenu('stock')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${
-                  activeMenu === 'stock'
-                    ? 'bg-orange-100 text-orange-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'stock'
+                  ? 'bg-orange-100 text-orange-600'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <FaBoxes className="mr-3 text-orange-500" />
                 <span>Inventory</span>
               </Link>
 
               <Link
-                to="/chef/profile"
+                to="/customer/profile"
                 onClick={() => setActiveMenu('profile')}
-                className={`flex items-center p-3 rounded-lg transition-colors ${
-                  activeMenu === 'profile'
-                    ? 'bg-orange-100 text-orange-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'profile'
+                  ? 'bg-orange-100 text-orange-600'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
                 <FaUser className="mr-3 text-orange-500" />
                 <span>Profile</span>

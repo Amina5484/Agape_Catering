@@ -17,7 +17,9 @@ const CustomerProfile = () => {
     newPassword: '',
     confirmPassword: '',
   });
+
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -32,13 +34,10 @@ const CustomerProfile = () => {
           email,
           phone,
           gender,
-         
         }));
       } catch (error) {
         console.error('Error fetching profile:', error);
-        if (error.response?.status !== 200) {
-          toast.error('Failed to load profile');
-        }
+        toast.error('Failed to load profile');
       } finally {
         setLoading(false);
       }
@@ -69,189 +68,151 @@ const CustomerProfile = () => {
         toast.error('Current password is required to change password');
         return;
       }
+      if (user.newPassword.length < 6) {
+        toast.error('New password must be at least 6 characters long');
+        return;
+      }
     }
-
-    const formData = new FormData();
-
-    // Add basic info
-    formData.append('firstName', user.firstName);
-    formData.append('lastName', user.lastName);
-    formData.append('email', user.email);
-    formData.append('gender', user.gender);
-
-    // Add password fields if changing password
-    if (user.currentPassword) {
-      formData.append('currentPassword', user.currentPassword);
-    }
-    if (user.newPassword) {
-      formData.append('newPassword', user.newPassword);
-    }
-
-    // Add photo if selected
- 
 
     try {
-      const response = await axiosInstance.put('/user/profile', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      setSaving(true);
 
-      if (response.data.success) {
+      // Handle password change if requested
+      if (user.currentPassword && user.newPassword) {
+        const passwordData = {
+          currentPassword: user.currentPassword,
+          newPassword: user.newPassword,
+        };
+
+        try {
+          const passwordResponse = await axiosInstance.post('/auth/change-password', passwordData);
+
+          if (passwordResponse.data.message === 'Password changed successfully') {
+            toast.success('Password updated successfully');
+
+            // Clear password fields
+            setUser((prev) => ({
+              ...prev,
+              currentPassword: '',
+              newPassword: '',
+              confirmPassword: '',
+            }));
+          }
+        } catch (passwordError) {
+          console.error('Error changing password:', passwordError);
+          const errorMessage = passwordError.response?.data?.message || 'Failed to change password';
+          toast.error(errorMessage);
+          return;
+        }
+      }
+
+      // Update profile info
+      const profileData = {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        gender: user.gender,
+      };
+
+      //const profileResponse = await axiosInstance.put('/user/update-profile', profileData);
+
+      if (profileResponse.data.success) {
         toast.success('Profile updated successfully');
-        // Clear password fields
-        setUser((prev) => ({
-          ...prev,
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: '',
-        }));
-      
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      const errorMessage =
-        error.response?.data?.message || 'Failed to update profile';
+      const errorMessage = error.response?.data?.message || 'Failed to update profile';
       toast.error(errorMessage);
+    } finally {
+      setSaving(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-teal-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white shadow-xl rounded-lg p-8">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Profile Settings
-            </h2>
+            <h2 className="text-3xl font-extrabold text-gray-900">Profile Settings</h2>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Personal Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={user.firstName}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                  required
-                />
-              </div>
+              <InputField label="First Name" name="firstName" value={user.firstName} onChange={handleChange} required />
+              <InputField label="Last Name" name="lastName" value={user.lastName} onChange={handleChange} required />
+              <InputField label="Email" name="email" type="email" value={user.email} onChange={handleChange} required />
+              <InputField label="Phone" name="phone" type="tel" value={user.phone} onChange={handleChange} required />
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={user.lastName}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={user.email}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Phone
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={user.phone}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Gender
-                </label>
-                <input
+                <label className="block text-sm font-medium text-gray-700">Gender</label>
+                <select
                   name="gender"
                   value={user.gender}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500 focus:border-teal-500"
                   required
+                >
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Password Section */}
+            <div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Change Password</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <PasswordInput
+                  name="currentPassword"
+                  value={user.currentPassword}
+                  onChange={handleChange}
+                  label="Current Password"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500 focus:border-teal-500"
                 />
-                 
-              </div>
-
-          
-            </div>
-
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                Change Password
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <PasswordInput
-                    name="currentPassword"
-                    value={user.currentPassword}
-                    onChange={handleChange}
-                    label="Current Password"
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                  />
-                </div>
-
-                <div>
-                  <PasswordInput
-                    name="newPassword"
-                    value={user.newPassword}
-                    onChange={handleChange}
-                    label="New Password"
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                  />
-                </div>
-
-                <div>
-                  <PasswordInput
-                    name="confirmPassword"
-                    value={user.confirmPassword}
-                    onChange={handleChange}
-                    label="Confirm New Password"
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                  />
-                </div>
+                <PasswordInput
+                  name="newPassword"
+                  value={user.newPassword}
+                  onChange={handleChange}
+                  label="New Password"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500 focus:border-teal-500"
+                />
+                <PasswordInput
+                  name="confirmPassword"
+                  value={user.confirmPassword}
+                  onChange={handleChange}
+                  label="Confirm New Password"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500 focus:border-teal-500"
+                />
               </div>
             </div>
 
-            <div className="mt-8">
+            {/* Submit Button */}
+            <div className="pt-6">
               <button
                 type="submit"
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                disabled={saving}
+                className="w-full flex justify-center items-center bg-orange-400 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-lg transition disabled:bg-teal-400"
               >
-                Update Profile
+                {saving ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin h-5 w-5 mr-3 border-t-2 border-white rounded-full" viewBox="0 0 24 24" />
+                    Saving...
+                  </span>
+                ) : (
+                  'Update Profile'
+                )}
               </button>
             </div>
           </form>
@@ -261,4 +222,20 @@ const CustomerProfile = () => {
   );
 };
 
+// Reusable InputField component
+const InputField = ({ label, name, value, onChange, type = "text", required = false }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700">{label}</label>
+    <input
+      type={type}
+      name={name}
+      value={value}
+      onChange={onChange}
+      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-teal-500 focus:border-teal-500"
+      required={required}
+    />
+  </div>
+);
+
 export default CustomerProfile;
+

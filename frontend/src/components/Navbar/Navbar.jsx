@@ -206,15 +206,15 @@ const Navbar = ({ setShowLogin }) => {
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <FaClipboardList className="mr-2" />
-                    Order Status
+                    Order Check
                   </Link>
-                  <Link
+                  {/* <Link
                     to="/customer/order-history"
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <FaHistory className="mr-2" />
                     Order History
-                  </Link>
+                  </Link> */}
                   <Link
                     to="/customer/profile"
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
