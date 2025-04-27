@@ -38,7 +38,160 @@ export const createOrder = async (req, res) => {
           'Scheduled delivery date must be at least 14 days in the future.',
       });
     }
-
+    if (
+      TypeOfOrder === 'urgent'
+    ) {
+      const cart = await Cart.findOne({ userId }).populate('items.menuItem');
+      if (!cart || cart.items.length === 0) {
+        return res.status(400).json({ message: 'Your cart is empty.' });
+      }
+  
+      const total = cart.subtotal;
+      const amountToPayNow = total;
+  
+      const user = await userModel.findById(userId);
+      if (!user) return res.status(404).json({ message: 'User not found.' });
+  
+      const orderItems = cart.items.map((item) => ({
+        item: item.menuItem._id,
+        quantity: item.quantity,
+        price: item.price,
+        totalPrice: item.totalPrice,
+        specialInstructions: item.specialInstructions,
+        deliveryFee: item.deliveryFee,
+      }));
+  
+      // Create the order first
+      const newOrder = new Order({
+        userId,
+        Address,
+        typeOfOrder:TypeOfOrder,
+        menuItems: orderItems,
+        totalAmount: total,
+        paidAmount: 0, // Will be updated after payment
+        paymentStatus: 'paid',
+        orderStatus: 'pending',
+        deliveryDateValue: DeliveryDate,
+        specialInstructions:specialInstructions,
+        numberOfGuest: NumberOfGuest,
+      });
+  
+      await newOrder.save();
+  
+      // Now initialize Chapa payment with the order ID
+      const chapaPaymentData = {
+        amount: amountToPayNow,
+        currency: 'ETB',
+        email: user.email,
+        first_name: user.name || 'User',
+        last_name: '',
+        phone: user.phone || '0911121314',
+        tx_ref: `order_${newOrder._id}_${Date.now()}`,
+        callback_url: `${
+          process.env.FRONTEND_URL || 'http://localhost:3000'
+        }/payment-success`,
+        return_url: `${
+          process.env.FRONTEND_URL || 'http://localhost:3000'
+        }/payment-success`,
+        customization: {
+          title: 'Agape Catering',
+          description: 'Payment for your catering order',
+        },
+        meta: {
+          userId: userId.toString(),
+          orderId: newOrder._id.toString(),
+        },
+      };
+  
+      console.log('Initializing Chapa payment with data:', {
+        ...chapaPaymentData,
+        amount: amountToPayNow,
+        email: user.email,
+      });
+  
+      const chapaResponse = await axios.post(
+        'https://api.chapa.co/v1/transaction/initialize',
+        chapaPaymentData,
+        {
+          headers: {
+            Authorization: `Bearer ${CHAPA_SECRET_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      console.log('Chapa response:', chapaResponse.data);
+  
+      const checkout_url = chapaResponse?.data?.data?.checkout_url;
+      if (!checkout_url) {
+        console.error(
+          'Failed to get checkout URL from Chapa:',
+          chapaResponse.data
+        );
+        throw new Error('Failed to initialize payment');
+      }
+  
+      // Update order with payment information
+      newOrder.paidAmount = amountToPayNow;
+      newOrder.paymentStatus = 'partially_paid';
+      newOrder.paymentHistory = [
+        {
+          recordedBy: userId,
+          amount: amountToPayNow,
+          date: new Date(),
+          transactionId: chapaResponse.data.data.tx_ref || `txn_${Date.now()}`,
+          status: 'success',
+          method: 'chapa',
+          paymentType: 'partial',
+          paymentDescription: 'Initial payment for order',
+        },
+      ];
+  
+      await newOrder.save();
+  
+      // Update user's previous orders
+      user.previousOrders = user.previousOrders || [];
+      user.previousOrders.push({
+        items: orderItems,
+        orderDate: new Date(),
+        totalAmount: total,
+      });
+      await user.save();
+  
+      // Clear cart
+      cart.items = [];
+      cart.status = 'ordered';
+      await cart.save();
+  
+      // Send email notification
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: 'Order Receipt',
+          html: orderReceiptEmailHTML(
+            user.name || 'User',
+            newOrder._id,
+            new Date().toDateString(),
+            orderItems,
+            total,
+            amountToPayNow,
+            total
+          ),
+          });
+        } catch (error) {
+          console.error(
+            'Error creating order:',
+            error.response?.data || error.message
+          );
+          res
+            .status(500)
+            .json({ message: 'Something went wrong.', error: error.message });
+        }
+      return res.status(2000).json({
+        message:
+          'Scheduled delivery date must be at least 14 days in the future.',
+      });
+    }
     const cart = await Cart.findOne({ userId }).populate('items.menuItem');
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: 'Your cart is empty.' });
@@ -425,7 +578,7 @@ export const updateOrderStatus = async (req, res) => {
               // Default template for any other status
               emailHTML = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
-                  <h2 style="color: #5c6bc0;">Order Status Update</h2>
+                  <h2 style="color: #FFEE00D0;">Order Status Update</h2>
                   <p>Hello ${userName},</p>
                   <p>${statusMessage}</p>
                   <p>Thank you for choosing Agape Catering!</p>
