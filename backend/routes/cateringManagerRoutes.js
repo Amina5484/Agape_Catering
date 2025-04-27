@@ -413,7 +413,7 @@ catering_router.get('/chef/schedules', protect, async (req, res) => {
  */
 catering_router.post(
   '/chef/schedules/:scheduleId',
-  protect,
+  // protect,
   updateOrderScheduleStatus
 );
 
