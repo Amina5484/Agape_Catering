@@ -688,7 +688,7 @@ export const updateOrderScheduleStatus = async (req, res) => {
             subject: 'Schedule Status Update',
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
-                <h2 style="color: #5c6bc0;">Schedule Status Updated</h2>
+                <h2 style="color: #DB6403FF;">Schedule Status Updated</h2>
                 <p>Hello ${manager.name || 'Catering Manager'},</p>
                 <p>The status of schedule ID <strong>${scheduleId}</strong> has been updated to <strong>${status}</strong>.</p>
                 <p>Thank you for your attention.</p>
