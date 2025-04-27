@@ -46,8 +46,7 @@ const orderSchema = new mongoose.Schema({
   },
   typeOfOrder: {
     type: String,
-    enum: ['urgent', 'scheduled'],
-    default: 'scheduled',
+    enum: ['urgent', 'scheduled']
   },
   numberOfGuest: {
     type: Number,

@@ -63,14 +63,14 @@ export const createOrder = async (req, res) => {
     const newOrder = new Order({
       userId,
       Address,
-      TypeOfOrder,
+      typeOfOrder:TypeOfOrder,
       menuItems: orderItems,
       totalAmount: total,
       paidAmount: 0, // Will be updated after payment
       paymentStatus: 'pending',
       orderStatus: 'pending',
       deliveryDateValue: DeliveryDate,
-      specialInstructions,
+      specialInstructions:specialInstructions,
       numberOfGuest: NumberOfGuest,
     });
 
