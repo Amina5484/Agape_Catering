@@ -178,7 +178,7 @@ const ChefDashboard = () => {
               </Link>
 
               <Link
-                to="/customer/profile"
+                to="/chef/profile"
                 onClick={() => setActiveMenu('profile')}
                 className={`flex items-center p-3 rounded-lg transition-colors ${activeMenu === 'profile'
                   ? 'bg-orange-100 text-orange-600'

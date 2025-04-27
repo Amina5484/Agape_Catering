@@ -155,6 +155,7 @@ const OrderManagement = () => {
 
           // Check for capitalization variants
           const fieldVariants = [
+            'deliveryDateValue',
             'deliveryDate',
             'DeliveryDate',
             'Deliverydate',
@@ -418,10 +419,38 @@ const OrderManagement = () => {
         );
 
         toast.dismiss(toastId);
-        toast.success(
-          `Order status updated to ${newStatus}. Customer notified.`
-        );
-        fetchOrders();
+
+        if (response.data.success) {
+          // Update the status in the local state without fetching all orders again
+          const updatedOrders = orders.map((order) => {
+            if (order._id === orderId) {
+              return {
+                ...order,
+                orderStatus: normalizedStatus,
+              };
+            }
+            return order;
+          });
+
+          setOrders(updatedOrders);
+
+          // Show success message with notification details
+          let notifyMessage = `Order status updated to ${newStatus}.`;
+
+          if (response.data.paymentEmailSent) {
+            notifyMessage += ' Payment email sent to customer.';
+          } else if (response.data.notificationSent) {
+            notifyMessage += ' Customer notified.';
+          } else {
+            notifyMessage += ' No notifications sent.';
+          }
+
+          toast.success(notifyMessage);
+        } else {
+          toast.error(
+            response.data.message || 'Failed to update order status.'
+          );
+        }
         return;
       } catch (postError) {
         console.error('POST method failed:', postError);
@@ -439,10 +468,38 @@ const OrderManagement = () => {
           );
 
           toast.dismiss(toastId);
-          toast.success(
-            `Order status updated to ${newStatus}. Customer notified.`
-          );
-          fetchOrders();
+
+          if (response.data.success) {
+            // Update the status in the local state without fetching all orders again
+            const updatedOrders = orders.map((order) => {
+              if (order._id === orderId) {
+                return {
+                  ...order,
+                  orderStatus: normalizedStatus,
+                };
+              }
+              return order;
+            });
+
+            setOrders(updatedOrders);
+
+            // Show success message with notification details
+            let notifyMessage = `Order status updated to ${newStatus}.`;
+
+            if (response.data.paymentEmailSent) {
+              notifyMessage += ' Payment email sent to customer.';
+            } else if (response.data.notificationSent) {
+              notifyMessage += ' Customer notified.';
+            } else {
+              notifyMessage += ' No notifications sent.';
+            }
+
+            toast.success(notifyMessage);
+          } else {
+            toast.error(
+              response.data.message || 'Failed to update order status.'
+            );
+          }
           return;
         } catch (putError) {
           console.error('PUT method also failed:', putError);
@@ -459,7 +516,6 @@ const OrderManagement = () => {
         error.response?.data?.message ||
           'An unexpected error occurred. Please try again.'
       );
-      fetchOrders();
     }
   };
 
@@ -1619,18 +1675,6 @@ const OrderManagement = () => {
                         {formatDate(order.createdAt || order.orderedDate)}
                       </div>
                     </td>
-{/* <<<<<<< HEAD
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${order.orderStatus === 'Pending'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : order.orderStatus === 'Accepted'
-                              ? 'bg-green-100 text-green-800'
-                              : order.orderStatus === 'Completed'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-red-100 text-red-800'
-                          }`}
-======= */}
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="text-sm text-gray-800">
                         {order.deliveryDateValue ? (
@@ -1724,7 +1768,6 @@ const OrderManagement = () => {
                             ? 'bg-blue-50 border-blue-200 text-blue-800'
                             : 'bg-gray-50 border-gray-200 text-gray-800'
                         }`}
-
                       >
                         <option value="Pending">Pending</option>
                         <option value="Accepted">Accepted</option>

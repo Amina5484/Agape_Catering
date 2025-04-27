@@ -14,10 +14,16 @@ const DeleteModal = ({ isOpen, onClose, onConfirm }) => {
         <h2 className="text-lg font-semibold mb-4">Confirm Delete</h2>
         <p>Are you sure you want to delete this menu item?</p>
         <div className="flex justify-end mt-4">
-          <button onClick={onClose} className="mr-2 px-4 py-2 bg-gray-300 rounded">
+          <button
+            onClick={onClose}
+            className="mr-2 px-4 py-2 bg-gray-300 rounded"
+          >
             Cancel
           </button>
-          <button onClick={onConfirm} className="px-4 py-2 bg-red-600 text-white rounded">
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-red-600 text-white rounded"
+          >
             Confirm
           </button>
         </div>
@@ -132,7 +138,11 @@ const MenuManagement = () => {
       resetForm();
       fetchAllData();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'An error occurred');
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('An error occurred while processing your request');
+      }
     }
   };
 
@@ -368,7 +378,10 @@ const MenuManagement = () => {
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                     {filteredMenuItems.map((item) => (
-                      <tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <tr
+                        key={item._id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
                         <td className="px-4 py-4 whitespace-nowrap">
                           <img
                             src={`http://localhost:4000${item.image}`}
@@ -422,7 +435,11 @@ const MenuManagement = () => {
         </div>
       </div>
 
-      <DeleteModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onConfirm={confirmDelete} />
+      <DeleteModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };

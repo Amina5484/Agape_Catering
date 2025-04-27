@@ -254,12 +254,12 @@ const Cart = () => {
                   Order Summary
                 </h2>
                 <div className="space-y-4">
-                  {/* <div className="flex justify-between items-center">
+                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="text-gray-900 font-medium">
                       {calculateSubtotal().toLocaleString()} Br
                     </span>
-                  </div> */}
+                  </div> 
                   <div className="border-t border-gray-200 pt-4">
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-semibold text-gray-900">

@@ -58,6 +58,14 @@ export const addMenuItem = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
+    // Check if menu item with same name already exists
+    const existingMenuItem = await Menu.findOne({ name });
+    if (existingMenuItem) {
+      return res
+        .status(400)
+        .json({ message: 'A menu item with this name already exists' });
+    }
+
     // Check if category exists
     const categoryExists = await Category.findById(category);
     if (!categoryExists) {

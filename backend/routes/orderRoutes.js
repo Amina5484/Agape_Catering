@@ -11,16 +11,32 @@ import {
   addPaymentRecord,
 } from '../controllers/orderController.js';
 import Order from '../models/orderModel.js';
+import mongoose from 'mongoose';
+import Schedule from '../models/schedule.js';
 
 const orderRouter = express.Router();
 
 // Protected routes
 orderRouter.use(protect);
+
+// Create new order
 orderRouter.post('/create', createOrder);
+
+// Get orders for a user
 orderRouter.get('/user/:userId', getUserOrders);
+
+// Get order details
 orderRouter.get('/details/:orderId', getOrderDetails);
+
+// Get all orders
 orderRouter.get('/all', getAllOrders);
-orderRouter.put('/update-status/:orderId', updateOrderStatus);
+
+// Update order status (Manager or Chef)
+orderRouter.put(
+  '/update-status/:orderId',
+  authorizeRoles(ROLES.CATERING_MANAGER, ROLES.CHEF, ROLES.EXECUTIVE_CHEF),
+  updateOrderStatus
+);
 
 // Payment routes - require manager/chef role
 orderRouter.post(
@@ -29,31 +45,30 @@ orderRouter.post(
   addPaymentRecord
 );
 
-// Payment verification route - no need auth as called by payment gateway
+// Payment verification route - public (for payment gateway)
 orderRouter.get('/verify', verifyPayment);
 
-// Chef routes
+// Chef specific routes
+
+// Get orders assigned to the chef
 orderRouter.get(
   '/chef',
-  protect,
   authorizeRoles(ROLES.CHEF, ROLES.EXECUTIVE_CHEF),
   async (req, res) => {
     try {
-      // Fetch orders assigned to the current chef
       const orders = await Order.find({
         assignedToChef: req.user._id,
         status: { $in: ['pending', 'in-progress', 'completed'] },
       })
         .populate('customer', 'name email phone')
-        .populate('userId', 'name email phone') // Also populate userId for compatibility
-        .populate('items.item') // Populate menu items for simple orders
-        .populate('menuItems.item') // Populate menu items for catering orders
+        .populate('userId', 'name email phone')
+        .populate('items.item')
+        .populate('menuItems.item')
         .select(
           '+specialInstructions +preparationInstructions +additionalNotes +notes'
         )
         .sort({ createdAt: -1 });
 
-      // Log the first order's special instructions for debugging
       if (orders.length > 0) {
         console.log('First order special instructions:', {
           specialInstructions: orders[0].specialInstructions,
@@ -72,39 +87,35 @@ orderRouter.get(
   }
 );
 
-// Update order status
+// Update status of an order by chef
 orderRouter.put(
   '/:id/status',
-  protect,
-  authorizeRoles(ROLES.CHEF, ROLES.EXECUTIVE_CHEF),
+  authorizeRoles(ROLES.CHEF, ROLES.EXECUTIVE_CHEF, ROLES.CATERING_MANAGER),
   async (req, res) => {
     try {
       const { id } = req.params;
       const { status } = req.body;
 
-      // Validate status
       if (
         !['pending', 'in-progress', 'completed', 'cancelled'].includes(status)
       ) {
         return res.status(400).json({ message: 'Invalid status' });
       }
 
-      // Find the order and ensure it's assigned to this chef
-      const order = await Order.findOne({
-        _id: id,
-        assignedToChef: req.user._id,
-      });
+      // Find the order by ID without requiring assignedToChef match
+      const order = await Order.findById(id);
 
       if (!order) {
-        return res
-          .status(404)
-          .json({ message: 'Order not found or not assigned to you' });
+        return res.status(404).json({ message: 'Order not found' });
       }
 
-      // Update the status
       order.status = status;
 
-      // Add status history
+      // Initialize statusHistory if it doesn't exist
+      if (!order.statusHistory) {
+        order.statusHistory = [];
+      }
+
       order.statusHistory.push({
         status,
         updatedBy: req.user._id,
@@ -112,6 +123,28 @@ orderRouter.put(
       });
 
       await order.save();
+
+      // If the status is completed, also update the corresponding schedule
+      if (status === 'completed') {
+        try {
+          // Find the schedule that references this order
+          const scheduleUpdate = await Schedule.findOne({ orders: id });
+
+          if (scheduleUpdate) {
+            console.log(
+              `Found schedule for order ${id}, updating status to completed`
+            );
+            scheduleUpdate.status = 'completed';
+            await scheduleUpdate.save();
+            console.log(`Schedule ${scheduleUpdate._id} updated to completed`);
+          } else {
+            console.log(`No schedule found for order ${id}`);
+          }
+        } catch (scheduleError) {
+          console.error('Error updating schedule status:', scheduleError);
+          // Don't return an error, we still want to update the order status
+        }
+      }
 
       res.json({ message: 'Order status updated successfully', order });
     } catch (error) {
@@ -121,10 +154,9 @@ orderRouter.put(
   }
 );
 
-// Chef order details route - allow chefs to view complete order details
+// Get detailed view of an order by chef
 orderRouter.get(
   '/chef/details/:orderId',
-  protect,
   authorizeRoles(ROLES.CHEF, ROLES.EXECUTIVE_CHEF),
   async (req, res) => {
     try {
@@ -138,7 +170,6 @@ orderRouter.get(
         return res.status(404).json({ message: 'Order not found' });
       }
 
-      // Check if order is assigned to this chef
       if (
         order.assignedToChef &&
         order.assignedToChef.toString() !== req.user._id.toString()
@@ -154,37 +185,31 @@ orderRouter.get(
   }
 );
 
-// Assign order to chef endpoint
+// Assign order to chef
 orderRouter.put(
   '/assign-chef/:orderId',
-  protect,
   authorizeRoles(ROLES.CATERING_MANAGER),
   async (req, res) => {
     try {
       const { orderId } = req.params;
       const { chefId, preparationInstructions } = req.body;
 
-      // Find the order
       const order = await Order.findById(orderId);
 
       if (!order) {
         return res.status(404).json({ message: 'Order not found' });
       }
 
-      // Assign to specific chef if chefId is provided, otherwise mark as assignedToChef: true
-      // which will be visible to all chefs
       if (chefId) {
         order.assignedToChef = chefId;
       } else {
         order.assignedToChef = true;
       }
 
-      // Add preparation instructions if provided
       if (preparationInstructions) {
         order.preparationInstructions = preparationInstructions;
       }
 
-      // Add assignment metadata
       order.assignedAt = new Date();
       order.assignedBy = req.user._id;
 

@@ -262,7 +262,7 @@ const PlaceOrder = () => {
     try {
       // Format the order data to match the backend model structure
       const orderData = {
-        TypeOfOrder: orderType === 'Urgent' ? 'urgent' : 'scheduled',
+        TypeOfOrder: orderType.toLowerCase(),
         DeliveryDate: new Date(deliveryDate).toISOString(),
         NumberOfGuest: parseInt(formData.guests),
         specialInstructions: formData.specialInstructions || '',

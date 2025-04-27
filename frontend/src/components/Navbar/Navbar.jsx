@@ -208,13 +208,6 @@ const Navbar = ({ setShowLogin }) => {
                     <FaClipboardList className="mr-2" />
                     Order Check
                   </Link>
-                  {/* <Link
-                    to="/customer/order-history"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <FaHistory className="mr-2" />
-                    Order History
-                  </Link> */}
                   <Link
                     to="/customer/profile"
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -222,13 +215,16 @@ const Navbar = ({ setShowLogin }) => {
                     <FaUser className="mr-2" />
                     Manage Profile
                   </Link>
-                  <button
-                    onClick={logout}
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      logout();
+                    }}
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer"
                   >
                     <FaSignOutAlt className="mr-2" />
-                    Logout
-                  </button>
+                    <span>Logout</span>
+                  </div>
                 </div>
               )}
             </div>

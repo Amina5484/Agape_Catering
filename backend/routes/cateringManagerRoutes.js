@@ -20,7 +20,7 @@ import {
   generateReport,
   getSchedule,
   listNewOrders,
-  updateOrderScheduleStatus
+  updateOrderScheduleStatus,
 } from '../controllers/cateringManagerController.js';
 import { upload } from '../middleware/multer.js';
 import order from '../models/orderModel.js';
@@ -256,7 +256,7 @@ catering_router.post('/order/accept/:orderId', (req, res) => {
  *       200:
  *         description: Order status updated
  */
-catering_router.put('/order/update-status/:orderId', (req, res) => {
+catering_router.put('/order/update-status/:orderId', protect, (req, res) => {
   console.log('PUT /order/update-status route called with body:', req.body);
   updateOrderStatus(req, res);
 });
@@ -351,160 +351,18 @@ catering_router.get('/order/:orderId', async (req, res) => {
   }
 });
 
-catering_router.post('/order/update-status/:orderId', async (req, res) => {
-  // console.log('POST /order/update-status route called with body:', req.body);
-  try {
-    const { orderId } = req.params;
-    const {
-      status,
-      notifyCustomer,
-      customerEmail,
-      customerName,
-      customerPhone,
-      message,
-    } = req.body;
-
-    // Validate the status
-    const validStatuses = [
-      'pending',
-      'confirmed',
-      'preparing',
-      'ready',
-      'delivered',
-      'cancelled',
-    ];
-
-    const normalizedStatus = status.toLowerCase();
-    if (!validStatuses.includes(normalizedStatus)) {
-      return res.status(400).json({ message: 'Invalid order status' });
-    }
-
-    // Only trigger payment email when status is set to 'ready'
-    if (normalizedStatus === 'ready') {
-      let orderData;
-      try {
-        orderData = await order.findById(orderId).populate('menuItems.item');
-        if (!orderData) {
-          return res.status(404).json({ message: 'Order not found' });
-        }
-      } catch (dbErr) {
-        return res.status(500).json({
-          message: 'Error fetching order from database',
-          error: dbErr.message,
-        });
-      }
-
-      let user;
-      try {
-        user = await userModel.findById(orderData.userId);
-
-        if (!user) {
-          return res.status(404).json({ message: 'User not found' });
-        }
-      } catch (userErr) {
-        return res.status(500).json({
-          message: 'Error fetching user from database',
-          error: userErr.message,
-        });
-      }
-      // console.log('User found:', user);
-
-      const chapaPaymentData = {
-        amount: orderData.totalAmount - orderData.paidAmount,
-        currency: 'ETB',
-        email: user.email,
-        first_name: user.name || 'User',
-        last_name: '',
-        phone: user.phone || '0911121314',
-        tx_ref: `order_${user._id}_${Date.now()}`,
-        callback_url: 'http://localhost:3000/payment-success',
-        return_url: 'http://localhost:3000/payment-success',
-        customization: {
-          title: 'Agape Catering',
-          description: 'Payment for your catering order',
-        },
-        // meta: {
-        //   userId: user.userId.toString(),
-        // },
-      };
-
-      try {
-        const chapaResponse = await axios.post(
-          'https://api.chapa.co/v1/transaction/initialize',
-          chapaPaymentData,
-          {
-            headers: {
-              Authorization: `Bearer ${CHAPA_SECRET_KEY}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-      //   console.log(chapaResponse);
-
-      //   const paymentUrl = chapaResponse.data?.data?.checkout_url;
-      //   if (!paymentUrl) {
-      //     throw new Error('Payment URL not received from Chapa');
-      //   }
-      //   const order_date = new Date(orderData.createdAt).toLocaleString('en-US', {
-      //     year: 'numeric',
-      //     month: 'long',
-      //     day: 'numeric',
-      //     hour: '2-digit',
-      //     minute: '2-digit',
-      //     second: '2-digit',
-      //     hour12: true,
-      //   });
-
-      //   const remaning_amount = orderData.totalAmount - orderData.paidAmount;
-      //   try {
-      //     console.log(
-      //       user.name,
-      //       orderId,
-      //       new Date(orderData.createdAt).toLocaleString(), // Convert to human-readable date and time
-      //       orderData.menuItems,
-      //       orderData.totalAmount,
-      //       orderData.paidAmount,
-      //       orderData.totalAmount - orderData.paidAmount,
-      //       paymentUrl
-      //     );
-      //     await sendEmail({
-      //       to: user.email,
-      //       subject: 'Your Order is Ready for Pickup',
-      //       html: orderSecondPaymentEmailHTML(
-      //         user.name,
-      //         orderId,
-      //         order_date,
-      //         orderData.menuItems,
-      //         orderData.totalAmount,
-      //         orderData.paidAmount,
-      //         remaning_amount,
-      //         paymentUrl
-      //       ),
-      //     });
-      //     console.log('Email sent successfully');
-      //   } catch (emailError) {
-      //     console.error('Failed to send email:', emailError.message);
-      //     // Not throwing to allow order status update to proceed
-      //   }
-      // } catch (chapaErr) {
-      //   return res.status(500).json({ message: 'Chapa payment initialization failed', error: chapaErr.message });
-
-
-        res.status(200).json(chapaResponse.data);
-      } catch (error) {
-        console.error('Error initializing payment:', error);
-        res.status(500).json({ message: 'Server Error', error: error.message });
-
-      }
-    } else {
-      res.status(200).json({ message: 'Payment email not triggered' });
-    }
-  } catch (error) {
-    console.error('Error updating order status:', error);
-    res.status(500).json({ message: 'Server Error', error: error.message });
+// Update the POST route handler for order status updates
+catering_router.post(
+  '/order/update-status/:orderId',
+  protect,
+  async (req, res) => {
+    console.log('POST /order/update-status route called with body:', req.body);
+    // Add the user information to the request
+    req.user = req.user || {};
+    // Call the updateOrderStatus function with req and res
+    await updateOrderStatus(req, res);
   }
-});
+);
 
 // Endpoint for chef to get their schedules
 /**
@@ -553,6 +411,10 @@ catering_router.get('/chef/schedules', protect, async (req, res) => {
  *       200:
  *         description: List of schedules assigned to the chef
  */
-catering_router.post('/chef/schedules/:scheduleId', protect, updateOrderScheduleStatus);
+catering_router.post(
+  '/chef/schedules/:scheduleId',
+  protect,
+  updateOrderScheduleStatus
+);
 
 export default catering_router;

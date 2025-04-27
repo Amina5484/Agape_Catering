@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react';
-import axiosInstance from '../SystemAdmin/axiosInstance';
+import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useStore } from '../context/StoreContext';
-import { FaUser, FaEnvelope, FaPhone, FaLock, FaSpinner } from 'react-icons/fa';
+import {
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaLock,
+  FaSpinner,
+  FaEye,
+  FaEyeSlash,
+} from 'react-icons/fa';
 
 const ChefProfile = () => {
-  const { user } = useStore();
+  const { token } = useStore();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,6 +25,9 @@ const ChefProfile = () => {
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     fetchUserProfile();
@@ -25,9 +36,14 @@ const ChefProfile = () => {
   const fetchUserProfile = async () => {
     try {
       console.log('Fetching profile data...');
-      const response = await axiosInstance.get('/api/chef/profile');
+      const response = await axios.get(
+        'http://localhost:4000/api/user/profile',
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       console.log('Profile data received:', response.data);
-      const { name, email, phone } = response.data;
+      const { name, email, phone } = response.data.user;
       setFormData((prev) => ({
         ...prev,
         name,
@@ -93,33 +109,58 @@ const ChefProfile = () => {
 
     setIsSubmitting(true);
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('email', formData.email);
-      formDataToSend.append('phone', formData.phone);
-      if (formData.currentPassword) {
-        formDataToSend.append('currentPassword', formData.currentPassword);
-        formDataToSend.append('newPassword', formData.newPassword);
+      // Handle password change separately if requested
+      if (formData.currentPassword && formData.newPassword) {
+        const passwordData = {
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword,
+        };
+
+        try {
+          const passwordResponse = await axios.post(
+            'http://localhost:4000/api/auth/change-password',
+            passwordData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (
+            passwordResponse.data.message === 'Password changed successfully'
+          ) {
+            toast.success('Password updated successfully');
+          }
+        } catch (passwordError) {
+          console.error('Error changing password:', passwordError);
+          toast.error(
+            passwordError.response?.data?.message || 'Failed to change password'
+          );
+          return;
+        }
       }
 
-      console.log('Updating profile with data:', {
+      // Update profile info
+      const profileData = {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-      });
+      };
 
-      const response = await axiosInstance.put(
-        '/api/chef/profile',
-        formDataToSend,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+      // const response = await axios.put(
+      //   'http://localhost:4000/api/user/update-profile',
+      //   profileData,
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${token}`,
+      //       'Content-Type': 'application/json',
+      //     },
+      //   }
+      // );
 
-      console.log('Profile update response:', response.data);
-      toast.success('Profile updated successfully');
+      // console.log('Profile update response:', response.data);
+      // toast.success('Profile updated successfully');
       // Clear password fields after successful update
       setFormData((prev) => ({
         ...prev,
@@ -262,17 +303,28 @@ const ChefProfile = () => {
                       <FaLock className="h-4 w-4 text-slate-400" />
                     </div>
                     <input
-                      type="password"
+                      type={showCurrentPassword ? 'text' : 'password'}
                       id="currentPassword"
                       name="currentPassword"
                       value={formData.currentPassword}
                       onChange={handleChange}
-                      className={`block w-full pl-8 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      className={`block w-full pl-8 pr-10 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         errors.currentPassword
                           ? 'border-red-500'
                           : 'border-slate-300'
                       }`}
                     />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowCurrentPassword(!showCurrentPassword)
+                        }
+                        className="text-slate-400 hover:text-slate-500 focus:outline-none"
+                      >
+                        {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
                   </div>
                   {errors.currentPassword && (
                     <p className="mt-1 text-xs text-red-600">
@@ -294,17 +346,26 @@ const ChefProfile = () => {
                       <FaLock className="h-4 w-4 text-slate-400" />
                     </div>
                     <input
-                      type="password"
+                      type={showNewPassword ? 'text' : 'password'}
                       id="newPassword"
                       name="newPassword"
                       value={formData.newPassword}
                       onChange={handleChange}
-                      className={`block w-full pl-8 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      className={`block w-full pl-8 pr-10 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         errors.newPassword
                           ? 'border-red-500'
                           : 'border-slate-300'
                       }`}
                     />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="text-slate-400 hover:text-slate-500 focus:outline-none"
+                      >
+                        {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
                   </div>
                   {errors.newPassword && (
                     <p className="mt-1 text-xs text-red-600">
@@ -326,17 +387,28 @@ const ChefProfile = () => {
                       <FaLock className="h-4 w-4 text-slate-400" />
                     </div>
                     <input
-                      type="password"
+                      type={showConfirmPassword ? 'text' : 'password'}
                       id="confirmPassword"
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className={`block w-full pl-8 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      className={`block w-full pl-8 pr-10 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         errors.confirmPassword
                           ? 'border-red-500'
                           : 'border-slate-300'
                       }`}
                     />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        className="text-slate-400 hover:text-slate-500 focus:outline-none"
+                      >
+                        {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
                   </div>
                   {errors.confirmPassword && (
                     <p className="mt-1 text-xs text-red-600">
@@ -351,7 +423,7 @@ const ChefProfile = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   {isSubmitting ? (
                     <>
