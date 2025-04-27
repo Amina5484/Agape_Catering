@@ -675,6 +675,31 @@ export const updateOrderScheduleStatus = async (req, res) => {
       return res.status(404).json({ message: 'Schedule not found' });
     }
 
+    // send email to catering manager
+    const cateringManagers = await userModel.find({ role: 'Catering Manager' });
+
+    if (cateringManagers.length > 0) {
+      // Send email to all catering managers
+      const { sendEmail } = await import('../utils/sendEmail.js');
+      for (const manager of cateringManagers) {
+        if (manager.email) {
+          await sendEmail({
+            to: manager.email,
+            subject: 'Schedule Status Update',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
+                <h2 style="color: #DB6403FF;">Schedule Status Updated</h2>
+                <p>Hello ${manager.name || 'Catering Manager'},</p>
+                <p>The status of schedule ID <strong>${scheduleId}</strong> has been updated to <strong>${status}</strong>.</p>
+                <p>Thank you for your attention.</p>
+                <p>Best regards,<br>Agape Catering Team</p>
+              </div>
+            `,
+          });
+        }
+      }
+    }
+
     // Update the status
     scheduleStatus.status = status;
     await scheduleStatus.save();

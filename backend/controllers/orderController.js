@@ -5,6 +5,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import { sendEmail } from '../utils/sendEmail.js';
 import orderReceiptEmailHTML from '../email_templates/orderEmail.js';
+import fullPaymentEmailHTML from '../email_templates/orderEmailFullPayment.js';
 import mongoose from 'mongoose';
 
 dotenv.config();
@@ -168,7 +169,7 @@ export const createOrder = async (req, res) => {
         await sendEmail({
           to: user.email,
           subject: 'Order Receipt',
-          html: orderReceiptEmailHTML(
+          html: fullPaymentEmailHTML(
             user.name || 'User',
             newOrder._id,
             new Date().toDateString(),
