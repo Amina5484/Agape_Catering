@@ -145,9 +145,7 @@ const UserManagement = () => {
       <div className="p-6 ml-64 flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mb-4"></div>
-          <div className="text-white text-xl font-medium">
-            Loading users...
-          </div>
+          <div className="text-white text-xl font-medium">Loading users...</div>
         </div>
       </div>
     );
@@ -298,24 +296,26 @@ const UserManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'admin'
-                          ? 'bg-purple-100 text-purple-800'
-                          : user.role === 'manager'
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          user.role === 'admin'
+                            ? 'bg-purple-100 text-purple-800'
+                            : user.role === 'manager'
                             ? 'bg-blue-100 text-blue-800'
                             : user.role === 'staff'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
                       >
                         {user.role}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.isactivated
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                          }`}
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          user.isactivated
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
                       >
                         {user.isactivated ? 'Active' : 'Inactive'}
                       </span>

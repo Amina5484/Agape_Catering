@@ -47,7 +47,7 @@ import CategoryManagement from './manager/CategoryManagement';
 
 // System Admin Imports
 import CreateAccount from './SystemAdmin/CreateAccount/createaccount';
-import SystemSettings from './SystemAdmin/SystemSetting';
+//import SystemSettings from './SystemAdmin/SystemSetting';
 import UserManagement from './SystemAdmin/UserManagement';
 import SystemSidebar from './SystemAdmin/SystemSidebar';
 import SystemNavbar from './SystemAdmin/SystemNavbar';
@@ -56,6 +56,8 @@ import EditStaff from './SystemAdmin/EditStaff';
 import AdminHome from './SystemAdmin/AdminHome';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import MenuDisplay from './components/MenuDisplay/MenuDisplay';
+import BackupManagement from './components/BackupManagement';
+import ProfileManagement from './SystemAdmin/ProfileManagement';
 
 // Remove unused placeholder components
 const Unauthorized = () => (
@@ -165,11 +167,19 @@ const AppContent = () => {
             }
           >
             <Route index element={<AdminHome />} />
-            <Route path="create-account" element={<CreateAccount url={url} />} />
+            <Route
+              path="create-account"
+              element={<CreateAccount url={url} />}
+            />
             <Route path="edit-user" element={<EditStaff url={url} />} />
-            <Route path="settings" element={<SystemSettings url={url} />} />
-            <Route path="user-management" element={<UserManagement url={url} />} />
+            {/* <Route path="settings" element={<SystemSettings url={url} />} /> */}
+            <Route
+              path="user-management"
+              element={<UserManagement url={url} />}
+            />
             <Route path="view-user" element={<ViewUser />} />
+            <Route path="backup" element={<BackupManagement />} />
+            <Route path="profile" element={<ProfileManagement />} />
           </Route>
 
           {/* Chef Routes */}

@@ -1,6 +1,13 @@
-import React from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { FaUserCircle, FaPlus, FaListUl, FaCog, FaUsers, FaHome, FaTimes } from "react-icons/fa";
+import React from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import {
+  FaUserCircle,
+  FaPlus,
+  FaUsers,
+  FaHome,
+  FaTimes,
+  FaDatabase,
+} from 'react-icons/fa';
 import SystemNavbar from './SystemNavbar';
 import { useSidebar } from '../context/SidebarContext';
 
@@ -17,12 +24,15 @@ const SystemSidebar = ({ user }) => {
 
       {/* Sidebar - Only show if not on home page or if mobile menu is open */}
       {(!isHomePage || sidebarVisible) && (
-        <div className={`fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-gray-50 to-gray-100 border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${isMobileView
-          ? sidebarVisible
-            ? 'translate-x-0'
-            : '-translate-x-full'
-          : 'translate-x-0'
-          }`}>
+        <div
+          className={`fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-gray-50 to-gray-100 border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${
+            isMobileView
+              ? sidebarVisible
+                ? 'translate-x-0'
+                : '-translate-x-full'
+              : 'translate-x-0'
+          }`}
+        >
           {/* Mobile close button */}
           {isMobileView && (
             <button
@@ -41,9 +51,10 @@ const SystemSidebar = ({ user }) => {
               <NavLink
                 to="/admin"
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
-                    ? 'bg-orange-400 text-white shadow-md'
-                    : 'text-gray-700 hover:bg-gray-200'
+                  `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
+                    isActive
+                      ? 'bg-orange-400 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-gray-200'
                   }`
                 }
               >
@@ -54,9 +65,10 @@ const SystemSidebar = ({ user }) => {
               <NavLink
                 to="/admin/create-account"
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
-                    ? 'bg-orange-400 text-white shadow-md'
-                    : 'text-gray-700 hover:bg-gray-200'
+                  `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
+                    isActive
+                      ? 'bg-orange-400 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-gray-200'
                   }`
                 }
               >
@@ -67,9 +79,10 @@ const SystemSidebar = ({ user }) => {
               <NavLink
                 to="/admin/view-user"
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
-                    ? 'bg-orange-400 text-white shadow-md'
-                    : 'text-gray-700 hover:bg-gray-200'
+                  `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
+                    isActive
+                      ? 'bg-orange-400 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-gray-200'
                   }`
                 }
               >
@@ -78,29 +91,45 @@ const SystemSidebar = ({ user }) => {
               </NavLink>
 
               <NavLink
-                to="/admin/settings"
-                className={({ isActive }) =>
-                  `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
-                    ? 'bg-orange-400 text-white shadow-md'
-                    : 'text-gray-700 hover:bg-gray-200'
-                  }`
-                }
-              >
-                <FaListUl className="w-5 h-5" />
-                <span>Profile Management</span>
-              </NavLink>
-
-              <NavLink
                 to="/admin/user-management"
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${isActive
-                    ? 'bg-orange-400 text-white shadow-md'
-                    : 'text-gray-700 hover:bg-gray-200'
+                  `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
+                    isActive
+                      ? 'bg-orange-400 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-gray-200'
                   }`
                 }
               >
                 <FaUsers className="w-5 h-5" />
                 <span>Staff Management</span>
+              </NavLink>
+
+              <NavLink
+                to="/admin/backup"
+                className={({ isActive }) =>
+                  `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
+                    isActive
+                      ? 'bg-orange-400 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-gray-200'
+                  }`
+                }
+              >
+                <FaDatabase className="w-5 h-5" />
+                <span>Backup Management</span>
+              </NavLink>
+
+              <NavLink
+                to="/admin/profile"
+                className={({ isActive }) =>
+                  `flex items-center space-x-3 rounded-lg p-3 transition duration-300 ${
+                    isActive
+                      ? 'bg-orange-400 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-gray-200'
+                  }`
+                }
+              >
+                <FaUserCircle className="w-5 h-5" />
+                <span>Profile Management</span>
               </NavLink>
             </div>
           </div>
@@ -108,9 +137,12 @@ const SystemSidebar = ({ user }) => {
       )}
 
       {/* Main Content Area */}
-      <div className={`flex-1 transition-all duration-300 ${!isHomePage && !isMobileView ? 'ml-4' : ''
-        }`}>
-        <div className=" p-35 pt-16">
+      <div
+        className={`flex-1 transition-all duration-300 ${
+          !isHomePage && !isMobileView ? 'ml-4' : ''
+        }`}
+      >
+        <div className="p-35 pt-16">
           <Outlet />
         </div>
       </div>

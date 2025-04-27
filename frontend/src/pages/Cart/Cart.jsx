@@ -6,8 +6,7 @@ import axios from 'axios';
 import { FaTrash, FaMinus, FaPlus, FaShoppingBag } from 'react-icons/fa';
 
 const Cart = () => {
-  const { removeFromCart, url, token, userId, isLoggedIn } =
-    useContext(StoreContext);
+  const { removeFromCart, url, token, userId, isLoggedIn } = useContext(StoreContext);
   const [isLoading, setIsLoading] = useState(true);
   const [cartData, setCartData] = useState(null);
   const navigate = useNavigate();
@@ -217,7 +216,7 @@ const Cart = () => {
                         <td className="px-3 py-3">
                           <button
                             onClick={() => handleRemoveFromCart(item._id)}
-                            className="text-red-500 hover:text-red-600"
+                            className="text-orange-500 hover:text-red-600"
                           >
                             <FaTrash />
                           </button>
@@ -229,8 +228,8 @@ const Cart = () => {
               </div>
 
               {/* Delivery Information */}
-              <div className="bg-white rounded-xl shadow-sm p-6 mt-8">
-              
+              {/* <div className="bg-white rounded-xl shadow-sm p-6 mt-8">
+{/*               
                 <div className="space-y-4">
                  
                   <div>
@@ -243,8 +242,8 @@ const Cart = () => {
                       placeholder="Any special instructions for delivery?"
                     ></textarea>
                   </div>
-                </div>
-              </div>
+                </div> 
+              </div> */}
             </div>
 
             {/* ORDER SUMMARY */}
@@ -254,25 +253,20 @@ const Cart = () => {
                   Order Summary
                 </h2>
                 <div className="space-y-4">
-                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="text-gray-900 font-medium">
-                      {calculateSubtotal().toLocaleString()} Br
-                    </span>
-                  </div> 
+                  
                   <div className="border-t border-gray-200 pt-4">
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-semibold text-gray-900">
                         Total
                       </span>
-                      <span className="text-xl font-bold text-indigo-600">
-                        {calculateSubtotal().toLocaleString()} Br
-                      </span>
+                       <span className="text-xl font-bold text-black">
+                        {calculateSubtotal().toLocaleString()} Birr
+                      </span> 
                     </div>
                   </div>
                   <button
                     onClick={handleCheckout}
-                    className="w-full mt-6 bg-red-400 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                    className="w-full mt-6 bg-orange-400 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
                   >
                     Proceed to Checkout
                   </button>

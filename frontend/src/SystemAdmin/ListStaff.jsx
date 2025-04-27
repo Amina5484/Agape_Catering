@@ -20,7 +20,7 @@ const ListStaff = () => {
       setLoading(true);
       const response = await axios.get("http://localhost:4000/api/admin/staffs", {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: Bearer ${token},
         },
       });
       const staffData = response.data?.staffs || [];
@@ -37,9 +37,9 @@ const ListStaff = () => {
   const deleteStaff = async (id) => {
     if (window.confirm('Are you sure you want to delete this account?')) {
       try {
-        await axios.delete(`http://localhost:4000/api/admin/delete/${id}`, {
+        await axios.delete(http://localhost:4000/api/admin/delete/${id}, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: Bearer ${token},
           },
         });
         toast.success("Account deleted successfully");
@@ -137,7 +137,7 @@ const ListStaff = () => {
                       <div className="text-sm text-gray-900">{account.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleColor(account.role)}`}>
+                      <span className={px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleColor(account.role)}}>
                         {getRoleDisplayName(account.role)}
                       </span>
                     </td>
@@ -146,7 +146,7 @@ const ListStaff = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <Link
-                        to={`/admin/edituser/${account._id}`}
+                        to={/admin/edituser/${account._id}}
                         className="text-blue-600 hover:text-blue-900 mr-4"
                       >
                         <FaEdit className="h-5 w-5 inline" />

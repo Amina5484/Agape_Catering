@@ -54,7 +54,8 @@ const EditStaff = () => {
       <h2 className="text-2xl font-bold mb-6">Edit Staff</h2>
       <form onSubmit={handleSubmit} encType="multipart/form-data">
         {/* Form fields similar to CreateStaff.jsx */}
-        <button type="submit" className="mt-6 bg-blue-500 text-white px-4 py-2 rounded">
+        <button type="submit" className="mt-6 bg-orange-4
+00 text-white px-4 py-2 rounded">
           Update Staff
         </button>
       </form>

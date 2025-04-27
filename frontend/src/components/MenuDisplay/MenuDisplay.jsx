@@ -4,7 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../../context/StoreContext';
 import { useDarkMode } from '../../context/DarkModeContext';
 import { toast } from 'react-toastify';
-import { FiShoppingCart, FiPlus, FiMinus, FiInfo, FiFilter, FiSearch } from 'react-icons/fi';
+import {
+  FiShoppingCart,
+  FiPlus,
+  FiMinus,
+  FiInfo,
+  FiFilter,
+  FiSearch,
+} from 'react-icons/fi';
 import { useLocation } from 'react-router-dom';
 
 const MenuDisplay = ({ category }) => {
@@ -18,9 +25,7 @@ const MenuDisplay = ({ category }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [filterLoading, setFilterLoading] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
 
-  // Get search query from URL
   const searchParams = new URLSearchParams(location.search);
   const searchQuery = searchParams.get('search') || '';
 
@@ -39,8 +44,8 @@ const MenuDisplay = ({ category }) => {
         category === 'All'
           ? items
           : items.filter(
-            (item) => item.category && item.category._id === category
-          );
+              (item) => item.category && item.category._id === category
+            );
 
       setMenuItems(filteredItems);
 
@@ -61,12 +66,10 @@ const MenuDisplay = ({ category }) => {
     }
   };
 
-  // Filter menu items based on search query
   const filteredMenuItems = menuItems.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Group filtered items by category
   const groupedItems = filteredMenuItems.reduce((acc, item) => {
     const categoryName = item.category?.categoryName || 'Uncategorized';
     if (!acc[categoryName]) {
@@ -85,8 +88,13 @@ const MenuDisplay = ({ category }) => {
 
   const handleAddToCart = (item) => {
     const itemQuantity = quantities[item._id] || 1;
-    addToCart(item._id, itemQuantity);
-    toast.success(`${item.name} added to cart!`);
+
+    addToCart(item._id, itemQuantity).then((result) => {
+      if (result.success) {
+        toast.success(`${item.name} added to cart!`);
+      }
+    });
+
     setSelectedItem(null);
     setShowDetails(false);
     setQuantities((prev) => ({
@@ -133,45 +141,23 @@ const MenuDisplay = ({ category }) => {
   return (
     <div className="py-8">
       <div className="container mx-auto px-4">
-        {/* Search and Filter Section */}
         <div className="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          {/* Search Bar */}
           <div className="w-full sm:w-96 relative">
-            <div className="flex items-center">
-              <input
-                type="text"
-                placeholder="Search menu items..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full px-4 py-2 rounded-lg border ${isDarkMode
-                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400'
-                  : 'bg-white border-gray-200 text-gray-800 placeholder-gray-500'
-                  } focus:outline-none focus:ring-2 focus:ring-orange-500`}
-              />
-              <FiSearch
-                className={`absolute right-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                size={20}
-              />
-            </div>
+            {/* Search bar (future feature, now disabled) */}
           </div>
 
-          {/* Filter Status */}
           <div className="flex items-center space-x-2">
-            <FiFilter className="text-orange-500" size={20} />
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-              {category === 'All' ? 'All Items' : `Filtered by: ${category}`}
-            </h3>
             {filterLoading && (
               <div className="flex items-center space-x-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-500 border-t-transparent"></div>
-                <span className="text-sm text-gray-500 dark:text-gray-400">Filtering...</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  Filtering...
+                </span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Search Results Count */}
         {searchQuery && (
           <div className="mb-4 text-sm text-gray-500 dark:text-gray-400">
             Found {filteredMenuItems.length} items matching "{searchQuery}"
@@ -196,15 +182,16 @@ const MenuDisplay = ({ category }) => {
                   <div className="h-0.5 flex-grow bg-gray-200 dark:bg-gray-700 ml-3"></div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 ">
                   {items.map((item) => (
                     <motion.div
                       key={item._id}
                       whileHover={{ scale: 1.03 }}
-                      className={`rounded-lg overflow-hidden shadow-md transition-all duration-300 max-w-sm ${isDarkMode
-                        ? 'bg-gray-800 border border-gray-700 text-white'
-                        : 'bg-white border border-gray-100 text-gray-800'
-                        }`}
+                      className={`rounded-lg overflow-hidden shadow-md transition-all ${
+                        isDarkMode
+                          ? 'bg-gray-800 border border-gray-700 text-white'
+                          : 'bg-white border border-gray-100 text-gray-800'
+                      }`}
                     >
                       <div className="relative">
                         <img
@@ -233,7 +220,7 @@ const MenuDisplay = ({ category }) => {
                       </div>
 
                       <div className="p-4">
-                        <div className="flex justify-between items-start mb-3">
+                        <div className="flex justify-between items-start mb-30">
                           <h3 className="text-lg font-semibold line-clamp-1">
                             {item.name}
                           </h3>
@@ -248,15 +235,16 @@ const MenuDisplay = ({ category }) => {
                           {item.description}
                         </p>
 
-                        <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">
-                          <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+                        <div className="flex flex-col items-center mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+                          {/* Quantity controls */}
+                          <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden mb-3">
                             <button
                               onClick={() => handleQuantityChange(item._id, -1)}
                               className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                             >
                               <FiMinus className="text-orange-500" size={16} />
                             </button>
-                            <span className="px-3 py-1 font-medium">
+                            <span className="px-4 py-1 font-medium min-w-[30px] text-center">
                               {quantities[item._id] || 1}
                             </span>
                             <button
@@ -266,9 +254,11 @@ const MenuDisplay = ({ category }) => {
                               <FiPlus className="text-orange-500" size={16} />
                             </button>
                           </div>
+
+                          {/* Add to Cart button */}
                           <button
                             onClick={() => handleAddToCart(item)}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
+                            className="flex items-center justify-center gap-1.5 w-full px-4 py-2 bg-orange-300 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
                           >
                             <FiShoppingCart size={16} />
                             <span>Add</span>
@@ -299,7 +289,7 @@ const MenuDisplay = ({ category }) => {
         )}
       </div>
 
-      {/* Modal for item details */}
+      {/* Item Details Modal */}
       <AnimatePresence>
         {showDetails && selectedItem && (
           <motion.div
@@ -319,7 +309,6 @@ const MenuDisplay = ({ category }) => {
                 ✕
               </button>
 
-              {/* Image section */}
               <div className="md:w-1/3 w-full mb-4 md:mb-0">
                 <img
                   src={
@@ -332,7 +321,6 @@ const MenuDisplay = ({ category }) => {
                 />
               </div>
 
-              {/* Details section */}
               <div className="md:w-2/3 w-full flex flex-col justify-between">
                 <div>
                   <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
@@ -364,13 +352,12 @@ const MenuDisplay = ({ category }) => {
                       <FiPlus className="text-orange-500" />
                     </button>
                   </div>
-
                   <button
                     onClick={() => handleAddToCart(selectedItem)}
-                    className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg"
+                    className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
                   >
-                    <FiShoppingCart />
-                    Add to Cart
+                    <FiShoppingCart size={18} />
+                    <span>Add to Cart</span>
                   </button>
                 </div>
               </div>
