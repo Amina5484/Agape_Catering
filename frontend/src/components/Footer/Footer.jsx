@@ -30,10 +30,10 @@ const Footer = () => {
               className="w-8 h-8 text-orange-400 hover:text-white transition-transform transform hover:scale-110 cursor-pointer"
               title="Email"
             />
-            {/* <FaFacebook
+            <FaFacebook
               className="w-8 h-8 text-orange-400 hover:text-white transition-transform transform hover:scale-110 cursor-pointer"
               title="Facebook"
-            /> */}
+            />
             <a
               href="https://www.tiktok.com/@agapecatering?_t=ZM-8tnaQeDp6DF&_r=1"
               target="_blank"
@@ -48,7 +48,7 @@ const Footer = () => {
 
         <div className="flex flex-col md:flex-row gap-6 w-full md:w-[50%] mt-6 md:mt-0">
           <div className="flex flex-col items-center md:items-start w-full md:w-1/2">
-            <h2 className="text-lg font-semibold">Company</h2>
+            <h2 className="text-lg font-semibold text-orange-400">Company</h2>
             <ul className="text-center md:text-left p-4 cursor-pointer">
               <li className="hover:text-gray-400">Home</li>
               <li className="hover:text-gray-400">About Us</li>
@@ -58,7 +58,7 @@ const Footer = () => {
           </div>
 
           <div className="flex flex-col items-center md:items-end w-full md:w-1/2">
-            <h2 className="text-lg font-semibold">Get in Touch</h2>
+            <h2 className="text-lg font-semibold text-orange-400">Get in Touch</h2>
             <ul className="text-center md:text-right cursor-pointer">
               <li className="flex items-center gap-2 hover:text-gray-400">
                 <FaPhone className="text-orange-400" /> +251911572510 /
@@ -68,9 +68,9 @@ const Footer = () => {
                 <FaEnvelope className="text-orange-400" />{' '}
                 agapecatering@gmail.com
               </li>
-              <li className="flex items-center gap-2 hover:text-gray-400">
+              {/* <li className="flex items-center gap-2 hover:text-gray-400">
                 <FaFacebook className="text-orange-400" /> .......
-              </li>
+              </li> */}
               <a
                 href="https://www.tiktok.com/@agapecatering?_t=ZM-8tnaQeDp6DF&_r=1"
                 target="_blank"

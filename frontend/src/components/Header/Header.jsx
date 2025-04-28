@@ -5,9 +5,13 @@ const Header = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = [
     assets.home,
-    assets.agelgl, // Add more images from your assets
-    assets.alcha,
-    assets.beyaynet,
+    // assets.h2, // Add more images from your assets
+    // assets.h3,
+    // assets.h4,
+    // assets.h5,
+    // assets.h6,
+    // assets.h7,
+    // assets.h8,
   ];
 
   useEffect(() => {
@@ -25,7 +29,7 @@ const Header = () => {
         backgroundImage: `url(${images[currentImageIndex]})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        transition: 'background-image 1s ease-in-out'
+        transition: 'background-image 1s ease-in-out',
       }}
     >
       {/* Dark overlay with lower z-index */}
@@ -57,8 +61,11 @@ const Header = () => {
         {images.map((_, index) => (
           <div
             key={index}
-            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${index === currentImageIndex ? 'bg-white w-4 sm:w-6' : 'bg-white/50'
-              }`}
+            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
+              index === currentImageIndex
+                ? 'bg-white w-4 sm:w-6'
+                : 'bg-white/50'
+            }`}
           />
         ))}
       </div>

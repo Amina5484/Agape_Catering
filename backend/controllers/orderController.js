@@ -545,19 +545,39 @@ export const updateOrderStatus = async (req, res) => {
               break;
 
             case 'ready':
+              const transactionId = order.paymentHistory[0]?.transactionId;
+              const chapaPaymentLink = `https://chapa.link/pay/${transactionId}`;
+
               emailSubject = 'Your Agape Catering Order is Ready for Delivery';
               emailHTML = `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
-                  <h2 style="color: #5c6bc0;">Order Ready for Delivery</h2>
-                  <p>Hello ${userName},</p>
-                  <p>Great news! Your order is now ready and will soon be on its way to you.</p>
-                  <p>Order ID: <strong>${order._id
-                    .toString()
-                    .substring(0, 8)}...</strong></p>
-                  <p>Our delivery team will contact you shortly. Thank you for choosing Agape Catering!</p>
-                  <p>Best regards,<br>Agape Catering Team</p>
-                </div>
-              `;
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
+      <h2 style="color: #5c6bc0;">Order Ready for Delivery</h2>
+      <p>Hello ${userName},</p>
+      <p>Great news! Your order is now ready and will soon be on its way to you.</p>
+      <p>Order ID: <strong>${order._id
+        .toString()
+        .substring(0, 8)}...</strong></p>
+      
+      <p><strong>Please complete your payment to proceed with the delivery.</strong></p>
+
+      <div style="text-align: center; margin: 20px 0;">
+        <a href="${chapaPaymentLink}" style="
+          background-color: #5c6bc0;
+          color: white;
+          padding: 12px 20px;
+          text-decoration: none;
+          border-radius: 5px;
+          font-size: 16px;
+          display: inline-block;
+        ">
+          Pay Now
+        </a>
+      </div>
+
+      <p>Our delivery team will contact you shortly after payment is confirmed. Thank you for choosing Agape Catering!</p>
+      <p style="margin-top: 30px;">Best regards,<br>Agape Catering Team</p>
+    </div>
+  `;
               break;
 
             case 'delivered':
