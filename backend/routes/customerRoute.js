@@ -1,6 +1,6 @@
 import express from 'express';
 import { 
-   getMenu,getCurrentOrder,getOrderHistory
+   getMenu,getCurrentOrder,getOrderHistory,OrderCancel
 } from '../controllers/customerController.js';
 import { upload } from "../middleware/multer.js";
 import { protect, authorizeRoles } from '../config/authMiddleware.js';
@@ -34,6 +34,7 @@ const customer_router = express.Router();
 customer_router.get('/menu', getMenu);
 customer_router.get('/myorder', protect, authorizeRoles("Customer"), getCurrentOrder);
 customer_router.get('/myorderhistory', protect, authorizeRoles("Customer"), getOrderHistory);
+customer_router.post('/cancelOrder', protect, authorizeRoles("Customer"), OrderCancel);
 
 
 

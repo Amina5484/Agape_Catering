@@ -108,4 +108,32 @@ export const getCurrentOrder = async (req, res) => {
       res.status(500).json({ message: 'Server Error', error });
     }
   };
+  export const OrderCancel= async (req, res) => {
+    try {
+      const userId = req.user.id;
+  const { orderId } = req.body;
+
+  const updatedOrder = await order.findOneAndUpdate(
+    { _id: orderId, userId, orderStatus: { $nin: ['delivered', 'cancelled'] } },
+    { orderStatus: 'cancelled' },
+    { new: true }
+  );
+
+  if (!updatedOrder) {
+    return res.status(404).json({ message: 'Order not found or cannot be cancelled' });
+  }
+
+  res.status(200).json({ message: 'Order cancelled successfully', updatedOrder });
+      const pastOrders = await order.find({
+        userId,
+        orderStatus: { $in: ['delivered', 'cancelled'] },
+      }).sort({ createdAt: -1 }).populate('menuItems.item', 'name price');
   
+      res.status(200).json(pastOrders);
+    } catch (error) {
+      console.error('Error fetching order history:', error);
+      res.status(500).json({ message: 'Server Error', error });
+    }
+  };
+  
+
