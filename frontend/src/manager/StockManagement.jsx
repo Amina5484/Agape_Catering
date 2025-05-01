@@ -13,10 +13,16 @@ const DeleteModal = ({ isOpen, onClose, onConfirm }) => {
         <h2 className="text-lg font-semibold mb-4">Confirm Delete</h2>
         <p>Are you sure you want to delete this stock item?</p>
         <div className="flex justify-end mt-4">
-          <button onClick={onClose} className="mr-2 px-4 py-2 bg-gray-300 rounded">
+          <button
+            onClick={onClose}
+            className="mr-2 px-4 py-2 bg-gray-300 rounded"
+          >
             Cancel
           </button>
-          <button onClick={onConfirm} className="px-4 py-2 bg-red-600 text-white rounded">
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-red-600 text-white rounded"
+          >
             Confirm
           </button>
         </div>
@@ -156,11 +162,11 @@ const StockManagement = () => {
             prevItems.map((item) =>
               item._id === selectedItem._id
                 ? {
-                  ...item,
-                  ...response.data.updatedStock,
-                  initialQuantity:
-                    selectedItem.initialQuantity || selectedItem.quantity,
-                }
+                    ...item,
+                    ...response.data.updatedStock,
+                    initialQuantity:
+                      selectedItem.initialQuantity || selectedItem.quantity,
+                  }
                 : item
             )
           );
@@ -236,7 +242,7 @@ const StockManagement = () => {
             prevItems.filter((item) => item._id !== deletingId)
           );
           toast.success('Stock item deleted successfully', {
-            position: "top-right",
+            position: 'top-right',
             autoClose: 3000,
             hideProgressBar: false,
             closeOnClick: true,
@@ -288,16 +294,10 @@ const StockManagement = () => {
   }
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto mt-8">
-        {' '}
-        {/* Added mt-8 here */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-800">
-              Stock Management
-            </h2>
-          </div>
+    <div className="p-2 bg-gray-50 min-h-screen">
+      <div className="w-full overflow-x-auto">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-lg font-bold text-gray-800">Stock Management</h2>
           <button
             onClick={() => {
               setSelectedItem(null);
@@ -309,35 +309,31 @@ const StockManagement = () => {
               });
               setIsEditing(true);
             }}
-            className="group relative inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-500 to-blue-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 overflow-hidden"
+            className="px-3 py-1.5 bg-orange-400 text-white text-[8px] rounded hover:bg-orange-500"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative flex items-center space-x-2">
-              <FaPlus className="w-5 h-5 transform group-hover:rotate-90 transition-transform duration-300" />
-              <span className="font-semibold">Add New Stock Item</span>
-            </div>
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+            Add New Stock Item
           </button>
         </div>
+
         {/* Search and Filter Section */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded shadow-sm p-2 mb-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-400" />
+              <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-orange-400 w-2 h-2" />
               <input
                 type="text"
                 placeholder="Search items..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-6 pr-2 py-1 text-[8px] border rounded focus:outline-none focus:ring-1 focus:ring-orange-400"
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <FaFilter className="text-orange-400" />
+            <div className="flex items-center space-x-1">
+              <FaFilter className="text-orange-400 w-2 h-2" />
               <select
                 value={selectedUnit}
                 onChange={(e) => setSelectedUnit(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-2 py-1 text-[8px] border rounded focus:outline-none focus:ring-1 focus:ring-orange-400"
               >
                 <option value="all">All Units</option>
                 <option value="kg">Kilograms (kg)</option>
@@ -349,189 +345,92 @@ const StockManagement = () => {
             </div>
           </div>
         </div>
-        {isEditing && (
-          <div className="bg-white rounded-xl shadow-xl p-8 mb-8 transform transition-all duration-300 border border-gray-100">
-            <h3 className="text-2xl font-semibold mb-6 text-gray-700">
-              {selectedItem ? 'Edit Stock Item' : 'Add New Stock Item'}
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Quantity
-                  </label>
-                  <input
-                    type="number"
-                    name="quantity"
-                    value={formData.quantity}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Unit
-                  </label>
-                  <select
-                    name="unit"
-                    value={formData.unit}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
-                    required
-                  >
-                    <option value="">Select Unit</option>
-                    <option value="kg">Kilograms (kg)</option>
-                    <option value="g">Grams (g)</option>
-                    <option value="l">Liters (L)</option>
-                    <option value="ml">Milliliters (mL)</option>
-                    <option value="pcs">Pieces (pcs)</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex justify-end space-x-4 pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsEditing(false);
-                    setSelectedItem(null);
-                    setFormData({
-                      name: '',
-                      quantity: '',
-                      unit: '',
-                      initialQuantity: '',
-                    });
-                  }}
-                  className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-300 transform hover:scale-105"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300 transform hover:scale-105"
-                >
-                  {selectedItem ? 'Update Stock Item' : 'Add Stock Item'}
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-        <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
+
+        <div className="bg-white rounded shadow overflow-hidden border border-gray-100">
           <div className="overflow-x-auto">
-            <div className="min-w-full inline-block align-middle">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-orange-400">
-                  <tr>
-                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider whitespace-nowrap">
-                      Name
-                    </th>
-                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider whitespace-nowrap">
-                      Quantity
-                    </th>
-                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider whitespace-nowrap">
-                      Unit
-                    </th>
-                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider whitespace-nowrap">
-                      Stock Level
-                    </th>
-                    <th className="px-4 sm:px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider whitespace-nowrap">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredItems.length > 0 ? (
-                    filteredItems.map((item) => (
-                      <tr
-                        key={item._id}
-                        className="hover:bg-gray-50 transition duration-150"
-                      >
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-800">
-                            {item.name}
-                          </div>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-800">
-                            {item.quantity}
-                          </div>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                            {item.unit}
-                          </span>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.isLowStock
+            <table className="min-w-full divide-y divide-gray-200 text-[8px]">
+              <thead className="bg-orange-400">
+                <tr>
+                  <th className="px-1 py-1 text-left text-[7px] font-medium text-white uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-1 py-1 text-left text-[7px] font-medium text-white uppercase tracking-wider">
+                    Quantity
+                  </th>
+                  <th className="px-1 py-1 text-left text-[7px] font-medium text-white uppercase tracking-wider">
+                    Unit
+                  </th>
+                  <th className="px-1 py-1 text-left text-[7px] font-medium text-white uppercase tracking-wider">
+                    Stock Level
+                  </th>
+                  <th className="px-1 py-1 text-left text-[7px] font-medium text-white uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredItems.length > 0 ? (
+                  filteredItems.map((item) => (
+                    <tr
+                      key={item._id}
+                      className="hover:bg-gray-50 transition duration-150"
+                    >
+                      <td className="px-1 py-1 whitespace-nowrap">
+                        <div className="text-[8px] font-medium text-gray-800">
+                          {item.name}
+                        </div>
+                      </td>
+                      <td className="px-1 py-1 whitespace-nowrap">
+                        <div className="text-[8px] text-gray-800">
+                          {item.quantity}
+                        </div>
+                      </td>
+                      <td className="px-1 py-1 whitespace-nowrap">
+                        <span className="px-1 inline-flex text-[7px] leading-4 font-semibold rounded-full bg-blue-100 text-blue-800">
+                          {item.unit}
+                        </span>
+                      </td>
+                      <td className="px-1 py-1 whitespace-nowrap">
+                        <span
+                          className={`px-1 inline-flex text-[7px] leading-4 font-semibold rounded-full ${
+                            item.isLowStock
                               ? 'bg-red-100 text-red-800'
                               : 'bg-green-100 text-green-800'
-                              }`}
-                          >
-                            {item.isLowStock ? 'Low' : 'Normal'}
-                          </span>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 sm:space-x-3">
+                          }`}
+                        >
+                          {item.isLowStock ? 'Low' : 'Normal'}
+                        </span>
+                      </td>
+                      <td className="px-1 py-1 whitespace-nowrap text-[8px] font-medium">
+                        <div className="flex space-x-0.5">
                           <button
                             onClick={() => handleEdit(item)}
-                            className="text-blue-600 hover:text-blue-800 transition duration-300 hover:scale-110 flex items-center"
+                            className="text-blue-600 hover:text-blue-800"
                           >
-                            <FaEdit className="mr-1" />
-                            <span className="hidden sm:inline">Edit</span>
+                            Edit
                           </button>
                           <button
                             onClick={() => handleDelete(item._id)}
-                            className="text-red-600 hover:text-red-800 transition duration-300 hover:scale-110 flex items-center"
+                            className="text-red-600 hover:text-red-800"
                           >
-                            <FaTrash className="mr-1" />
-                            <span className="hidden sm:inline">Delete</span>
+                            Delete
                           </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="5"
-                        className="px-4 sm:px-6 py-8 text-center text-gray-500"
-                      >
-                        <div className="flex flex-col items-center space-y-2">
-                          <svg
-                            className="w-12 h-12 text-gray-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                            />
-                          </svg>
-                          <p className="text-lg">
-                            No stock items found. Add your first stock item!
-                          </p>
                         </div>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="px-1 py-1 text-center text-[8px] text-gray-500"
+                    >
+                      No stock items found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

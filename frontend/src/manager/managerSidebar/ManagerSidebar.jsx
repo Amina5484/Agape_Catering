@@ -119,6 +119,21 @@ const ManagerSidebar = () => {
         />
       )}
 
+      {/* Main Content */}
+      <div
+        className={`transition-all duration-300 
+        ${sidebarVisible && !isMobileView ? 'pl-0 md:pl-72' : 'pl-0'}`}
+      >
+        <ManagerNavbar />
+        <div
+          className={`p-4 md:p-8 pt-20 ${
+            isDarkMode ? 'bg-gray-900' : 'bg-cloud'
+          } min-h-screen transition-colors duration-300`}
+        >
+          <Outlet />
+        </div>
+      </div>
+
       {/* Sidebar - position depends on viewport */}
       <div
         className={`fixed inset-y-0 z-30 w-72 transform transition-transform duration-300 ease-in-out
@@ -126,7 +141,7 @@ const ManagerSidebar = () => {
           ${
             isMobileView
               ? 'right-0' +
-                (sidebarVisible
+                (isMobileMenuOpen
                   ? ' translate-x-0 sidebar-appear-right'
                   : ' translate-x-full')
               : 'left-0' +
@@ -212,21 +227,6 @@ const ManagerSidebar = () => {
               <span>v1.0.0</span>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div
-        className={`transition-all duration-300 
-        ${sidebarVisible && !isMobileView ? 'pl-0 md:pl-72' : 'pl-0'}`}
-      >
-        <ManagerNavbar />
-        <div
-          className={`p-4 md:p-8 pt-20 ${
-            isDarkMode ? 'bg-gray-900' : 'bg-cloud'
-          } min-h-screen transition-colors duration-300`}
-        >
-          <Outlet />
         </div>
       </div>
     </div>

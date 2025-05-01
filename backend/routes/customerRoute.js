@@ -78,6 +78,12 @@ customer_router.post('/cancelOrder', protect, authorizeRoles("Customer"), OrderC
  */
 // customer_router.post("/order/placeorder",placeOrder);
 
-
+// cancele
+// customer_router.post(
+//   '/cancelOrder',
+//   protect,
+//   authorizeRoles('Customer'),
+//   OrderCancel
+// );
 
 export default customer_router;

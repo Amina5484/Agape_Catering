@@ -480,12 +480,12 @@ const PlaceOrder = () => {
                     {cartData?.subtotal?.toLocaleString() || '0'} Birr
                   </span>
                 </div>
-                <div className="flex justify-between mb-2">
+                {/* <div className="flex justify-between mb-2">
                   <span>Delivery Fee:</span>
                   <span>
                     {cartData?.deliveryFee?.toLocaleString() || '0'} Birr
                   </span>
-                </div>
+                </div> */}
                 <div className="flex justify-between font-bold text-lg border-t pt-2">
                   <span>Total:</span>
                   <span>{cartData?.total?.toLocaleString() || '0'} Birr</span>

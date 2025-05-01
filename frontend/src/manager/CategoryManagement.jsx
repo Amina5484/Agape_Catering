@@ -240,16 +240,16 @@ const CategoryManagement = () => {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600 text-[9px]">
                   <thead className="bg-orange-400 dark:bg-gray-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-0.5 py-0.5 text-left text-[8px] font-medium text-white dark:text-gray-400 uppercase tracking-wider">
                         Image
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-0.5 py-0.5 text-left text-[8px] font-medium text-white dark:text-gray-400 uppercase tracking-wider">
                         Name
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
+                      <th className="px-0.5 py-0.5 text-left text-[8px] font-medium text-white dark:text-gray-400 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -260,31 +260,33 @@ const CategoryManagement = () => {
                         key={category._id}
                         className="hover:bg-gray-50 dark:hover:bg-gray-700"
                       >
-                        <td className="px-4 py-4 whitespace-nowrap">
+                        <td className="px-0.5 py-0.5 whitespace-nowrap">
                           <img
                             src={`http://localhost:4000${category.image}`}
                             alt={category.categoryName}
-                            className="h-12 w-12 object-cover rounded-md"
+                            className="h-6 w-6 object-cover rounded-sm"
                           />
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        <td className="px-0.5 py-0.5 whitespace-nowrap">
+                          <div className="text-[8px] font-medium text-gray-900 dark:text-white">
                             {category.categoryName}
                           </div>
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => handleEdit(category)}
-                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3"
-                          >
-                            <FaEdit className="inline-block" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(category._id)}
-                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                          >
-                            <FaTrash className="inline-block" />
-                          </button>
+                        <td className="px-0.5 py-0.5 whitespace-nowrap text-[8px] font-medium">
+                          <div className="flex space-x-0.5">
+                            <button
+                              onClick={() => handleEdit(category)}
+                              className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                            >
+                              <FaEdit className="w-2 h-2" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(category._id)}
+                              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                            >
+                              <FaTrash className="w-2 h-2" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

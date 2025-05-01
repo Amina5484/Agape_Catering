@@ -13,6 +13,11 @@ import {
     FaUtensils,
 } from 'react-icons/fa';
 
+
+
+
+
+
 const CustomerOrders = () => {
     const [currentOrders, setCurrentOrders] = useState([]);
     const [orderHistory, setOrderHistory] = useState([]);
@@ -24,6 +29,12 @@ const CustomerOrders = () => {
         fetchCurrentOrders();
         fetchOrderHistory();
     }, []);
+
+
+
+
+
+    
 
     const fetchMenuItems = async (order) => {
         try {
@@ -322,7 +333,7 @@ const CustomerOrders = () => {
                                                 </div>
 
                                                 <div className="mt-4">
-                                                    <p className="text-sm text-gray-500">Menu Items</p>
+                                                    {/* <p className="text-sm text-gray-500">Menu Items</p>
                                                     <div className="mt-2 space-y-3">
                                                         {order.menuItems?.map((item, index) => {
                                                             const menuItem = menuItems[item.item];
@@ -370,7 +381,7 @@ const CustomerOrders = () => {
                                                                 </div>
                                                             );
                                                         })}
-                                                    </div>
+                                                    </div> */}
                                                     <div className="mt-4 pt-4 border-t border-gray-200">
                                                         <div className="flex justify-between items-center">
                                                             <span className="text-sm font-medium text-gray-500">Subtotal</span>

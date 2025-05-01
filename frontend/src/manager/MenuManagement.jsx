@@ -355,80 +355,88 @@ const MenuManagement = () => {
                 </select>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
-                  <thead className="bg-orange-400 dark:bg-gray-700">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
-                        Image
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
-                        Category
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
-                        Price
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-white dark:text-gray-400 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
-                    {filteredMenuItems.map((item) => (
-                      <tr
-                        key={item._id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                      >
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <img
-                            src={`http://localhost:4000${item.image}`}
-                            alt={item.name}
-                            className="h-12 w-12 object-cover rounded-md"
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = 'https://via.placeholder.com/48';
-                            }}
-                          />
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {item.name}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {item.description}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 dark:text-white">
-                            {item.category?.categoryName || 'Uncategorized'}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 dark:text-white">
-                            {item.price.toFixed(2)}birr
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => handleEdit(item)}
-                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3"
+              {/* Responsive Table Container */}
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600 text-[9px]">
+                      <thead className="bg-orange-400 dark:bg-gray-700">
+                        <tr>
+                          <th className="px-0.5 py-0.5 text-left text-[8px] font-medium text-white dark:text-gray-400 uppercase tracking-wider">
+                            Image
+                          </th>
+                          <th className="px-0.5 py-0.5 text-left text-[8px] font-medium text-white dark:text-gray-400 uppercase tracking-wider">
+                            Name
+                          </th>
+                          <th className="px-0.5 py-0.5 text-left text-[8px] font-medium text-white dark:text-gray-400 uppercase tracking-wider">
+                            Category
+                          </th>
+                          <th className="px-0.5 py-0.5 text-left text-[8px] font-medium text-white dark:text-gray-400 uppercase tracking-wider">
+                            Price
+                          </th>
+                          <th className="px-0.5 py-0.5 text-left text-[8px] font-medium text-white dark:text-gray-400 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                        {filteredMenuItems.map((item) => (
+                          <tr
+                            key={item._id}
+                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
                           >
-                            <FaEdit className="inline-block" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(item._id)}
-                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                          >
-                            <FaTrash className="inline-block" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                            <td className="px-0.5 py-0.5 whitespace-nowrap">
+                              <img
+                                src={`http://localhost:4000${item.image}`}
+                                alt={item.name}
+                                className="h-6 w-6 object-cover rounded-sm"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src =
+                                    'https://via.placeholder.com/24';
+                                }}
+                              />
+                            </td>
+                            <td className="px-0.5 py-0.5">
+                              <div className="text-[8px] font-medium text-gray-900 dark:text-white">
+                                {item.name}
+                              </div>
+                              <div className="text-[8px] text-gray-500 dark:text-gray-400 line-clamp-1">
+                                {item.description}
+                              </div>
+                            </td>
+                            <td className="px-0.5 py-0.5 whitespace-nowrap">
+                              <div className="text-[8px] text-gray-900 dark:text-white">
+                                {item.category?.categoryName || 'Uncategorized'}
+                              </div>
+                            </td>
+                            <td className="px-0.5 py-0.5 whitespace-nowrap">
+                              <div className="text-[8px] text-gray-900 dark:text-white">
+                                {item.price.toFixed(2)}birr
+                              </div>
+                            </td>
+                            <td className="px-0.5 py-0.5 whitespace-nowrap text-[8px] font-medium">
+                              <div className="flex space-x-0.5">
+                                <button
+                                  onClick={() => handleEdit(item)}
+                                  className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                >
+                                  <FaEdit className="w-2 h-2" />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(item._id)}
+                                  className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                >
+                                  <FaTrash className="w-2 h-2" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>

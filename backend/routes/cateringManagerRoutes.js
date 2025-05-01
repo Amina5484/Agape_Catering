@@ -274,7 +274,7 @@ catering_router.get('/customer/:customerId/location', viewCustomerLocation);
 catering_router.get('/feedback', viewFeedback);
 
 // Reports
-catering_router.get('/report', generateReport);
+catering_router.get('/report', protect, generateReport);
 
 // Get all orders
 catering_router.get('/orders', async (req, res) => {

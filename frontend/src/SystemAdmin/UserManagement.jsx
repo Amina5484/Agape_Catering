@@ -142,31 +142,35 @@ const UserManagement = () => {
 
   if (loading) {
     return (
-      <div className="p-6 ml-64 flex items-center justify-center">
+      <div className="p-2 md:p-6 ml-0 md:ml-64 flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mb-4"></div>
-          <div className="text-white text-xl font-medium">Loading users...</div>
+          <div className="animate-spin rounded-full h-8 w-8 md:h-12 md:w-12 border-b-2 border-orange-400 mb-2 md:mb-4"></div>
+          <div className="text-white text-sm md:text-xl font-medium">
+            Loading users...
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 ml-64">
+    <div className="p-2 md:p-6 ml-0 md:ml-64">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-white">User Management</h2>
+        <div className="flex justify-between items-center mb-4 md:mb-6">
+          <h2 className="text-lg md:text-2xl font-bold text-white">
+            User Management
+          </h2>
         </div>
 
         {isEditing && (
-          <div className="bg-orange-400 rounded-xl shadow-lg p-6 mb-6">
-            <h3 className="text-xl font-semibold text-white mb-4">
+          <div className="bg-orange-400 rounded-lg md:rounded-xl shadow-lg p-4 md:p-6 mb-4 md:mb-6">
+            <h3 className="text-lg md:text-xl font-semibold text-white mb-3 md:mb-4">
               {selectedUser ? 'Edit User' : 'Add New User'}
             </h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-white">
+                  <label className="block text-xs md:text-sm font-medium text-white">
                     Name
                   </label>
                   <input
@@ -174,12 +178,12 @@ const UserManagement = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white">
+                  <label className="block text-xs md:text-sm font-medium text-white">
                     Email
                   </label>
                   <input
@@ -187,12 +191,12 @@ const UserManagement = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white">
+                  <label className="block text-xs md:text-sm font-medium text-white">
                     Phone
                   </label>
                   <input
@@ -200,24 +204,25 @@ const UserManagement = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white">
+                  <label className="block text-xs md:text-sm font-medium text-white">
                     Role
                   </label>
                   <select
                     name="role"
                     value={formData.role}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm"
                     required
                   >
-                    <option value="">Select a role</option>
-                    <option value="Executive Chef">Executive Chef</option>
-                    <option value="Catering Manager">Catering Manager</option>
+                    <option value="">Select Role</option>
+                    <option value="admin">Admin</option>
+                    <option value="manager">Manager</option>
+                    <option value="staff">Staff</option>
                   </select>
                 </div>
               </div>
@@ -229,89 +234,72 @@ const UserManagement = () => {
                   onChange={handleChange}
                   className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
                 />
-                <label className="ml-2 block text-sm text-white">
-                  Active Account
+                <label className="ml-2 block text-xs md:text-sm text-white">
+                  Active
                 </label>
               </div>
-              <div className="flex justify-end space-x-4">
+              <div className="flex justify-end space-x-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsEditing(false);
-                    setSelectedUser(null);
-                    setFormData({
-                      name: '',
-                      email: '',
-                      phone: '',
-                      role: '',
-                      isactivated: true,
-                    });
-                  }}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  onClick={() => setIsEditing(false)}
+                  className="px-3 py-1.5 md:px-4 md:py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-xs md:text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                  className="px-3 py-1.5 md:px-4 md:py-2 bg-white text-orange-400 rounded-lg hover:bg-gray-100 text-xs md:text-sm"
                 >
-                  {selectedUser ? 'Update User' : 'Create User'}
+                  {selectedUser ? 'Update' : 'Create'}
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-orange-300">
-              <thead className="bg-orange-500">
+            <table className="min-w-full divide-y divide-gray-200 text-[8px] md:text-sm">
+              <thead className="bg-orange-400">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-1 py-1 md:px-3 md:py-3 text-left text-[7px] md:text-xs font-medium text-white uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-1 py-1 md:px-3 md:py-3 text-left text-[7px] md:text-xs font-medium text-white uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-1 py-1 md:px-3 md:py-3 text-left text-[7px] md:text-xs font-medium text-white uppercase tracking-wider">
+                    Phone
+                  </th>
+                  <th className="px-1 py-1 md:px-3 md:py-3 text-left text-[7px] md:text-xs font-medium text-white uppercase tracking-wider">
                     Role
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-1 py-1 md:px-3 md:py-3 text-left text-[7px] md:text-xs font-medium text-white uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-1 py-1 md:px-3 md:py-3 text-left text-[7px] md:text-xs font-medium text-white uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-
-              <tbody className="bg-white divide-y divide-orange-300">
+              <tbody className="bg-white divide-y divide-gray-200">
                 {users.map((user) => (
-                  <tr key={user._id} className="hover:bg-white">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
+                  <tr key={user._id} className="hover:bg-gray-50">
+                    <td className="px-1 py-1 md:px-3 md:py-3 whitespace-nowrap text-[8px] md:text-sm">
                       {user.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                    <td className="px-1 py-1 md:px-3 md:py-3 whitespace-nowrap text-[8px] md:text-sm">
                       {user.email}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          user.role === 'admin'
-                            ? 'bg-purple-100 text-purple-800'
-                            : user.role === 'manager'
-                            ? 'bg-blue-100 text-blue-800'
-                            : user.role === 'staff'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {user.role}
-                      </span>
+                    <td className="px-1 py-1 md:px-3 md:py-3 whitespace-nowrap text-[8px] md:text-sm">
+                      {user.phone}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                    <td className="px-1 py-1 md:px-3 md:py-3 whitespace-nowrap text-[8px] md:text-sm">
+                      {user.role}
+                    </td>
+                    <td className="px-1 py-1 md:px-3 md:py-3 whitespace-nowrap text-[8px] md:text-sm">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        className={`px-1 py-0.5 md:px-2 md:py-1 inline-flex text-[7px] md:text-xs leading-5 font-semibold rounded-full ${
                           user.isactivated
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
@@ -320,28 +308,25 @@ const UserManagement = () => {
                         {user.isactivated ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-3">
+                    <td className="px-1 py-1 md:px-3 md:py-3 whitespace-nowrap text-[8px] md:text-sm">
+                      <div className="flex space-x-1 md:space-x-2">
                         <button
                           onClick={() => handleView(user._id)}
-                          className="text-white hover:text-orange-200"
-                          title="View User"
+                          className="text-blue-600 hover:text-blue-800"
                         >
-                          <FaEye className="w-4 h-4" />
+                          <FaEye className="w-3 h-3 md:w-4 md:h-4" />
                         </button>
                         <button
                           onClick={() => handleEdit(user)}
-                          className="text-blue-500 hover:text-blue-200"
-                          title="Edit User"
+                          className="text-orange-600 hover:text-orange-800"
                         >
-                          <FaEdit className="w-4 h-4" />
+                          <FaEdit className="w-3 h-3 md:w-4 md:h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(user._id)}
-                          className="text-red-500 hover:text-red-200"
-                          title="Delete User"
+                          className="text-red-600 hover:text-red-800"
                         >
-                          <FaTrash className="w-4 h-4" />
+                          <FaTrash className="w-3 h-3 md:w-4 md:h-4" />
                         </button>
                       </div>
                     </td>

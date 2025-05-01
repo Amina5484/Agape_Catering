@@ -41,16 +41,41 @@ const GenerateReport = () => {
   const fetchReportData = async () => {
     setLoading(true);
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('No authentication token found. Please log in again.');
+        setLoading(false);
+        return;
+      }
+
+      console.log('Fetching report data with token:', token);
+
       const response = await axios.get(
         'http://localhost:4000/api/catering/report',
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         }
       );
-      setReportData(response.data);
+
+      if (response.data) {
+        setReportData(response.data);
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error) {
       console.error('Error fetching report data:', error);
-      toast.error('Failed to fetch report data');
+      if (error.response?.status === 401) {
+        toast.error('Session expired. Please log in again.');
+        // Redirect to login page
+        window.location.href = '/login';
+      } else {
+        toast.error(
+          error.response?.data?.message || 'Failed to fetch report data'
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -286,9 +311,9 @@ const GenerateReport = () => {
           </h2>
           <button
             onClick={handleDownloadCSV}
-            className="absolute right-0 top-8 flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-300"
+            className="absolute right-0 top-8 flex items-center px-2 py-1 md:px-4 md:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-300 text-sm md:text-base"
           >
-            <FaDownload className="mr-2" />
+            <FaDownload className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
             Download Report
           </button>
         </div>
@@ -345,7 +370,7 @@ const GenerateReport = () => {
               </div>
             </div>
           </div>
-{/* 
+          {/* 
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-purple-100 text-purple-600">

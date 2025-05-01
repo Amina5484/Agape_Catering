@@ -47,14 +47,8 @@ export const SidebarProvider = ({ children }) => {
 
   const hideSidebar = () => {
     setSidebarVisible(false);
-    if (!isDesktop) {
-      setIsMobileMenuOpen(false);
-      // Don't reset hasClickedCard for mobile view
-    } else {
-      // Reset hasClickedCard for desktop so the sidebar will be hidden
-      // until another card is clicked when returning to the home page
-      setHasClickedCard(false);
-    }
+    setIsMobileMenuOpen(false);
+    setHasClickedCard(false);
   };
 
   const toggleMobileMenu = () => {
