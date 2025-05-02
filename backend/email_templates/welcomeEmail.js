@@ -1,5 +1,5 @@
 const welcomeEmailHTML = (name, email, password, role) => {
-    return `
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -95,13 +95,12 @@ const welcomeEmailHTML = (name, email, password, role) => {
         </div>
         <div class="footer">
           <p>&copy; ${new Date().getFullYear()} Catering App. All rights reserved.</p>
-          <p>Contact us at support@aggapecatering.com</p>
+          <p>Contact us at andebetmolla211@gmail.com</p>
         </div>
       </div>
     </body>
     </html>
     `;
-  };
-  
-  export default welcomeEmailHTML;
-  
+};
+
+export default welcomeEmailHTML;

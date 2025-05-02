@@ -100,6 +100,22 @@ const fullPaymentEmailHTML = (name, orderId, orderDate, items, totalAmount) => {
           font-weight: bold;
           color: #27ae60;
         }
+
+        .chapa-button {
+          display: inline-block;
+          margin: 20px 0;
+          padding: 12px 24px;
+          background-color: #4CAF50;
+          color: white;
+          text-decoration: none;
+          border-radius: 4px;
+          font-weight: bold;
+          text-align: center;
+        }
+
+        .chapa-button:hover {
+          background-color: #45a049;
+        }
   
         @media only screen and (max-width: 600px) {
           .header h1 {
@@ -139,6 +155,12 @@ const fullPaymentEmailHTML = (name, orderId, orderDate, items, totalAmount) => {
   
           <p><strong>Total Amount:</strong> ${totalAmount.toFixed(2)} ETB</p>
           <p><span class="highlight">Payment Status: Paid in Full</span></p>
+
+          <div style="text-align: center;">
+            <a href="https://checkout.chapa.co/checkout/payment/${orderId}" class="chapa-button">
+              Pay with Chapa
+            </a>
+          </div>
   
           <p>If you have any questions or need help, feel free to contact our support team.</p>
           <p>Best regards,<br/>The Catering App Team</p>

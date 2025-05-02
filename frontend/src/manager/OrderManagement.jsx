@@ -521,13 +521,14 @@ const OrderManagement = () => {
 
   // Helper function to normalize status values to match backend expectations
   const normalizeStatus = (status) => {
-    // Backend validates against: 'pending', 'confirmed', 'preparing', 'ready', 'delivered'
+    // Backend validates against: 'pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled'
     const statusMap = {
       Pending: 'pending',
       Accepted: 'confirmed', // 'Accepted' in UI maps to 'confirmed' in DB
       Preparing: 'preparing',
       Ready: 'ready',
       Delivered: 'delivered',
+      Cancelled: 'cancelled',
     };
 
     // Either use the mapping or convert to lowercase if not in mapping
@@ -543,6 +544,7 @@ const OrderManagement = () => {
       preparing: 'Preparing',
       ready: 'Ready',
       delivered: 'Delivered',
+      cancelled: 'Cancelled',
     };
 
     return statusMap[dbStatus] || dbStatus;
@@ -1234,6 +1236,8 @@ const OrderManagement = () => {
                       ? 'bg-indigo-50 border-indigo-200 text-indigo-800'
                       : order.orderStatus === 'delivered'
                       ? 'bg-blue-50 border-blue-200 text-blue-800'
+                      : order.orderStatus === 'cancelled'
+                      ? 'bg-red-50 border-red-200 text-red-800'
                       : 'bg-gray-50 border-gray-200 text-gray-800'
                   }`}
                 >
@@ -1242,6 +1246,7 @@ const OrderManagement = () => {
                   <option value="Preparing">Preparing</option>
                   <option value="Ready">Ready</option>
                   <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
                 </select>
                 <button
                   onClick={onClose}
@@ -1694,11 +1699,35 @@ const OrderManagement = () => {
                       <td className="px-1 py-1 whitespace-nowrap">
                         <div className="text-[8px] text-gray-800">
                           {order.isScheduledOrder ? (
-                            <div className="text-[7px] text-red-500">
-                              <span>(Scheduled)</span>
+                            <div className="text-[7px] text-green-500 font-medium">
+                              Scheduled
                             </div>
                           ) : (
-                            'Regular'
+                            <button
+                              type="button"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  await handleScheduleOrder(order, e);
+                                  // Update the order's isScheduledOrder status
+                                  const updatedOrders = orders.map((o) =>
+                                    o._id === order._id
+                                      ? { ...o, isScheduledOrder: true }
+                                      : o
+                                  );
+                                  setOrders(updatedOrders);
+                                } catch (error) {
+                                  console.error(
+                                    'Error scheduling order:',
+                                    error
+                                  );
+                                  toast.error('Failed to schedule order');
+                                }
+                              }}
+                              className="px-1 py-0.5 bg-green-500 text-white rounded text-[7px] hover:bg-green-600 transition-colors cursor-pointer"
+                            >
+                              Schedule
+                            </button>
                           )}
                         </div>
                       </td>
@@ -1725,6 +1754,8 @@ const OrderManagement = () => {
                               ? 'bg-indigo-50 border-indigo-200 text-indigo-800'
                               : order.orderStatus === 'delivered'
                               ? 'bg-blue-50 border-blue-200 text-blue-800'
+                              : order.orderStatus === 'cancelled'
+                              ? 'bg-red-50 border-red-200 text-red-800'
                               : 'bg-gray-50 border-gray-200 text-gray-800'
                           }`}
                         >
@@ -1733,6 +1764,7 @@ const OrderManagement = () => {
                           <option value="Preparing">Preparing</option>
                           <option value="Ready">Ready</option>
                           <option value="Delivered">Delivered</option>
+                          <option value="Cancelled">Cancelled</option>
                         </select>
                       </td>
                       <td className="px-1 py-1 whitespace-nowrap text-[8px] font-medium">

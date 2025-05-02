@@ -1,15 +1,15 @@
- const orderReceiptEmailHTML = (
-   name,
-   orderId,
-   orderDate,
-   items,
-   totalAmount,
-   firstPayment,
-   balanceAmount
- ) => {
-   const formattedItems = items
-     .map(
-       (item) => `
+const orderReceiptEmailHTML = (
+  name,
+  orderId,
+  orderDate,
+  items,
+  totalAmount,
+  firstPayment,
+  balanceAmount
+) => {
+  const formattedItems = items
+    .map(
+      (item) => `
     <tr>
       <td style="padding: 10px; border: 1px solid #ddd;">${item.name}</td>
       <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${
@@ -20,10 +20,10 @@
       )} ETB</td>
     </tr>
   `
-     )
-     .join('');
+    )
+    .join('');
 
-   return `
+  return `
   <!DOCTYPE html>
   <html lang="en">
   <head>
@@ -158,12 +158,12 @@
       </div>
       <div class="footer">
         <p>&copy; ${new Date().getFullYear()} Catering App. All rights reserved.</p>
-        <p>Contact us at support@aggapecatering.com</p>
+        <p>Contact us at andebetmolla211@gmail.com</p>
       </div>
     </div>
   </body>
   </html>
   `;
- };
+};
 
- export default orderReceiptEmailHTML;
+export default orderReceiptEmailHTML;
